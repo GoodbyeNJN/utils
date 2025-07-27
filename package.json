@@ -64,9 +64,10 @@
         "typescript": "^5.8.3"
     },
     "publishConfig": {
-        "registry": "https://registry.npmjs.org"
+        "registry": "https://registry.npmjs.org",
+        "access": "public"
     },
     "engines": {
-        "node": ">=18"
+        "node": ">=20"
     }
 }
