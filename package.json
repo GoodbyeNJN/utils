@@ -1,0 +1,72 @@
+{
+    "name": "@goodbyenjn/utils",
+    "version": "1.0.0",
+    "description": "GoodbyeNJN's utils for typescript and javascript",
+    "keywords": [
+        "utils",
+        "typescript",
+        "javascript"
+    ],
+    "homepage": "https://github.com/GoodbyeNJN/utils",
+    "bugs": {
+        "url": "https://github.com/GoodbyeNJN/utils/issues"
+    },
+    "license": "MIT",
+    "author": "GoodbyeNJN <cc@fuckwall.cc>",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/GoodbyeNJN/utils.git"
+    },
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        },
+        "./fs": {
+            "types": "./dist/fs.d.ts",
+            "import": "./dist/fs.js"
+        },
+        "./remeda": {
+            "types": "./dist/remeda.d.ts",
+            "import": "./dist/remeda.js"
+        },
+        "./result": {
+            "types": "./dist/result.d.ts",
+            "import": "./dist/result.js"
+        },
+        "./types": {
+            "types": "./dist/types.d.ts"
+        },
+        "./global-types": {
+            "types": "./dist/global-types.d.ts"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "pnpm run clean && pnpm run bundle",
+        "bundle": "rolldown -c rolldown.config.ts",
+        "clean": "rm -rf dist"
+    },
+    "devDependencies": {
+        "@goodbyenjn/configs": "^6.0.0",
+        "@goodbyenjn/utils": "file:",
+        "@types/node": "^24.1.0",
+        "eslint": "^9.32.0",
+        "prettier": "^3.6.2",
+        "remeda": "^2.26.1",
+        "rolldown": "1.0.0-beta.29",
+        "rolldown-plugin-dts": "^0.14.1",
+        "rotery": "^0.7.0",
+        "type-fest": "^4.41.0",
+        "typescript": "^5.8.3"
+    },
+    "publishConfig": {
+        "registry": "https://registry.npmjs.org"
+    },
+    "engines": {
+        "node": ">=18"
+    }
+}
