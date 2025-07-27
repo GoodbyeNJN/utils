@@ -1,6 +1,6 @@
 # @goodbyenjn/utils
 
-[![npm version](https://badge.fury.io/js/@goodbyenjn/utils.svg)](https://badge.fury.io/js/@goodbyenjn/utils)
+[![npm version](https://badge.fury.io/js/@goodbyenjn%2Futils.svg)](https://badge.fury.io/js/@goodbyenjn%2Futils)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 GoodbyeNJN's utility library for TypeScript and JavaScript, providing a collection of common utility functions and types.
