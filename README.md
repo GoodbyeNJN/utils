@@ -72,7 +72,7 @@ if (existsResult.isOk() && existsResult.value) {
 ### Result Pattern
 
 ```typescript
-import { Ok, Err, fromThrowable } from "@goodbyenjn/utils/result";
+import { Ok, Err, Result } from "@goodbyenjn/utils/result";
 
 // Create results
 const success = Ok(42);
@@ -84,7 +84,7 @@ if (success.isOk()) {
 }
 
 // Convert throwing functions to Result
-const safeParseInt = fromThrowable(parseInt);
+const safeParseInt = Result.fromThrowable(parseInt);
 const result = safeParseInt("not-a-number");
 if (result.isErr()) {
     console.log("Parse failed:", result.error);

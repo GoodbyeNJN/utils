@@ -1,5 +1,4 @@
-import { err, ok } from "./sync";
-import { IterableResult } from "./utils";
+import { err, ok, Result } from "./sync";
 
 import type { Err } from "./sync";
 import type {
@@ -7,9 +6,10 @@ import type {
     InferAsyncOkType,
     InferErrType,
     InferOkType,
-    Result,
+    ResultAsyncAll,
+    ResultAsyncAllSettled,
 } from "./types";
-import type { Fn, Promisable } from "@/types";
+import type { AsyncFn, Fn, NonEmptyTuple, Promisable } from "@/types";
 
 export function okAsync(): ResultAsync<void, never>;
 export function okAsync<T>(value: T): ResultAsync<T, never>;
@@ -24,26 +24,74 @@ export function errAsync(error?: unknown) {
 }
 
 export class ResultAsync<T = unknown, E = unknown> implements PromiseLike<Result<T, E>> {
+    static fromPromise<T, E = unknown>(promise: Promise<T>): ResultAsync<T, E>;
+    static fromPromise<T, E>(
+        promise: Promise<T>,
+        // eslint-disable-next-line @typescript-eslint/unified-signatures
+        onReject: (error: unknown) => E,
+    ): ResultAsync<T, E>;
+    static fromPromise(promise: Promise<unknown>, onReject?: Fn) {
+        const newPromise = promise
+            .then(value => ok(value))
+            .catch(error => err(onReject ? onReject(error) : error));
+
+        return new ResultAsync(newPromise);
+    }
+
+    static fromThrowable<Args extends readonly any[], T, E = unknown>(
+        fn: AsyncFn<T, Args>,
+    ): Fn<ResultAsync<T, E>, Args>;
+    static fromThrowable<Args extends readonly any[], T, E>(
+        fn: AsyncFn<T, Args>,
+        // eslint-disable-next-line @typescript-eslint/unified-signatures
+        onThrow: (error: unknown) => E,
+    ): Fn<ResultAsync<T, E>, Args>;
+    static fromThrowable(fn: AsyncFn, onThrow?: Fn) {
+        return (...args: any[]) => {
+            const wrapper = async () => {
+                try {
+                    return ok(await fn(...args));
+                } catch (error) {
+                    return err(onThrow ? onThrow(error) : error);
+                }
+            };
+
+            return new ResultAsync(wrapper());
+        };
+    }
+
+    static all<T extends NonEmptyTuple<ResultAsync>>(results: T): ResultAsyncAll<T>;
+    static all<T extends readonly ResultAsync[]>(results: T): ResultAsyncAll<T>;
+    static all<T extends ResultAsync[]>(results: T) {
+        return this.fromPromise(Promise.all(results)).andThen(Result.all);
+    }
+
+    static allSettled<T extends NonEmptyTuple<ResultAsync>>(results: T): ResultAsyncAllSettled<T>;
+    static allSettled<T extends readonly ResultAsync[]>(results: T): ResultAsyncAllSettled<T>;
+    static allSettled<T extends ResultAsync[]>(results: T) {
+        return this.fromPromise(Promise.all(results)).andThen(Result.allSettled);
+    }
+
     constructor(private promise: PromiseLike<Result<T, E>>) {}
 
-    map<U>(fn: (value: T) => Promisable<U>): ResultAsync<U, E> {
-        return this.deriveFrom(async res => {
-            if (res.isErr()) {
-                return err(res.err());
-            }
+    get ok(): Promise<boolean> {
+        return this.promise.then(res => res.ok) as Promise<boolean>;
+    }
 
-            return ok(await fn(res.ok()));
-        });
+    get value(): Promise<T> {
+        return this.promise.then(res => res.unwrapOr(null)) as Promise<T>;
+    }
+
+    get error(): Promise<E> {
+        return this.promise.then(res => res.unwrapOr(null)) as Promise<E>;
+    }
+
+    map<U>(fn: (value: T) => Promisable<U>): ResultAsync<U, E> {
+        return this.deriveFrom(async res => (res.isErr() ? res : ok(await fn(res.value))));
     }
 
     mapErr<F>(fn: (error: E) => Promisable<F>): ResultAsync<T, F> {
-        return this.deriveFrom(async res => {
-            if (res.isOk()) {
-                return ok(res.ok());
-            }
-
-            return err(await fn(res.err()));
-        });
+        return this.deriveFrom(async res => (res.isOk() ? res : err(await fn(res.error))));
     }
 
     and<R extends Result<unknown, E>>(result: R): ResultAsync<InferOkType<R>, E>;
@@ -51,11 +99,9 @@ export class ResultAsync<T = unknown, E = unknown> implements PromiseLike<Result
     and<U>(result: Result<U, E> | ResultAsync<U, E>): ResultAsync<U, E>;
     and(result: Result | ResultAsync) {
         return this.deriveFrom(res => {
-            if (res.isErr()) {
-                return result;
-            }
+            if (res.isErr()) return res;
 
-            return ok(res.ok());
+            return result instanceof ResultAsync ? result.promise : result;
         });
     }
 
@@ -68,11 +114,9 @@ export class ResultAsync<T = unknown, E = unknown> implements PromiseLike<Result
     andThen<U, F>(fn: (value: T) => Result<U, F> | ResultAsync<U, F>): ResultAsync<U, E | F>;
     andThen(fn: Fn) {
         return this.deriveFrom(res => {
-            if (res.isErr()) {
-                return err(res.err());
-            }
+            if (res.isErr()) return res;
 
-            const value = fn(res.ok());
+            const value = fn(res.value);
             return value instanceof ResultAsync ? value.promise : value;
         });
     }
@@ -82,11 +126,9 @@ export class ResultAsync<T = unknown, E = unknown> implements PromiseLike<Result
     or<F>(result: Result<T, F> | ResultAsync<T, F>): ResultAsync<T, F>;
     or(result: Result | ResultAsync) {
         return this.deriveFrom(res => {
-            if (res.isOk()) {
-                return result;
-            }
+            if (res.isOk()) return res;
 
-            return err(res.err());
+            return result instanceof ResultAsync ? result.promise : result;
         });
     }
 
@@ -97,38 +139,30 @@ export class ResultAsync<T = unknown, E = unknown> implements PromiseLike<Result
     orElse<U, F>(fn: (error: E) => Result<U, F> | ResultAsync<U, F>): ResultAsync<T | U, F>;
     orElse(fn: Fn) {
         return this.deriveFrom(async res => {
-            if (res.isOk()) {
-                return ok(res.ok());
-            }
+            if (res.isOk()) return res;
 
-            const error = fn(res.err());
+            const error = fn(res.error);
             return error instanceof ResultAsync ? error.promise : error;
         });
     }
 
     inspect(fn: (value: T) => unknown): ResultAsync<T, E> {
         return this.deriveFrom(async res => {
-            if (res.isErr()) {
-                return err(res.err());
-            }
             try {
-                await fn(res.ok());
+                res.isOk() && (await fn(res.value));
             } catch {}
 
-            return ok(res.ok());
+            return res;
         });
     }
 
     inspectErr(fn: (error: E) => unknown): ResultAsync<T, E> {
         return this.deriveFrom(async res => {
-            if (res.isOk()) {
-                return ok(res.ok());
-            }
             try {
-                await fn(res.err());
+                res.isErr() && (await fn(res.error));
             } catch {}
 
-            return err(res.err());
+            return res;
         });
     }
 
@@ -144,20 +178,10 @@ export class ResultAsync<T = unknown, E = unknown> implements PromiseLike<Result
         return res.match(ok, err);
     }
 
-    async ok(): Promise<T> {
+    async toIter() {
         const res = await this.promise;
 
-        return res.ok();
-    }
-
-    async err(): Promise<E> {
-        const res = await this.promise;
-
-        return res.err();
-    }
-
-    async toIter(): Promise<IterableResult<T, E>> {
-        return new IterableResult(await this.promise);
+        return res.toIter();
     }
 
     then<TResult1 = Result<T, E>, TResult2 = never>(
@@ -170,13 +194,13 @@ export class ResultAsync<T = unknown, E = unknown> implements PromiseLike<Result
         return this.promise.then(onfulfilled, onrejected);
     }
 
-    async *[Symbol.asyncIterator](): AsyncGenerator<Err<never, E>, T> {
+    async *[Symbol.asyncIterator](): AsyncGenerator<Err<E>, T> {
         const res = await this.promise;
         if (res.isErr()) {
-            yield err(res.err());
+            yield res;
         }
 
-        return res.ok();
+        return res.value;
     }
 
     private deriveFrom<U, F>(
