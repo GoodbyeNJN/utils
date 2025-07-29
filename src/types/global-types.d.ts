@@ -51,18 +51,18 @@ declare global {
 }
 
 declare global {
-    type AsyncFn<Return = any, Args extends any[] = any[]> = Types.AsyncFn<Return, Args>;
+    type AsyncFn<Return = any, Args extends readonly any[] = any[]> = Types.AsyncFn<Return, Args>;
     type AsyncFnWithThis<
         Return = any,
-        Args extends any[] = any[],
+        Args extends readonly any[] = any[],
         This = unknown,
     > = Types.AsyncFnWithThis<Return, Args, This>;
-    type Fn<Return = any, Args extends any[] = any[]> = Types.Fn<Return, Args>;
-    type FnWithThis<Return = any, Args extends any[] = any[], This = unknown> = Types.FnWithThis<
-        Return,
-        Args,
-        This
-    >;
+    type Fn<Return = any, Args extends readonly any[] = any[]> = Types.Fn<Return, Args>;
+    type FnWithThis<
+        Return = any,
+        Args extends readonly any[] = any[],
+        This = unknown,
+    > = Types.FnWithThis<Return, Args, This>;
 
     type Entries<BaseType> = Types.Entries<BaseType>;
     type Entry<BaseType> = Types.Entry<BaseType>;
