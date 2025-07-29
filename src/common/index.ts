@@ -4,6 +4,8 @@ export { linear, scale } from "./math";
 
 export { parseKeyValuePairs, parseValueToBoolean } from "./parse";
 
+export { $ } from "./process";
+
 export { PromiseWithResolvers, createLock, createSingleton, sleep } from "./promise";
 
 export {
