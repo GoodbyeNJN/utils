@@ -4,9 +4,9 @@ export { linear, scale } from "./math";
 
 export { parseKeyValuePairs, parseValueToBoolean } from "./parse";
 
-export { $, quoteShellArg } from "./process";
-
 export { PromiseWithResolvers, createLock, createSingleton, sleep } from "./promise";
+
+export { $, quoteShellArg } from "./shell";
 
 export {
     addPrefix,
