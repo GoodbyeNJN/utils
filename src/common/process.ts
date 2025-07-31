@@ -30,3 +30,23 @@ export function $(cmd: string | TemplateStringsArray, ...values: any[]) {
 
     return ResultAsync.fromPromise(promise, errorToMessage(`Failed to execute command: ${cmd}`));
 }
+
+const REGEXP_NULL_CHAR = /\x00+/g;
+const REGEXP_SAFE_CHARS = /^[A-Za-z0-9,:=_./-]+$/;
+const REGEXP_SINGLE_QUOTES = /'+/g;
+
+export const quoteShellArg = (arg: string) => {
+    if (!arg) return "''";
+
+    const cleaned = String(arg).replace(REGEXP_NULL_CHAR, "");
+
+    const matches = REGEXP_SAFE_CHARS.exec(cleaned);
+    if (matches?.[0].length === cleaned.length) return cleaned;
+
+    const quoted = cleaned.replace(REGEXP_SINGLE_QUOTES, matched =>
+        matched.length === 1 ? `'\\''` : `'"${matched}"'`,
+    );
+    const trimmed = `'${quoted}'`.replace(/^''/, "").replace(/''$/, "");
+
+    return trimmed;
+};
