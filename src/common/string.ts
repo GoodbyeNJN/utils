@@ -1,4 +1,4 @@
-import { isFunction, isPlainObject } from "@/remeda";
+import { isFunction, isPlainObject, isString } from "@/remeda";
 
 const REGEXP_WHITESPACE = /^\s*$/;
 
@@ -78,8 +78,13 @@ export const splitWithSlash = (path: string) => split("/", path);
  * `
  * ```
  */
-export const unindent = (str: TemplateStringsArray | string) => {
-    const lines = (typeof str === "string" ? str : str[0]!).split("\n");
+export function unindent(template: string): string;
+export function unindent(template: TemplateStringsArray, ...values: any[]): string;
+export function unindent(template: string | TemplateStringsArray, ...values: any[]) {
+    const string = isString(template)
+        ? template
+        : template.reduce((acc, part, index) => acc + part + (values[index] ?? ""), "");
+    const lines = string.split("\n");
     const whitespaceLines = lines.map(line => REGEXP_WHITESPACE.test(line));
 
     const commonIndent = lines.reduce((min, line, idx) => {
@@ -102,7 +107,7 @@ export const unindent = (str: TemplateStringsArray | string) => {
         .slice(emptyLinesHead, lines.length - emptyLinesTail)
         .map(line => line.slice(commonIndent))
         .join("\n");
-};
+}
 
 /**
  * @example

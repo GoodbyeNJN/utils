@@ -4,14 +4,18 @@ import { ResultAsync } from "@/result";
 import { errorToMessage } from "./error";
 import { PromiseWithResolvers } from "./promise";
 
-export const $ = (cmd: TemplateStringsArray | string) => {
-    const command = isString(cmd) ? cmd : cmd[0]!;
+export function $(cmd: string): ResultAsync<{ stdout: string; stderr: string }, string>;
+export function $(
+    cmd: TemplateStringsArray,
+    ...values: any[]
+): ResultAsync<{ stdout: string; stderr: string }, string>;
+export function $(cmd: string | TemplateStringsArray, ...values: any[]) {
+    const command = isString(cmd)
+        ? cmd
+        : cmd.reduce((acc, part, index) => acc + part + (values[index] ?? ""), "");
 
     const promise = import("node:child_process").then(({ exec }) => {
-        const { promise, reject, resolve } = PromiseWithResolvers<{
-            stdout: string;
-            stderr: string;
-        }>();
+        const { promise, reject, resolve } = PromiseWithResolvers();
 
         exec(command, (error, stdout, stderr) => {
             if (error) {
@@ -25,4 +29,4 @@ export const $ = (cmd: TemplateStringsArray | string) => {
     });
 
     return ResultAsync.fromPromise(promise, errorToMessage(`Failed to execute command: ${cmd}`));
-};
+}
