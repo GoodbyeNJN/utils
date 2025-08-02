@@ -3,7 +3,7 @@ import path, { dirname } from "node:path";
 
 import { errorToMessage } from "@/common";
 import { isNumber } from "@/remeda";
-import { err, ok, Result, ResultAsync, safeTry } from "@/result";
+import { err, ok, Result, safeTry } from "@/result";
 
 import type {
     AppendFileOptions,
@@ -35,21 +35,21 @@ const parseWriteJsonOptions = (options?: WriteJsonOptions) => {
     return { indent: options?.indent ?? 2, encoding: parseEncodingOptions(options) };
 };
 
-export const appendFile = (
+export const appendFile = async (
     path: PathLike,
     data: string,
     options?: AppendFileOptions,
-): ResultAsync<void, string> =>
+): Promise<Result<void, string>> =>
     safeTry(async function* () {
         const newline = options?.newline ?? true;
 
-        yield* mkdir(dirname(pathLikeToPath(path).toString()));
+        yield* await mkdir(dirname(pathLikeToPath(path).toString()));
 
-        const fn = ResultAsync.fromThrowable(
-            fsp.appendFile,
-            errorToMessage(`Failed to append file: ${path}`),
-        );
-        const result = fn(path, newline ? `\n${data}` : data, parseEncodingOptions(options));
+        const fn = async () => {
+            await fsp.appendFile(path, newline ? `\n${data}` : data, parseEncodingOptions(options));
+        };
+        const onThrow = errorToMessage(`Failed to append file: ${path}`);
+        const result = await Result.try(fn, onThrow);
 
         return result;
     });
@@ -64,27 +64,27 @@ export const appendFileSync = (
 
         yield* mkdirSync(dirname(pathLikeToPath(path).toString()));
 
-        const fn = Result.fromThrowable(
-            fs.appendFileSync,
-            errorToMessage(`Failed to append file: ${path}`),
-        );
-        const result = fn(path, newline ? `\n${data}` : data, parseEncodingOptions(options));
+        const fn = () => {
+            fs.appendFileSync(path, newline ? `\n${data}` : data, parseEncodingOptions(options));
+        };
+        const onThrow = errorToMessage(`Failed to append file: ${path}`);
+        const result = Result.try(fn, onThrow);
 
         return result;
     });
 
-export const cp = (
+export const cp = async (
     source: PathLike,
     destination: PathLike,
     options?: CpOptions,
-): ResultAsync<void, string> => {
+): Promise<Result<void, string>> => {
     const { recursive = true } = options || {};
 
-    const fn = ResultAsync.fromThrowable(
-        fsp.cp,
-        errorToMessage(`Failed to copy path: ${source} to ${destination}`),
-    );
-    const result = fn(source, destination, { recursive });
+    const fn = async () => {
+        await fsp.cp(source, destination, { recursive });
+    };
+    const onThrow = errorToMessage(`Failed to copy path: ${source} to ${destination}`);
+    const result = await Result.try(fn, onThrow);
 
     return result;
 };
@@ -96,72 +96,90 @@ export const cpSync = (
 ): Result<void, string> => {
     const { recursive = true } = options || {};
 
-    const fn = Result.fromThrowable(
-        fs.cpSync,
-        errorToMessage(`Failed to copy path: ${source} to ${destination}`),
-    );
-    const result = fn(source, destination, { recursive });
+    const fn = () => {
+        fs.cpSync(source, destination, { recursive });
+    };
+    const onThrow = errorToMessage(`Failed to copy path: ${source} to ${destination}`);
+    const result = Result.try(fn, onThrow);
 
     return result;
 };
 
-export const exists = (path: PathLike): ResultAsync<true, string> => {
-    const fn = ResultAsync.fromThrowable(
-        fsp.access,
-        errorToMessage(`Failed to check exists of path: ${path}`),
-    );
-    const result = fn(path);
+export const exists = async (path: PathLike): Promise<Result<true, string>> => {
+    const fn = async () => {
+        await fsp.access(path);
 
-    return result.map(() => true as const);
+        return true as const;
+    };
+    const onThrow = errorToMessage(`Failed to check exists of path: ${path}`);
+    const result = await Result.try(fn, onThrow);
+
+    return result;
 };
 
 export const existsSync = (path: PathLike): Result<true, string> => {
-    const fn = Result.fromThrowable(
-        fs.accessSync,
-        errorToMessage(`Failed to check exists of path: ${path}`),
-    );
-    const result = fn(path);
+    const fn = () => {
+        fs.accessSync(path);
 
-    return result.map(() => true as const);
+        return true as const;
+    };
+    const onThrow = errorToMessage(`Failed to check exists of path: ${path}`);
+    const result = Result.try(fn, onThrow);
+
+    return result;
 };
 
-export const mkdir = (path: PathLike, options?: MkdirOptions): ResultAsync<void, string> => {
+export const mkdir = async (
+    path: PathLike,
+    options?: MkdirOptions,
+): Promise<Result<void, string>> => {
     const { recursive = true } = options || {};
 
-    const fn = ResultAsync.fromThrowable(
-        () => fsp.mkdir(path, { recursive }) as Promise<void>,
-        errorToMessage(`Failed to create directory: ${path}`),
-    );
+    if ((await exists(path)).isOk()) return ok();
 
-    return exists(path).and(ok()).or(fn());
+    const fn = async () => {
+        await fsp.mkdir(path, { recursive });
+    };
+    const onThrow = errorToMessage(`Failed to create directory: ${path}`);
+    const result = await Result.try(fn, onThrow);
+
+    return result;
 };
 
 export const mkdirSync = (path: PathLike, options?: MkdirOptions): Result<void, string> => {
     const { recursive = true } = options || {};
 
-    const fn = Result.fromThrowable(
-        () => fs.mkdirSync(path, { recursive }) as void,
-        errorToMessage(`Failed to create directory: ${path}`),
-    );
+    if (existsSync(path).isOk()) return ok();
 
-    return existsSync(path).and(ok()).or(fn());
+    const fn = () => {
+        fs.mkdirSync(path, { recursive });
+    };
+    const onThrow = errorToMessage(`Failed to create directory: ${path}`);
+    const result = Result.try(fn, onThrow);
+
+    return result;
 };
 
-export function readFile(
+export async function readFile(
     path: PathLike,
     options: BufferEncodingOptions,
-): ResultAsync<Buffer, string>;
-export function readFile(
+): Promise<Result<Buffer, string>>;
+export async function readFile(
     path: PathLike,
     options?: StringEncodingOptions,
-): ResultAsync<string, string>;
-export function readFile(path: any, options?: any): ResultAsync<any, string> {
-    const fn = ResultAsync.fromThrowable(
-        (): Promise<any> => fsp.readFile(path, parseEncodingOptions(options)),
-        errorToMessage(`Failed to read file: ${path}`),
-    );
+): Promise<Result<string, string>>;
+export async function readFile(path: any, options?: any): Promise<Result<any, string>> {
+    return safeTry(async function* () {
+        yield* await exists(path);
 
-    return exists(path).and(fn());
+        const fn = async () => {
+            return await fsp.readFile(path, parseEncodingOptions(options));
+        };
+        const onThrow = errorToMessage(`Failed to read file: ${path}`);
+        const result = await Result.try(fn, onThrow);
+
+        return result;
+    });
 }
 
 export function readFileSync(
@@ -173,82 +191,92 @@ export function readFileSync(
     options?: StringEncodingOptions,
 ): Result<string, string>;
 export function readFileSync(path: any, options?: any): Result<any, string> {
-    const fn = Result.fromThrowable(
-        (): any => fs.readFileSync(path, parseEncodingOptions(options)),
-        errorToMessage(`Failed to read file: ${path}`),
-    );
+    return safeTry(function* () {
+        yield* existsSync(path);
 
-    return existsSync(path).and(fn());
-}
-
-export const readFileByLine = (
-    path: PathLike,
-    options?: StringEncodingOptions,
-): ResultAsync<AsyncIterator<string>, string> => {
-    const reader = async () => {
-        const { createInterface } = await import("node:readline");
-
-        const stream = fs.createReadStream(path, {
-            ...parseEncodingOptions(options),
-            autoClose: true,
-        });
-        stream.on("error", error => {
-            throw error;
-        });
-
-        const reader = createInterface({
-            input: stream,
-            crlfDelay: Infinity,
-        });
-
-        return reader[Symbol.asyncIterator]();
-    };
-    const fn = ResultAsync.fromThrowable(reader, errorToMessage(`Failed to read file: ${path}`));
-
-    return exists(path).and(fn());
-};
-
-export const readJson = <T = any>(
-    path: PathLike,
-    options?: StringEncodingOptions,
-): ResultAsync<T, string> => {
-    const fn = Result.fromThrowable(
-        JSON.parse,
-        errorToMessage(`Failed to parse JSON file: ${path}`),
-    );
-
-    return readFile(path, options).andThen(content => {
-        if (!content) return err(`JSON file is empty: ${path}`);
-
-        const result = fn(content);
+        const fn = () => {
+            return fs.readFileSync(path, parseEncodingOptions(options));
+        };
+        const onThrow = errorToMessage(`Failed to read file: ${path}`);
+        const result = Result.try(fn, onThrow);
 
         return result;
     });
-};
+}
+
+export const readFileByLine = async (
+    path: PathLike,
+    options?: StringEncodingOptions,
+): Promise<Result<AsyncIterator<string>, string>> =>
+    safeTry(async function* () {
+        yield* await exists(path);
+
+        const { createInterface } = await import("node:readline");
+
+        const fn = () => {
+            const stream = fs.createReadStream(path, {
+                ...parseEncodingOptions(options),
+                autoClose: true,
+            });
+            stream.on("error", error => {
+                throw error;
+            });
+
+            const reader = createInterface({
+                input: stream,
+                crlfDelay: Infinity,
+            });
+
+            return reader[Symbol.asyncIterator]();
+        };
+        const onThrow = errorToMessage(`Failed to read file: ${path}`);
+        const result = Result.try(fn, onThrow);
+
+        return result;
+    });
+
+export const readJson = async <T = any>(
+    path: PathLike,
+    options?: StringEncodingOptions,
+): Promise<Result<T, string>> =>
+    safeTry(async function* () {
+        const content = yield* await readFile(path, options);
+        if (!content) return err(`JSON file is empty: ${path}`);
+
+        const fn = () => {
+            return JSON.parse(content);
+        };
+        const onThrow = errorToMessage(`Failed to parse JSON file: ${path}`);
+        const result = Result.try(fn, onThrow);
+
+        return result;
+    });
 
 export const readJsonSync = <T = any>(
     path: PathLike,
     options?: StringEncodingOptions,
-): Result<T, string> => {
-    const fn = Result.fromThrowable(
-        JSON.parse,
-        errorToMessage(`Failed to parse JSON file: ${path}`),
-    );
-
-    return readFileSync(path, options).andThen(content => {
+): Result<T, string> =>
+    safeTry(function* () {
+        const content = yield* readFileSync(path, options);
         if (!content) return err(`JSON file is empty: ${path}`);
 
-        const result = fn(content);
+        const fn = () => {
+            return JSON.parse(content);
+        };
+        const onThrow = errorToMessage(`Failed to parse JSON file: ${path}`);
+        const result = Result.try(fn, onThrow);
 
         return result;
     });
-};
 
-export const rm = (path: PathLike, options?: RmOptions): ResultAsync<void, string> => {
+export const rm = async (path: PathLike, options?: RmOptions): Promise<Result<void, string>> => {
     const { force = true, recursive = true } = options || {};
 
-    const fn = ResultAsync.fromThrowable(fsp.rm, errorToMessage(`Failed to remove path: ${path}`));
-    const result = fn(path, { force, recursive });
+    const fn = async () => {
+        await fsp.rm(path, { force, recursive });
+    };
+    const onThrow = errorToMessage(`Failed to remove path: ${path}`);
+    const result = await Result.try(fn, onThrow);
 
     return result;
 };
@@ -256,47 +284,51 @@ export const rm = (path: PathLike, options?: RmOptions): ResultAsync<void, strin
 export const rmSync = (path: PathLike, options?: RmOptions): Result<void, string> => {
     const { force = true, recursive = true } = options || {};
 
-    const fn = Result.fromThrowable(fs.rmSync, errorToMessage(`Failed to remove path: ${path}`));
-    const result = fn(path, { force, recursive });
+    const fn = () => {
+        fs.rmSync(path, { force, recursive });
+    };
+    const onThrow = errorToMessage(`Failed to remove path: ${path}`);
+    const result = Result.try(fn, onThrow);
 
     return result;
 };
 
-export const writeFile = (
+export const writeFile = async (
     path: PathLike,
     data: string,
     options?: StringEncodingOptions,
-): ResultAsync<void, string> => {
-    const fn = ResultAsync.fromThrowable(
-        fsp.writeFile,
-        errorToMessage(`Failed to write file: ${path}`),
-    );
+): Promise<Result<void, string>> =>
+    safeTry(async function* () {
+        yield* await mkdir(dirname(pathLikeToPath(path).toString()));
 
-    return mkdir(dirname(pathLikeToPath(path).toString())).and(
-        fn(path, data, parseEncodingOptions(options)),
-    );
-};
+        const fn = async () => {
+            await fsp.writeFile(path, data, parseEncodingOptions(options));
+        };
+        const onThrow = errorToMessage(`Failed to write file: ${path}`);
+        const result = await Result.try(fn, onThrow);
+
+        return result;
+    });
 
 export const writeFileSync = (
     path: PathLike,
     data: string,
     options?: StringEncodingOptions,
 ): Result<void, string> => {
-    const fn = Result.fromThrowable(
-        fs.writeFileSync,
-        errorToMessage(`Failed to write file: ${path}`),
-    );
+    const fn = () => {
+        fs.writeFileSync(path, data, parseEncodingOptions(options));
+    };
+    const onThrow = errorToMessage(`Failed to write file: ${path}`);
+    const result = Result.try(fn, onThrow);
 
-    return mkdirSync(dirname(pathLikeToPath(path).toString())).and(
-        fn(path, data, parseEncodingOptions(options)),
-    );
+    return result;
 };
 
-export const writeJson = (
+export const writeJson = async (
     path: PathLike,
     data: any,
     indentOrOptions?: WriteJsonOptions,
-): ResultAsync<void, string> => {
+): Promise<Result<void, string>> => {
     const { indent, encoding } = parseWriteJsonOptions(indentOrOptions);
 
     const content = JSON.stringify(data, null, indent);

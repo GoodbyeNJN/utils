@@ -1,39 +1,48 @@
 import { isString } from "@/remeda";
-import { ResultAsync } from "@/result";
+import { Result } from "@/result";
 
 import { errorToMessage } from "./error";
 import { PromiseWithResolvers } from "./promise";
 
-export function $(cmd: string): ResultAsync<{ stdout: string; stderr: string }, string>;
-export function $(
-    cmd: TemplateStringsArray,
-    ...values: any[]
-): ResultAsync<{ stdout: string; stderr: string }, string>;
-export function $(cmd: string | TemplateStringsArray, ...values: any[]) {
-    const command = isString(cmd)
-        ? cmd
-        : cmd.reduce((acc, part, index) => acc + part + (values[index] ?? ""), "");
-
-    const promise = import("node:child_process").then(({ exec }) => {
-        const { promise, reject, resolve } = PromiseWithResolvers();
-
-        exec(command, (error, stdout, stderr) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve({ stdout, stderr });
-            }
-        });
-
-        return promise;
-    });
-
-    return ResultAsync.fromPromise(promise, errorToMessage(`Failed to execute command: ${cmd}`));
+export interface ShellExecResult {
+    stdout: string;
+    stderr: string;
 }
 
 const REGEXP_NULL_CHAR = /\x00+/g;
 const REGEXP_SAFE_CHARS = /^[A-Za-z0-9,:=_./-]+$/;
 const REGEXP_SINGLE_QUOTES = /'+/g;
+
+export async function $(cmd: string): Promise<Result<ShellExecResult, string>>;
+export async function $(
+    cmd: TemplateStringsArray,
+    ...values: any[]
+): Promise<Result<ShellExecResult, string>>;
+export async function $(cmd: string | TemplateStringsArray, ...values: any[]) {
+    const { exec } = await import("node:child_process");
+
+    const command = isString(cmd)
+        ? cmd
+        : cmd.reduce((acc, part, index) => acc + part + (values[index] ?? ""), "");
+
+    const fn = async () => {
+        const { promise, reject, resolve } = PromiseWithResolvers<ShellExecResult>();
+
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve({ stdout: stdout.trim(), stderr: stderr.trim() });
+            }
+        });
+
+        return await promise;
+    };
+    const onThrow = errorToMessage(`Failed to execute command: ${cmd}`);
+    const result = Result.try(fn, onThrow);
+
+    return result;
+}
 
 export const quoteShellArg = (arg: string) => {
     if (!arg) return "''";

@@ -1,37 +1,54 @@
-import { errAsync, ResultAsync } from "./async";
+/* eslint-disable @typescript-eslint/unified-signatures */
+
+import { isFunction, isPromiseLike } from "@/remeda";
 
 import type { InferErrType, InferOkType, ResultAll, ResultAllSettled } from "./types";
-import type { Fn, NonEmptyTuple } from "@/types";
-
-export function ok(): Ok<void>;
-export function ok<T>(value: T): Ok<T>;
-export function ok(value?: unknown): Ok {
-    return new Ok(value);
-}
-
-export function err(): Err<void>;
-export function err<E>(error: E): Err<E>;
-export function err(error?: unknown): Err {
-    return new Err(error);
-}
+import type { AsyncFn, Fn, NonEmptyTuple, SyncFn } from "@/types";
 
 export abstract class Result<T = unknown, E = unknown> {
-    static fromThrowable<Args extends readonly any[], T, E = unknown>(
-        fn: Fn<T, Args>,
-    ): Fn<Result<T, E>, Args>;
-    static fromThrowable<Args extends readonly any[], T, E>(
-        fn: Fn<T, Args>,
-        // eslint-disable-next-line @typescript-eslint/unified-signatures
+    static ok(): Ok<void>;
+    static ok<T>(value: T): Ok<T>;
+    static ok(value?: unknown): Ok {
+        return new Ok(value);
+    }
+
+    static err(): Err<void>;
+    static err<E>(error: E): Err<E>;
+    static err(error?: unknown): Err {
+        return new Err(error);
+    }
+
+    static try<T, E = unknown>(fn: SyncFn<T>): Result<T, E>;
+    static try<T, E>(fn: SyncFn<T>, onThrow: (error: unknown) => E): Result<T, E>;
+    static try<T, E = unknown>(fn: AsyncFn<T>): Promise<Result<Awaited<T>, E>>;
+    static try<T, E>(
+        fn: AsyncFn<T>,
+        onThrowOrReject: (error: unknown) => E,
+    ): Promise<Result<Awaited<T>, E>>;
+    static try<T, E = unknown>(data: Promise<T>): Promise<Result<Awaited<T>, E>>;
+    static try<T, E>(
+        data: Promise<T>,
         onThrow: (error: unknown) => E,
-    ): Fn<Result<T, E>, Args>;
-    static fromThrowable(fn: Fn, onThrow?: Fn) {
-        return (...args: any[]) => {
-            try {
-                return ok(fn(...args));
-            } catch (error) {
-                return err(onThrow ? onThrow(error) : error);
+    ): Promise<Result<Awaited<T>, E>>;
+    static try<T, E = unknown>(data: T): Result<T, E>;
+    static try<T, E>(data: T, onThrow: (error: unknown) => E): Result<T, E>;
+    static try(fnOrData: unknown, onThrow?: Fn): any {
+        try {
+            let data = fnOrData;
+
+            if (isFunction(fnOrData)) {
+                data = fnOrData();
             }
-        };
+
+            if (!isPromiseLike(data)) return ok(data);
+
+            return data.then(
+                value => ok(value),
+                error => err(onThrow ? onThrow(error) : error),
+            );
+        } catch (error) {
+            return err(onThrow ? onThrow(error) : error);
+        }
     }
 
     static all<T extends NonEmptyTuple<Result>>(results: T): ResultAll<T>;
@@ -107,13 +124,6 @@ export abstract class Result<T = unknown, E = unknown> {
     }
 
     /**
-     * Maps `Result<T, E>` to `ResultAsync<U, E>`
-     */
-    mapAsync<U>(fn: (value: T) => Promise<U>): ResultAsync<U, E> {
-        return this.isErr() ? errAsync(this.error) : ResultAsync.fromPromise(fn(this.value));
-    }
-
-    /**
      * Maps `Result<T, E>` to `Result<T, F>`
      */
     mapErr<F>(fn: (error: E) => F): Result<T, F> {
@@ -136,13 +146,6 @@ export abstract class Result<T = unknown, E = unknown> {
     andThen<U, F>(fn: (value: T) => Result<U, F>): Result<U, E | F>;
     andThen(fn: Fn) {
         return this.isErr() ? this : fn(this.value);
-    }
-
-    /**
-     * Maps `Result<T, E>` to `ResultAsync<U, E | F>`
-     */
-    andThenAsync<U, F>(fn: (value: T) => ResultAsync<U, F>): ResultAsync<U, E | F> {
-        return this.isErr() ? errAsync(this.error) : fn(this.value);
     }
 
     /**
@@ -202,11 +205,11 @@ export abstract class Result<T = unknown, E = unknown> {
     /**
      * Returns an iterable object that yields the `Ok` value and `Err` value
      */
-    toIter(): [ok: boolean, value: T, error: E] {
+    iter(): [ok: boolean, error: E, value: T] {
         if (this.isOk()) {
-            return [true, this.value, null as never];
+            return [true, null as never, this.value];
         } else {
-            return [false, null as never, this.error];
+            return [false, this.error, null as never];
         }
     }
 
@@ -262,3 +265,6 @@ export class Err<E = unknown> extends Result<never, E> {
         return this._error;
     }
 }
+
+export const ok = Result.ok;
+export const err = Result.err;

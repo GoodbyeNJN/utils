@@ -1,6 +1,6 @@
-import { ResultAsync } from "./async";
+import { isPromiseLike } from "@/remeda";
 
-import type { Err, Result } from "./sync";
+import type { Err, Result } from "./result";
 import type { InferErrType, InferOkType } from "./types";
 import type { Fn } from "@/types";
 
@@ -11,17 +11,21 @@ export function safeTry<YieldErr extends Err, GeneratorReturnResult extends Resu
     InferOkType<GeneratorReturnResult>,
     InferErrType<YieldErr> | InferErrType<GeneratorReturnResult>
 >;
-export function safeTry<T, E>(body: () => AsyncGenerator<Err<E>, Result<T, E>>): ResultAsync<T, E>;
+export function safeTry<T, E>(
+    body: () => AsyncGenerator<Err<E>, Result<T, E>>,
+): Promise<Result<T, E>>;
 export function safeTry<YieldErr extends Err, GeneratorReturnResult extends Result>(
     body: () => AsyncGenerator<YieldErr, GeneratorReturnResult>,
-): ResultAsync<
-    InferOkType<GeneratorReturnResult>,
-    InferErrType<YieldErr> | InferErrType<GeneratorReturnResult>
+): Promise<
+    Result<
+        InferOkType<GeneratorReturnResult>,
+        InferErrType<YieldErr> | InferErrType<GeneratorReturnResult>
+    >
 >;
 export function safeTry(body: Fn<Generator | AsyncGenerator>) {
     const next = body().next();
-    if (next instanceof Promise) {
-        return new ResultAsync(next.then(res => res.value));
+    if (isPromiseLike(next)) {
+        return next.then(res => res.value);
     }
 
     return next.value;
