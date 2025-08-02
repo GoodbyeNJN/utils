@@ -63,6 +63,12 @@ declare global {
         Args extends readonly any[] = any[],
         This = unknown,
     > = Types.FnWithThis<Return, Args, This>;
+    type SyncFn<Return = any, Args extends readonly any[] = any[]> = Types.SyncFn<Return, Args>;
+    type SyncFnWithThis<
+        Return = any,
+        Args extends readonly any[] = any[],
+        This = unknown,
+    > = Types.SyncFnWithThis<Return, Args, This>;
 
     type Entries<BaseType> = Types.Entries<BaseType>;
     type Entry<BaseType> = Types.Entry<BaseType>;

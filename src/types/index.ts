@@ -1,4 +1,4 @@
-export type { AsyncFn, AsyncFnWithThis, Fn, FnWithThis } from "./fn";
+export type { AsyncFn, AsyncFnWithThis, Fn, FnWithThis, SyncFn, SyncFnWithThis } from "./fn";
 export type { Nullable } from "./nullable";
 export type { OmitByKey } from "./omit-by-key";
 export type { YieldType } from "./yield-type";

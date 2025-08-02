@@ -17,3 +17,14 @@ export type AsyncFnWithThis<Return = any, Args extends readonly any[] = any[], T
 ) => Promise<Return>) & {
     prototype: This;
 };
+
+export type SyncFn<Return = any, Args extends readonly any[] = any[]> = (
+    ...args: Args
+) => Return extends Promise<any> ? never : Return;
+
+export type SyncFnWithThis<Return = any, Args extends readonly any[] = any[], This = unknown> = ((
+    this: This,
+    ...args: Args
+) => Return extends Promise<any> ? never : Return) & {
+    prototype: This;
+};
