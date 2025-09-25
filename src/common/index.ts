@@ -1,4 +1,4 @@
-export { errorToMessage, getErrorMessage, isErrorLike, normalizeError } from "./error";
+export { errorToMessage, getErrorMessage, normalizeError } from "./error";
 
 export { linear, scale } from "./math";
 
@@ -23,7 +23,5 @@ export {
 } from "./string";
 
 export { debounce, throttle } from "./throttle";
-
-export type { ErrorLike } from "./error";
 
 export type { DebouncedFn, DebounceOptions, ThrottledFn, ThrottleOptions } from "./throttle";
