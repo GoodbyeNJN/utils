@@ -1,5 +1,34 @@
 import type { Err, Ok, Result } from "./result";
 
+/**
+ * Presets for printing the `Err` result
+ *
+ * - "full" - Prints full details including context and stack trace.
+ * - "standard" - Prints error message and context, but omits stack trace.
+ * - "minimal" - Prints only the error message without context or stack trace.
+ *
+ * Default is "standard".
+ */
+export type PrintPresets = "full" | "standard" | "minimal";
+
+/**
+ * Options for printing the `Err` result
+ */
+export interface PrintOptions {
+    /**
+     * The log level to use. Default is "error".
+     */
+    level?: "error" | "warn" | "info";
+    /**
+     * Whether to include the context messages. Default is `true`.
+     */
+    context?: boolean;
+    /**
+     * Whether to include the stack trace. Default is `false`.
+     */
+    stack?: boolean;
+}
+
 export type ExtractOkTypes<T extends readonly Result[]> = {
     [K in keyof T]: T[K] extends Result<infer U, unknown> ? U : never;
 };

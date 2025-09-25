@@ -1,9 +1,18 @@
 /* eslint-disable @typescript-eslint/unified-signatures */
 
-import { isFunction, isPromiseLike } from "@/remeda";
+import { isFunction, isObjectType, isPromiseLike, isString } from "@/remeda";
 
-import type { InferErrType, InferOkType, ResultAll, ResultAllSettled } from "./types";
+import type {
+    InferErrType,
+    InferOkType,
+    PrintOptions,
+    PrintPresets,
+    ResultAll,
+    ResultAllSettled,
+} from "./types";
 import type { AsyncFn, Fn, NonEmptyTuple, SyncFn } from "@/types";
+
+const nil = null as never;
 
 export abstract class Result<T = unknown, E = unknown> {
     static ok(): Ok<void>;
@@ -15,7 +24,17 @@ export abstract class Result<T = unknown, E = unknown> {
     static err(): Err<void>;
     static err<E>(error: E): Err<E>;
     static err(error?: unknown): Err {
-        return new Err(error);
+        const err = new Err(error);
+
+        if (error instanceof Error) {
+            err["stack"] = error.stack;
+        } else if ("captureStackTrace" in Error) {
+            const dummy = {} as unknown as Error;
+            Error.captureStackTrace(dummy, Result.err);
+            err["stack"] = dummy.stack;
+        }
+
+        return err;
     }
 
     static try<T, E = unknown>(fn: SyncFn<T>): Result<T, E>;
@@ -85,6 +104,8 @@ export abstract class Result<T = unknown, E = unknown> {
 
         return acc;
     }
+
+    protected readonly ctxs: (string | Fn<string>)[] = [];
 
     abstract readonly ok: boolean;
 
@@ -207,9 +228,9 @@ export abstract class Result<T = unknown, E = unknown> {
      */
     iter(): [ok: boolean, error: E, value: T] {
         if (this.isOk()) {
-            return [true, null as never, this.value];
+            return [true, nil, this.value];
         } else {
-            return [false, this.error, null as never];
+            return [false, this.error, nil];
         }
     }
 
@@ -225,6 +246,18 @@ export abstract class Result<T = unknown, E = unknown> {
         return self as unknown as T;
     }
 
+    context(context: string): this {
+        this.ctxs.push(context);
+
+        return this;
+    }
+
+    withContext(fn: Fn<string>): this {
+        this.ctxs.push(fn);
+
+        return this;
+    }
+
     abstract get value(): T;
 
     abstract get error(): E;
@@ -232,7 +265,7 @@ export abstract class Result<T = unknown, E = unknown> {
 
 export class Ok<T = unknown> extends Result<T, never> {
     readonly ok = true;
-    private _value: T;
+    private readonly _value: T;
 
     constructor(value: T) {
         super();
@@ -244,13 +277,14 @@ export class Ok<T = unknown> extends Result<T, never> {
     }
 
     get error(): never {
-        return null as never;
+        return nil;
     }
 }
 
 export class Err<E = unknown> extends Result<never, E> {
     readonly ok = false;
-    private _error: E;
+    private readonly _error: E;
+    private stack: string | undefined;
 
     constructor(error: E) {
         super();
@@ -258,11 +292,94 @@ export class Err<E = unknown> extends Result<never, E> {
     }
 
     get value(): never {
-        return null as never;
+        return nil;
     }
 
     get error(): E {
         return this._error;
+    }
+
+    print(): void;
+    print(preset: PrintPresets): void;
+    print(options: PrintOptions): void;
+    print(presetOrOptions?: PrintPresets | PrintOptions): void {
+        const options: Required<PrintOptions> = {
+            level: "error",
+            context: true,
+            stack: false,
+        };
+        if (isString(presetOrOptions)) {
+            options.context = presetOrOptions === "full" || presetOrOptions === "standard";
+            options.stack = presetOrOptions === "full";
+        } else if (isObjectType(presetOrOptions)) {
+            options.level = presetOrOptions.level ?? options.level;
+            options.context = presetOrOptions.context ?? options.context;
+            options.stack = presetOrOptions.stack ?? options.stack;
+        }
+
+        const output = this.format(options.context, options.stack);
+
+        switch (options.level) {
+            case "error":
+                console.error(output);
+                break;
+            case "warn":
+                console.warn(output);
+                break;
+            case "info":
+                console.info(output);
+                break;
+        }
+    }
+
+    private format(context: boolean, stack: boolean): string {
+        const contexts = this.ctxs
+            .slice()
+            .toReversed()
+            .map(ctx => (isFunction(ctx) ? ctx() : ctx));
+        const stacks = this.stack
+            ?.split("\n")
+            .map(line => line.trim())
+            .filter(Boolean) || ["<no stack trace>"];
+
+        let message: string;
+        try {
+            message =
+                this._error instanceof Error ? this._error.message : JSON.stringify(this._error);
+        } catch {
+            message = String(this._error);
+        }
+
+        const lines: (string | string[])[] = [
+            `Error: ${contexts.length > 0 ? contexts.at(0) : message}`,
+        ];
+
+        if (context) {
+            lines.push(
+                "",
+                "Caused by:",
+                contexts
+                    .slice(1)
+                    .concat(message)
+                    .map((line, index) => `    ${index}: ${line}`),
+            );
+        }
+
+        if (stack) {
+            const top = stacks.at(0) || "";
+            const hasErrorMessage =
+                new RegExp(`^\\w+:\\s+${message}$`).test(top) || /^\w+$/.test(top);
+
+            lines.push(
+                "",
+                "Stack trace:",
+                stacks.slice(hasErrorMessage ? 1 : 0).map(line => `    ${line}`),
+            );
+        }
+
+        const output = lines.flat().join("\n");
+
+        return output;
     }
 }
 
