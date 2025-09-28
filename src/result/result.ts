@@ -15,6 +15,20 @@ import type { AsyncFn, Fn, NonEmptyTuple, SyncFn } from "@/types";
 
 const nil = null as never;
 
+const createErrFromError = <E = unknown>(error: E, caller: Function): Err<E> => {
+    const err = new Err(error);
+
+    if (error instanceof Error) {
+        err["stack"] = error.stack;
+    } else if ("captureStackTrace" in Error) {
+        const dummy = {} as unknown as Error;
+        Error.captureStackTrace(dummy, caller);
+        err["stack"] = dummy.stack;
+    }
+
+    return err;
+};
+
 export abstract class Result<T = unknown, E = unknown> {
     static ok(): Ok<void>;
     static ok<T>(value: T): Ok<T>;
@@ -25,17 +39,7 @@ export abstract class Result<T = unknown, E = unknown> {
     static err(): Err<void>;
     static err<E>(error: E): Err<E>;
     static err(error?: unknown): Err {
-        const err = new Err(error);
-
-        if (error instanceof Error) {
-            err["stack"] = error.stack;
-        } else if ("captureStackTrace" in Error) {
-            const dummy = {} as unknown as Error;
-            Error.captureStackTrace(dummy, Result.err);
-            err["stack"] = dummy.stack;
-        }
-
-        return err;
+        return createErrFromError(error, this.err);
     }
 
     static try<T, E = unknown>(fn: SyncFn<T>): Result<T, E>;
@@ -78,10 +82,10 @@ export abstract class Result<T = unknown, E = unknown> {
 
             return data.then(
                 value => ok(value),
-                error => err(transformError(error)),
+                error => createErrFromError(transformError(error), this.try),
             );
         } catch (error) {
-            return err(transformError(error));
+            return createErrFromError(transformError(error), this.try);
         }
     }
 
@@ -92,7 +96,7 @@ export abstract class Result<T = unknown, E = unknown> {
 
         for (const result of results) {
             if (!result.isOk()) {
-                acc = err(result.error);
+                acc = createErrFromError(result.error, this.all);
                 break;
             }
 
@@ -113,7 +117,7 @@ export abstract class Result<T = unknown, E = unknown> {
             } else if (result.isOk() && acc.isOk()) {
                 acc = acc.map(values => [...values, result.value]);
             } else if (result.isErr() && acc.isOk()) {
-                acc = err([result.error]);
+                acc = createErrFromError([result.error], this.allSettled);
             }
         }
 
@@ -163,7 +167,7 @@ export abstract class Result<T = unknown, E = unknown> {
      * Maps `Result<T, E>` to `Result<T, F>`
      */
     mapErr<F>(fn: (error: E) => F): Result<T, F> {
-        return this.isOk() ? this : err(fn(this.error));
+        return this.isOk() ? this : createErrFromError(fn(this.error), this.mapErr);
     }
 
     /**
