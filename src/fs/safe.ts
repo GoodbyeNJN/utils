@@ -1,7 +1,6 @@
 import fs, { promises as fsp } from "node:fs";
 import path, { dirname } from "node:path";
 
-import { errorToMessage } from "@/common";
 import { isNumber } from "@/remeda";
 import { err, ok, Result, safeTry } from "@/result";
 
@@ -39,7 +38,7 @@ export const appendFile = async (
     path: PathLike,
     data: string,
     options?: AppendFileOptions,
-): Promise<Result<void, string>> =>
+): Promise<Result<void, Error>> =>
     safeTry(async function* () {
         const newline = options?.newline ?? true;
 
@@ -48,8 +47,7 @@ export const appendFile = async (
         const fn = async () => {
             await fsp.appendFile(path, newline ? `\n${data}` : data, parseEncodingOptions(options));
         };
-        const onThrow = errorToMessage(`Failed to append file: ${path}`);
-        const result = await Result.try(fn, onThrow);
+        const result = (await Result.try(fn, Error)).context(`Failed to append file: ${path}`);
 
         return result;
     });
@@ -58,7 +56,7 @@ export const appendFileSync = (
     path: PathLike,
     data: string,
     options?: AppendFileOptions,
-): Result<void, string> =>
+): Result<void, Error> =>
     safeTry(function* () {
         const newline = options?.newline ?? true;
 
@@ -67,8 +65,7 @@ export const appendFileSync = (
         const fn = () => {
             fs.appendFileSync(path, newline ? `\n${data}` : data, parseEncodingOptions(options));
         };
-        const onThrow = errorToMessage(`Failed to append file: ${path}`);
-        const result = Result.try(fn, onThrow);
+        const result = Result.try(fn, Error).context(`Failed to append file: ${path}`);
 
         return result;
     });
@@ -77,14 +74,15 @@ export const cp = async (
     source: PathLike,
     destination: PathLike,
     options?: CpOptions,
-): Promise<Result<void, string>> => {
+): Promise<Result<void, Error>> => {
     const { recursive = true } = options || {};
 
     const fn = async () => {
         await fsp.cp(source, destination, { recursive });
     };
-    const onThrow = errorToMessage(`Failed to copy path: ${source} to ${destination}`);
-    const result = await Result.try(fn, onThrow);
+    const result = (await Result.try(fn, Error)).context(
+        `Failed to copy path: ${source} to ${destination}`,
+    );
 
     return result;
 };
@@ -93,38 +91,39 @@ export const cpSync = (
     source: PathLike,
     destination: PathLike,
     options?: CpOptions,
-): Result<void, string> => {
+): Result<void, Error> => {
     const { recursive = true } = options || {};
 
     const fn = () => {
         fs.cpSync(source, destination, { recursive });
     };
-    const onThrow = errorToMessage(`Failed to copy path: ${source} to ${destination}`);
-    const result = Result.try(fn, onThrow);
+    const result = Result.try(fn, Error).context(
+        `Failed to copy path: ${source} to ${destination}`,
+    );
 
     return result;
 };
 
-export const exists = async (path: PathLike): Promise<Result<true, string>> => {
+export const exists = async (path: PathLike): Promise<Result<true, Error>> => {
     const fn = async () => {
         await fsp.access(path);
 
         return true as const;
     };
-    const onThrow = errorToMessage(`Failed to check exists of path: ${path}`);
-    const result = await Result.try(fn, onThrow);
+    const result = (await Result.try(fn, Error)).context(
+        `Failed to check exists for path: ${path}`,
+    );
 
     return result;
 };
 
-export const existsSync = (path: PathLike): Result<true, string> => {
+export const existsSync = (path: PathLike): Result<true, Error> => {
     const fn = () => {
         fs.accessSync(path);
 
         return true as const;
     };
-    const onThrow = errorToMessage(`Failed to check exists of path: ${path}`);
-    const result = Result.try(fn, onThrow);
+    const result = Result.try(fn, Error).context(`Failed to check exists for path: ${path}`);
 
     return result;
 };
@@ -132,7 +131,7 @@ export const existsSync = (path: PathLike): Result<true, string> => {
 export const mkdir = async (
     path: PathLike,
     options?: MkdirOptions,
-): Promise<Result<void, string>> => {
+): Promise<Result<void, Error>> => {
     const { recursive = true } = options || {};
 
     if ((await exists(path)).isOk()) return ok();
@@ -140,13 +139,12 @@ export const mkdir = async (
     const fn = async () => {
         await fsp.mkdir(path, { recursive });
     };
-    const onThrow = errorToMessage(`Failed to create directory: ${path}`);
-    const result = await Result.try(fn, onThrow);
+    const result = (await Result.try(fn, Error)).context(`Failed to create directory: ${path}`);
 
     return result;
 };
 
-export const mkdirSync = (path: PathLike, options?: MkdirOptions): Result<void, string> => {
+export const mkdirSync = (path: PathLike, options?: MkdirOptions): Result<void, Error> => {
     const { recursive = true } = options || {};
 
     if (existsSync(path).isOk()) return ok();
@@ -154,8 +152,7 @@ export const mkdirSync = (path: PathLike, options?: MkdirOptions): Result<void, 
     const fn = () => {
         fs.mkdirSync(path, { recursive });
     };
-    const onThrow = errorToMessage(`Failed to create directory: ${path}`);
-    const result = Result.try(fn, onThrow);
+    const result = Result.try(fn, Error).context(`Failed to create directory: ${path}`);
 
     return result;
 };
@@ -163,42 +160,37 @@ export const mkdirSync = (path: PathLike, options?: MkdirOptions): Result<void, 
 export async function readFile(
     path: PathLike,
     options: BufferEncodingOptions,
-): Promise<Result<Buffer, string>>;
+): Promise<Result<Buffer, Error>>;
 export async function readFile(
     path: PathLike,
     options?: StringEncodingOptions,
-): Promise<Result<string, string>>;
-export async function readFile(path: any, options?: any): Promise<Result<any, string>> {
+): Promise<Result<string, Error>>;
+export async function readFile(path: any, options?: any): Promise<Result<any, Error>> {
     return safeTry(async function* () {
         yield* await exists(path);
 
         const fn = async () => {
             return await fsp.readFile(path, parseEncodingOptions(options));
         };
-        const onThrow = errorToMessage(`Failed to read file: ${path}`);
-        const result = await Result.try(fn, onThrow);
+        const result = (await Result.try(fn, Error)).context(`Failed to read file: ${path}`);
 
         return result;
     });
 }
 
-export function readFileSync(
-    path: PathLike,
-    options: BufferEncodingOptions,
-): Result<Buffer, string>;
+export function readFileSync(path: PathLike, options: BufferEncodingOptions): Result<Buffer, Error>;
 export function readFileSync(
     path: PathLike,
     options?: StringEncodingOptions,
-): Result<string, string>;
-export function readFileSync(path: any, options?: any): Result<any, string> {
+): Result<string, Error>;
+export function readFileSync(path: any, options?: any): Result<any, Error> {
     return safeTry(function* () {
         yield* existsSync(path);
 
         const fn = () => {
             return fs.readFileSync(path, parseEncodingOptions(options));
         };
-        const onThrow = errorToMessage(`Failed to read file: ${path}`);
-        const result = Result.try(fn, onThrow);
+        const result = Result.try(fn, Error).context(`Failed to read file: ${path}`);
 
         return result;
     });
@@ -207,7 +199,7 @@ export function readFileSync(path: any, options?: any): Result<any, string> {
 export const readFileByLine = async (
     path: PathLike,
     options?: StringEncodingOptions,
-): Promise<Result<AsyncIterator<string>, string>> =>
+): Promise<Result<AsyncIterator<string>, Error>> =>
     safeTry(async function* () {
         yield* await exists(path);
 
@@ -229,8 +221,7 @@ export const readFileByLine = async (
 
             return reader[Symbol.asyncIterator]();
         };
-        const onThrow = errorToMessage(`Failed to read file: ${path}`);
-        const result = Result.try(fn, onThrow);
+        const result = Result.try(fn, Error).context(`Failed to read file: ${path}`);
 
         return result;
     });
@@ -238,16 +229,15 @@ export const readFileByLine = async (
 export const readJson = async <T = any>(
     path: PathLike,
     options?: StringEncodingOptions,
-): Promise<Result<T, string>> =>
+): Promise<Result<T, Error>> =>
     safeTry(async function* () {
         const content = yield* await readFile(path, options);
-        if (!content) return err(`JSON file is empty: ${path}`);
+        if (!content) return err(new Error(`JSON file is empty: ${path}`));
 
         const fn = () => {
             return JSON.parse(content);
         };
-        const onThrow = errorToMessage(`Failed to parse JSON file: ${path}`);
-        const result = Result.try(fn, onThrow);
+        const result = Result.try(fn, Error).context(`Failed to parse JSON file: ${path}`);
 
         return result;
     });
@@ -255,40 +245,37 @@ export const readJson = async <T = any>(
 export const readJsonSync = <T = any>(
     path: PathLike,
     options?: StringEncodingOptions,
-): Result<T, string> =>
+): Result<T, Error> =>
     safeTry(function* () {
         const content = yield* readFileSync(path, options);
-        if (!content) return err(`JSON file is empty: ${path}`);
+        if (!content) return err(new Error(`JSON file is empty: ${path}`));
 
         const fn = () => {
             return JSON.parse(content);
         };
-        const onThrow = errorToMessage(`Failed to parse JSON file: ${path}`);
-        const result = Result.try(fn, onThrow);
+        const result = Result.try(fn, Error).context(`Failed to parse JSON file: ${path}`);
 
         return result;
     });
 
-export const rm = async (path: PathLike, options?: RmOptions): Promise<Result<void, string>> => {
+export const rm = async (path: PathLike, options?: RmOptions): Promise<Result<void, Error>> => {
     const { force = true, recursive = true } = options || {};
 
     const fn = async () => {
         await fsp.rm(path, { force, recursive });
     };
-    const onThrow = errorToMessage(`Failed to remove path: ${path}`);
-    const result = await Result.try(fn, onThrow);
+    const result = (await Result.try(fn, Error)).context(`Failed to remove path: ${path}`);
 
     return result;
 };
 
-export const rmSync = (path: PathLike, options?: RmOptions): Result<void, string> => {
+export const rmSync = (path: PathLike, options?: RmOptions): Result<void, Error> => {
     const { force = true, recursive = true } = options || {};
 
     const fn = () => {
         fs.rmSync(path, { force, recursive });
     };
-    const onThrow = errorToMessage(`Failed to remove path: ${path}`);
-    const result = Result.try(fn, onThrow);
+    const result = Result.try(fn, Error).context(`Failed to remove path: ${path}`);
 
     return result;
 };
@@ -297,15 +284,14 @@ export const writeFile = async (
     path: PathLike,
     data: string,
     options?: StringEncodingOptions,
-): Promise<Result<void, string>> =>
+): Promise<Result<void, Error>> =>
     safeTry(async function* () {
         yield* await mkdir(dirname(pathLikeToPath(path).toString()));
 
         const fn = async () => {
             await fsp.writeFile(path, data, parseEncodingOptions(options));
         };
-        const onThrow = errorToMessage(`Failed to write file: ${path}`);
-        const result = await Result.try(fn, onThrow);
+        const result = (await Result.try(fn, Error)).context(`Failed to write file: ${path}`);
 
         return result;
     });
@@ -314,12 +300,11 @@ export const writeFileSync = (
     path: PathLike,
     data: string,
     options?: StringEncodingOptions,
-): Result<void, string> => {
+): Result<void, Error> => {
     const fn = () => {
         fs.writeFileSync(path, data, parseEncodingOptions(options));
     };
-    const onThrow = errorToMessage(`Failed to write file: ${path}`);
-    const result = Result.try(fn, onThrow);
+    const result = Result.try(fn, Error).context(`Failed to write file: ${path}`);
 
     return result;
 };
@@ -328,7 +313,7 @@ export const writeJson = async (
     path: PathLike,
     data: any,
     indentOrOptions?: WriteJsonOptions,
-): Promise<Result<void, string>> => {
+): Promise<Result<void, Error>> => {
     const { indent, encoding } = parseWriteJsonOptions(indentOrOptions);
 
     const content = JSON.stringify(data, null, indent);
@@ -340,7 +325,7 @@ export const writeJsonSync = (
     path: PathLike,
     data: any,
     indentOrOptions?: WriteJsonOptions,
-): Result<void, string> => {
+): Result<void, Error> => {
     const { indent, encoding } = parseWriteJsonOptions(indentOrOptions);
 
     const content = JSON.stringify(data, null, indent);

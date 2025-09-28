@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/unified-signatures */
 
+import { normalizeError } from "@/common";
 import { isFunction, isObjectType, isPromiseLike, isString } from "@/remeda";
 
 import type {
@@ -38,20 +39,34 @@ export abstract class Result<T = unknown, E = unknown> {
     }
 
     static try<T, E = unknown>(fn: SyncFn<T>): Result<T, E>;
+    static try<T>(fn: SyncFn<T>, onThrow: ErrorConstructor): Result<T, Error>;
     static try<T, E>(fn: SyncFn<T>, onThrow: (error: unknown) => E): Result<T, E>;
     static try<T, E = unknown>(fn: AsyncFn<T>): Promise<Result<Awaited<T>, E>>;
+    static try<T>(
+        fn: AsyncFn<T>,
+        onThrowOrReject: ErrorConstructor,
+    ): Promise<Result<Awaited<T>, Error>>;
     static try<T, E>(
         fn: AsyncFn<T>,
         onThrowOrReject: (error: unknown) => E,
     ): Promise<Result<Awaited<T>, E>>;
     static try<T, E = unknown>(data: Promise<T>): Promise<Result<Awaited<T>, E>>;
+    static try<T>(data: Promise<T>, onThrow: ErrorConstructor): Promise<Result<Awaited<T>, Error>>;
     static try<T, E>(
         data: Promise<T>,
         onThrow: (error: unknown) => E,
     ): Promise<Result<Awaited<T>, E>>;
     static try<T, E = unknown>(data: T): Result<T, E>;
+    static try<T>(data: T, onThrow: ErrorConstructor): Result<T, Error>;
     static try<T, E>(data: T, onThrow: (error: unknown) => E): Result<T, E>;
     static try(fnOrData: unknown, onThrow?: Fn): any {
+        const transformError = (error: unknown) => {
+            if (!onThrow) return error;
+            if (onThrow === Error) return normalizeError(error);
+
+            return onThrow(error);
+        };
+
         try {
             let data = fnOrData;
 
@@ -63,10 +78,10 @@ export abstract class Result<T = unknown, E = unknown> {
 
             return data.then(
                 value => ok(value),
-                error => err(onThrow ? onThrow(error) : error),
+                error => err(transformError(error)),
             );
         } catch (error) {
-            return err(onThrow ? onThrow(error) : error);
+            return err(transformError(error));
         }
     }
 
