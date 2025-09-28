@@ -1,7 +1,6 @@
 import path from "node:path";
 
 import { removePrefix } from "@/common";
-import { ok } from "@/result";
 
 import { readFile } from "./safe";
 
@@ -12,17 +11,17 @@ export interface VFileOptions {
 }
 
 export class VFile {
-    static fromFilepath(pathname: string, cwd?: string) {
+    static async fromFilepath(pathname: string, cwd?: string) {
         const vfile = new VFile({
             pathname,
             cwd,
         });
 
-        const content = readFile(pathname);
+        const content = await readFile(pathname);
 
-        return content.andThen(content => {
+        return content.map(content => {
             vfile.content = content;
-            return ok(vfile);
+            return vfile;
         });
     }
 
