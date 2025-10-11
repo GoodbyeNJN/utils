@@ -105,9 +105,19 @@ export abstract class Result<T = unknown, E = unknown> {
         return acc;
     }
 
-    protected readonly ctxs: (string | Fn<string>)[] = [];
+    protected readonly contexts: (string | Fn<string>)[] = [];
 
-    abstract readonly ok: boolean;
+    private readonly ok: boolean;
+
+    private readonly value: T;
+
+    private readonly error: E;
+
+    protected constructor(ok: boolean, error: E, value: T) {
+        this.ok = ok;
+        this.error = error;
+        this.value = value;
+    }
 
     /**
      * Check if `Result` is `OK`
@@ -247,20 +257,16 @@ export abstract class Result<T = unknown, E = unknown> {
     }
 
     context(context: string): this {
-        this.ctxs.push(context);
+        this.contexts.push(context);
 
         return this;
     }
 
-    withContext(fn: Fn<string>): this {
-        this.ctxs.push(fn);
+    withContext(contextGetter: Fn<string>): this {
+        this.contexts.push(contextGetter);
 
         return this;
     }
-
-    abstract get value(): T;
-
-    abstract get error(): E;
 }
 
 export const ok = Result.ok;

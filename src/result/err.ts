@@ -13,35 +13,24 @@ export class Err<E = unknown> extends Result<never, E> {
         const err = new Err(error);
 
         if (error instanceof Error) {
-            err["stack"] = error.stack;
+            err.stack = error.stack;
         } else if ("captureStackTrace" in Error) {
             const dummy = {} as unknown as Error;
             Error.captureStackTrace(dummy, caller);
-            err["stack"] = dummy.stack;
+            err.stack = dummy.stack;
         }
 
         return err;
     }
 
-    readonly ok = false;
-    private readonly _error: E;
     private stack: string | undefined;
 
     constructor(error: E) {
-        super();
-        this._error = error;
-    }
-
-    get value(): never {
-        return never;
-    }
-
-    get error(): E {
-        return this._error;
+        super(false, error, never);
     }
 
     toError(): Error {
-        return normalizeError(this.error);
+        return normalizeError(this["error"]);
     }
 
     format(): string;
@@ -51,7 +40,7 @@ export class Err<E = unknown> extends Result<never, E> {
         const options = this.normalize(presetOrOptions);
 
         const message = this.toError().message;
-        const contexts = this.ctxs
+        const contexts = this["contexts"]
             .slice()
             .toReversed()
             .map(ctx => (isFunction(ctx) ? ctx() : ctx));
