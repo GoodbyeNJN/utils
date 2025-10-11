@@ -220,10 +220,39 @@ export abstract class Result<T = unknown, E = unknown> {
     }
 
     /**
+     * Unwrap the `Ok` value, or throw an error if `Result` is `Err`
+     */
+    unwrap(): T {
+        if (this.isErr()) {
+            throw this.unwrapErr();
+        }
+
+        return this.value;
+    }
+
+    /**
+     * Unwrap the `Err` value, or throw an error if `Result` is `Ok`
+     */
+    unwrapErr(): E {
+        if (this.isOk()) {
+            throw this.unwrap();
+        }
+
+        return this.error;
+    }
+
+    /**
      * Unwrap the `Ok` value, or return the provided value if `Result` is `Err`
      */
-    unwrapOr<U>(defaultValue: U): T | U {
+    unwrapOr(defaultValue: T): T {
         return this.isOk() ? this.value : defaultValue;
+    }
+
+    /**
+     * Unwrap the `Ok` value, or compute it from a function if `Result` is `Err`
+     */
+    unwrapOrElse(defaultValueGetter: (error: E) => T): T {
+        return this.isOk() ? this.value : defaultValueGetter(this.error);
     }
 
     /**
