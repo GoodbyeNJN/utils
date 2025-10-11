@@ -35,6 +35,9 @@ importers:
       rotery:
         specifier: ^0.7.0
         version: 0.7.0
+      safe-stable-stringify:
+        specifier: ^2.5.0
+        version: 2.5.0
       type-fest:
         specifier: ^4.41.0
         version: 4.41.0
@@ -1053,6 +1056,10 @@ packages:
   rotery@0.7.0:
     resolution: {integrity: sha512-iihUyiNo+M3UCKvnruSowAjv2jPCCO9wIH3keuHdCMi3CoRU+IbDTEdVn7X4X9u5Ghr4wR92ChtIBND5t6fH2w==}
     engines: {node: '>=10.24.1'}
+
+  safe-stable-stringify@2.5.0:
+    resolution: {integrity: sha512-b3rppTKm9T+PsVCBEOUR46GWI7fdOs00VKZ1+9c1EWDaDMvjQc6tUwuFyIprgGgTcWoVHSKrU8H31ZHA2e0RHA==}
+    engines: {node: '>=10'}
 
   shebang-command@2.0.0:
     resolution: {integrity: sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA==}
@@ -2102,6 +2109,8 @@ snapshots:
       fsevents: 2.3.3
 
   rotery@0.7.0: {}
+
+  safe-stable-stringify@2.5.0: {}
 
   shebang-command@2.0.0:
     dependencies:

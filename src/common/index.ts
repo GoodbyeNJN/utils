@@ -1,5 +1,7 @@
 export { errorToMessage, getErrorMessage, normalizeError } from "./error";
 
+export { stringify, parse, safeParse } from "./json";
+
 export { linear, scale } from "./math";
 
 export { parseKeyValuePairs, parseValueToBoolean } from "./parse";
