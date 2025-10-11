@@ -8,6 +8,20 @@ import { Result } from "./result";
 import type { PrintOptions, PrintPresets } from "./types";
 
 export class Err<E = unknown> extends Result<never, E> {
+    static fromError<E = unknown>(error: E, caller: Function): Err<E> {
+        const err = new Err(error);
+
+        if (error instanceof Error) {
+            err["stack"] = error.stack;
+        } else if ("captureStackTrace" in Error) {
+            const dummy = {} as unknown as Error;
+            Error.captureStackTrace(dummy, caller);
+            err["stack"] = dummy.stack;
+        }
+
+        return err;
+    }
+
     readonly ok = false;
     private readonly _error: E;
     private stack: string | undefined;
