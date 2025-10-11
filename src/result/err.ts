@@ -102,6 +102,14 @@ export class Err<E = unknown> extends Result<never, E> {
         }
     }
 
+    override toString(): string {
+        return this.format();
+    }
+
+    override toJSON(): string {
+        return this.toString();
+    }
+
     private normalize(presetOrOptions?: FormatPresets | PrintOptions): Required<PrintOptions> {
         // Default options, equitable to "standard"
         const options: Required<PrintOptions> = {

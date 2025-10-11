@@ -296,6 +296,10 @@ export abstract class Result<T = unknown, E = unknown> {
 
         return this;
     }
+
+    abstract toString(): string;
+
+    abstract toJSON(): string;
 }
 
 export const ok = Result.ok;
