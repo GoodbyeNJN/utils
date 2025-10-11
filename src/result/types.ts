@@ -3,15 +3,15 @@ import type { Ok } from "./ok";
 import type { Result } from "./result";
 
 /**
- * Presets for printing the `Err` result
+ * Presets for formatting the `Err` result
  *
- * - "full" - Prints full details including context and stack trace.
- * - "standard" - Prints error message and context, but omits stack trace.
- * - "minimal" - Prints only the error message without context or stack trace.
+ * - "full" - Full details including context and stack trace
+ * - "standard" - Error message and context, but omits stack trace.
+ * - "minimal" - Only the error message without context or stack trace.
  *
  * Default is "standard".
  */
-export type PrintPresets = "full" | "standard" | "minimal";
+export type FormatPresets = "full" | "standard" | "minimal";
 
 /**
  * Options for printing the `Err` result
