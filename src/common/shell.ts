@@ -1,7 +1,6 @@
 import { isString } from "@/remeda";
 import { Result } from "@/result";
 
-import { errorToMessage } from "./error";
 import { PromiseWithResolvers } from "./promise";
 
 export interface ShellExecResult {
@@ -13,11 +12,11 @@ const REGEXP_NULL_CHAR = /\x00+/g;
 const REGEXP_SAFE_CHARS = /^[A-Za-z0-9,:=_./-]+$/;
 const REGEXP_SINGLE_QUOTES = /'+/g;
 
-export async function $(cmd: string): Promise<Result<ShellExecResult, string>>;
+export async function $(cmd: string): Promise<Result<ShellExecResult, Error>>;
 export async function $(
     cmd: TemplateStringsArray,
     ...values: any[]
-): Promise<Result<ShellExecResult, string>>;
+): Promise<Result<ShellExecResult, Error>>;
 export async function $(cmd: string | TemplateStringsArray, ...values: any[]) {
     const { exec } = await import("node:child_process");
 
@@ -38,8 +37,7 @@ export async function $(cmd: string | TemplateStringsArray, ...values: any[]) {
 
         return await promise;
     };
-    const onThrow = errorToMessage(`Failed to execute command: ${cmd}`);
-    const result = Result.try(fn, onThrow);
+    const result = (await Result.try(fn, Error)).context(`Failed to execute command: ${cmd}`);
 
     return result;
 }
