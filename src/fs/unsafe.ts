@@ -78,55 +78,55 @@ export const mkdirSync = (path: PathLike, options?: MkdirOptions): void => {
 export async function readFile(
     path: PathLike,
     options: BufferEncodingOptions,
-): Promise<Buffer | null>;
+): Promise<Buffer | undefined>;
 export async function readFile(
     path: PathLike,
     options?: StringEncodingOptions,
-): Promise<string | null>;
+): Promise<string | undefined>;
 export async function readFile(path: any, options?: any): Promise<any> {
     const result = await safeReadFile(path, options);
-    if (result.isErr()) return null;
+    if (result.isErr()) return undefined;
 
-    return result.value;
+    return result.unwrap();
 }
 
-export function readFileSync(path: PathLike, options: BufferEncodingOptions): Buffer | null;
-export function readFileSync(path: PathLike, options?: StringEncodingOptions): string | null;
+export function readFileSync(path: PathLike, options: BufferEncodingOptions): Buffer | undefined;
+export function readFileSync(path: PathLike, options?: StringEncodingOptions): string | undefined;
 export function readFileSync(path: any, options?: any): any {
     const result = safeReadFileSync(path, options);
-    if (result.isErr()) return null;
+    if (result.isErr()) return undefined;
 
-    return result.value;
+    return result.unwrap();
 }
 
 export const readFileByLine = async (
     path: PathLike,
     options?: StringEncodingOptions,
-): Promise<AsyncIterator<string> | null> => {
+): Promise<AsyncIterator<string> | undefined> => {
     const result = await safeReadFileByLine(path, options);
-    if (result.isErr()) return null;
+    if (result.isErr()) return undefined;
 
-    return result.value;
+    return result.unwrap();
 };
 
 export const readJson = async <T = any>(
     path: PathLike,
     options?: StringEncodingOptions,
-): Promise<T | null> => {
+): Promise<T | undefined> => {
     const result = await safeReadJson(path, options);
-    if (result.isErr()) return null;
+    if (result.isErr()) return undefined;
 
-    return result.value;
+    return result.unwrap();
 };
 
 export const readJsonSync = <T = any>(
     path: PathLike,
     options?: StringEncodingOptions,
-): T | null => {
+): T | undefined => {
     const result = safeReadJsonSync(path, options);
-    if (result.isErr()) return null;
+    if (result.isErr()) return undefined;
 
-    return result.value;
+    return result.unwrap();
 };
 
 export const rm = async (path: PathLike, options?: RmOptions): Promise<void> => {
