@@ -1,6 +1,6 @@
 # @goodbyenjn/utils
 
-[![npm version](https://badge.fury.io/js/@goodbyenjn/utils.svg)](https://badge.fury.io/js/@goodbyenjn/utils)
+[![npm version](https://badge.fury.io/js/@goodbyenjn%2Futils.svg)](https://badge.fury.io/js/@goodbyenjn%2Futils)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 GoodbyeNJN's utility library for TypeScript and JavaScript, providing a collection of common utility functions and types.
@@ -12,7 +12,7 @@ GoodbyeNJN's utility library for TypeScript and JavaScript, providing a collecti
 - 📦 **Modular**: Import only what you need with tree-shakable exports
 - 🛡️ **Result Type**: Functional error handling with Result pattern
 - 📁 **File System**: Safe file system operations with Result types
-- 🧰 **Common Utils**: String, math, promise, and other utility functions
+- 🧰 **Common Utils**: String, math, promise, process, and other utility functions
 - 📊 **Remeda Extensions**: Extended utilities built on top of Remeda
 
 ## Installation
@@ -30,7 +30,7 @@ yarn add @goodbyenjn/utils
 ### Common Utilities
 
 ```typescript
-import { sleep, template, unindent, debounce } from "@goodbyenjn/utils";
+import { sleep, template, unindent, debounce, $ } from "@goodbyenjn/utils";
 
 // Promise utilities
 await sleep(1000); // Sleep for 1 second
@@ -44,6 +44,15 @@ const code = unindent`
         return 'formatted';
     }
 `;
+
+// Process utilities - Execute shell commands safely
+const result = await $`ls -la`;
+if (result.isOk()) {
+    console.log("stdout:", result.value.stdout);
+    console.log("stderr:", result.value.stderr);
+} else {
+    console.error("Command failed:", result.error);
+}
 
 // Throttling and debouncing
 const debouncedFn = debounce(() => console.log("Called!"), 300);
@@ -72,7 +81,7 @@ if (existsResult.isOk() && existsResult.value) {
 ### Result Pattern
 
 ```typescript
-import { Ok, Err, fromThrowable } from "@goodbyenjn/utils/result";
+import { Ok, Err, Result } from "@goodbyenjn/utils/result";
 
 // Create results
 const success = Ok(42);
@@ -84,7 +93,7 @@ if (success.isOk()) {
 }
 
 // Convert throwing functions to Result
-const safeParseInt = fromThrowable(parseInt);
+const safeParseInt = Result.fromThrowable(parseInt);
 const result = safeParseInt("not-a-number");
 if (result.isErr()) {
     console.log("Parse failed:", result.error);
@@ -134,7 +143,7 @@ type NumberType = YieldType<typeof numberGenerator>; // number
 
 ### Available Modules
 
-- **Main (`@goodbyenjn/utils`)** - Common utilities (string, math, promise, error handling, etc.)
+- **Main (`@goodbyenjn/utils`)** - Common utilities (string, math, promise, process, error handling, etc.)
 - **File System (`@goodbyenjn/utils/fs`)** - Safe file system operations
 - **Result (`@goodbyenjn/utils/result`)** - Functional error handling
 - **Remeda (`@goodbyenjn/utils/remeda`)** - Extended Remeda utilities
@@ -156,6 +165,10 @@ type NumberType = YieldType<typeof numberGenerator>; // number
 - `createLock()` - Create a mutex lock
 - `createSingleton(factory)` - Create singleton factory
 - `PromiseWithResolvers` - Promise with external resolvers
+
+#### Process Utilities
+
+- `$(command)` - Execute shell commands safely, returns ResultAsync with stdout/stderr
 
 #### Math Utilities
 
