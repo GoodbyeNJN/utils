@@ -1,4 +1,4 @@
-import type { Except } from "libs/type-fest";
+import type { Except } from "type-fest";
 
 export type OmitByKey<ObjectType, KeysType extends keyof ObjectType> = Except<
     ObjectType,
