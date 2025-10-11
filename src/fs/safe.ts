@@ -1,6 +1,7 @@
 import fs, { promises as fsp } from "node:fs";
 import path, { dirname } from "node:path";
 
+import { safeParse, stringify } from "@/common";
 import { isNumber } from "@/remeda";
 import { err, ok, Result, safeTry } from "@/result";
 
@@ -234,10 +235,7 @@ export const readJson = async <T = any>(
         const content = yield* await readFile(path, options);
         if (!content) return err(new Error(`JSON file is empty: ${path}`));
 
-        const fn = () => {
-            return JSON.parse(content);
-        };
-        const result = Result.try(fn, Error).context(`Failed to parse JSON file: ${path}`);
+        const result = safeParse<T>(content).context(`Failed to parse JSON file: ${path}`);
 
         return result;
     });
@@ -250,10 +248,7 @@ export const readJsonSync = <T = any>(
         const content = yield* readFileSync(path, options);
         if (!content) return err(new Error(`JSON file is empty: ${path}`));
 
-        const fn = () => {
-            return JSON.parse(content);
-        };
-        const result = Result.try(fn, Error).context(`Failed to parse JSON file: ${path}`);
+        const result = safeParse<T>(content).context(`Failed to parse JSON file: ${path}`);
 
         return result;
     });
@@ -316,7 +311,7 @@ export const writeJson = async (
 ): Promise<Result<void, Error>> => {
     const { indent, encoding } = parseWriteJsonOptions(indentOrOptions);
 
-    const content = JSON.stringify(data, null, indent);
+    const content = stringify(data, null, indent) ?? "";
 
     return writeFile(path, content, encoding);
 };
@@ -328,7 +323,7 @@ export const writeJsonSync = (
 ): Result<void, Error> => {
     const { indent, encoding } = parseWriteJsonOptions(indentOrOptions);
 
-    const content = JSON.stringify(data, null, indent);
+    const content = stringify(data, null, indent) ?? "";
 
     return writeFileSync(path, content, encoding);
 };

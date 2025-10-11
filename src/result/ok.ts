@@ -1,3 +1,5 @@
+import { stringify } from "@/common";
+
 import { never } from "./common";
 import { Result } from "./result";
 
@@ -7,7 +9,7 @@ export class Ok<T = unknown> extends Result<T, never> {
     }
 
     override toString(): string {
-        const value = JSON.stringify(this["value"]);
+        const value = stringify(this["value"]);
 
         return `Ok(${value})`;
     }
