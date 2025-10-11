@@ -38,11 +38,12 @@ jobs:
 
       - name: Commit and Push to pkg branch
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
           git fetch origin pkg || git checkout -b pkg
           git checkout pkg
-          git merge --no-ff --no-edit -s recursive -X theirs master
+          git checkout master -- LICENSE README.md package.json
+          git rm -rf --cached .
           git add .
           if ! git diff --staged --quiet; then
             git commit -m "build: ${{ github.sha }}"
