@@ -1,6 +1,7 @@
 import { isPromiseLike } from "@/remeda";
 
-import type { Err, Result } from "./result";
+import type { Err } from "./err";
+import type { Result } from "./result";
 import type { InferErrType, InferOkType } from "./types";
 import type { Fn } from "@/types";
 
@@ -30,3 +31,5 @@ export function safeTry(body: Fn<Generator | AsyncGenerator>) {
 
     return next.value;
 }
+
+export const never = null as never;
