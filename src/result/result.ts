@@ -15,19 +15,19 @@ import type { AsyncFn, Fn, NonEmptyTuple, SyncFn } from "@/types";
 
 const never = null as never;
 
+export function ok(): Ok<void>;
+export function ok<T>(value: T): Ok<T>;
+export function ok(value?: unknown): Ok {
+    return new Ok(value);
+}
+
+export function err(): Err<void>;
+export function err<E>(error: E): Err<E>;
+export function err(error?: unknown): Err {
+    return Err.fromError(error, err);
+}
+
 export abstract class Result<T = unknown, E = unknown> {
-    static ok(): Ok<void>;
-    static ok<T>(value: T): Ok<T>;
-    static ok(value?: unknown): Ok {
-        return new Ok(value);
-    }
-
-    static err(): Err<void>;
-    static err<E>(error: E): Err<E>;
-    static err(error?: unknown): Err {
-        return Err.fromError(error, Result.err);
-    }
-
     static try<T, E = unknown>(fn: SyncFn<T>): Result<T, E>;
     static try<T>(fn: SyncFn<T>, onThrow: ErrorConstructor): Result<T, Error>;
     static try<T, E>(fn: SyncFn<T>, onThrow: (error: unknown) => E): Result<T, E>;
@@ -306,9 +306,6 @@ export abstract class Result<T = unknown, E = unknown> {
 
     abstract toJSON(): string;
 }
-
-export const ok = Result.ok;
-export const err = Result.err;
 
 export class Ok<T = unknown> extends Result<T, never> {
     constructor(value: T) {
