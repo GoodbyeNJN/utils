@@ -1,6 +1,4 @@
-import type { Err } from "./err";
-import type { Ok } from "./ok";
-import type { Result } from "./result";
+import type { Err, Ok, Result } from "./result";
 
 /**
  * Presets for formatting the `Err` result
