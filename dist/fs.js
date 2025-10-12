@@ -1,4 +1,4 @@
-import { Result, err, ok, removePrefix, safeParse, safeTry, stringify } from "./chunks/chunk-4981f17d.js";
+import { Result, err, ok, removePrefix, safeParse, safeTry, stringify } from "./chunks/chunk-5b5d51d0.js";
 import { e$3 as e } from "./chunks/chunk-a14ca88a.js";
 import fs, { promises } from "node:fs";
 import path, { dirname } from "node:path";
@@ -25,7 +25,7 @@ const appendFile$1 = async (path$1, data, options) => safeTry(async function* ()
 	const fn = async () => {
 		await promises.appendFile(path$1, newline ? `\n${data}` : data, parseEncodingOptions(options));
 	};
-	return (await Result.try(fn, Error)).context(`Failed to append file: ${path$1}`);
+	return (await Result.fromCallable(fn, Error)).context(`Failed to append file: ${path$1}`);
 });
 const appendFileSync$1 = (path$1, data, options) => safeTry(function* () {
 	const newline = options?.newline ?? true;
@@ -33,35 +33,35 @@ const appendFileSync$1 = (path$1, data, options) => safeTry(function* () {
 	const fn = () => {
 		fs.appendFileSync(path$1, newline ? `\n${data}` : data, parseEncodingOptions(options));
 	};
-	return Result.try(fn, Error).context(`Failed to append file: ${path$1}`);
+	return Result.fromCallable(fn, Error).context(`Failed to append file: ${path$1}`);
 });
 const cp$1 = async (source, destination, options) => {
 	const { recursive = true } = options || {};
 	const fn = async () => {
 		await promises.cp(source, destination, { recursive });
 	};
-	return (await Result.try(fn, Error)).context(`Failed to copy path: ${source} to ${destination}`);
+	return (await Result.fromCallable(fn, Error)).context(`Failed to copy path: ${source} to ${destination}`);
 };
 const cpSync$1 = (source, destination, options) => {
 	const { recursive = true } = options || {};
 	const fn = () => {
 		fs.cpSync(source, destination, { recursive });
 	};
-	return Result.try(fn, Error).context(`Failed to copy path: ${source} to ${destination}`);
+	return Result.fromCallable(fn, Error).context(`Failed to copy path: ${source} to ${destination}`);
 };
 const exists$1 = async (path$1) => {
 	const fn = async () => {
 		await promises.access(path$1);
 		return true;
 	};
-	return (await Result.try(fn, Error)).context(`Failed to check exists for path: ${path$1}`);
+	return (await Result.fromCallable(fn, Error)).context(`Failed to check exists for path: ${path$1}`);
 };
 const existsSync$1 = (path$1) => {
 	const fn = () => {
 		fs.accessSync(path$1);
 		return true;
 	};
-	return Result.try(fn, Error).context(`Failed to check exists for path: ${path$1}`);
+	return Result.fromCallable(fn, Error).context(`Failed to check exists for path: ${path$1}`);
 };
 const mkdir$1 = async (path$1, options) => {
 	const { recursive = true } = options || {};
@@ -69,7 +69,7 @@ const mkdir$1 = async (path$1, options) => {
 	const fn = async () => {
 		await promises.mkdir(path$1, { recursive });
 	};
-	return (await Result.try(fn, Error)).context(`Failed to create directory: ${path$1}`);
+	return (await Result.fromCallable(fn, Error)).context(`Failed to create directory: ${path$1}`);
 };
 const mkdirSync$1 = (path$1, options) => {
 	const { recursive = true } = options || {};
@@ -77,7 +77,7 @@ const mkdirSync$1 = (path$1, options) => {
 	const fn = () => {
 		fs.mkdirSync(path$1, { recursive });
 	};
-	return Result.try(fn, Error).context(`Failed to create directory: ${path$1}`);
+	return Result.fromCallable(fn, Error).context(`Failed to create directory: ${path$1}`);
 };
 async function readFile$1(path$1, options) {
 	return safeTry(async function* () {
@@ -85,7 +85,7 @@ async function readFile$1(path$1, options) {
 		const fn = async () => {
 			return await promises.readFile(path$1, parseEncodingOptions(options));
 		};
-		return (await Result.try(fn, Error)).context(`Failed to read file: ${path$1}`);
+		return (await Result.fromCallable(fn, Error)).context(`Failed to read file: ${path$1}`);
 	});
 }
 function readFileSync$1(path$1, options) {
@@ -94,7 +94,7 @@ function readFileSync$1(path$1, options) {
 		const fn = () => {
 			return fs.readFileSync(path$1, parseEncodingOptions(options));
 		};
-		return Result.try(fn, Error).context(`Failed to read file: ${path$1}`);
+		return Result.fromCallable(fn, Error).context(`Failed to read file: ${path$1}`);
 	});
 }
 const readFileByLine$1 = async (path$1, options) => safeTry(async function* () {
@@ -113,7 +113,7 @@ const readFileByLine$1 = async (path$1, options) => safeTry(async function* () {
 			crlfDelay: Infinity
 		})[Symbol.asyncIterator]();
 	};
-	return Result.try(fn, Error).context(`Failed to read file: ${path$1}`);
+	return Result.fromCallable(fn, Error).context(`Failed to read file: ${path$1}`);
 });
 const readJson$1 = async (path$1, options) => safeTry(async function* () {
 	const content = yield* await readFile$1(path$1, options);
@@ -133,7 +133,7 @@ const rm$1 = async (path$1, options) => {
 			recursive
 		});
 	};
-	return (await Result.try(fn, Error)).context(`Failed to remove path: ${path$1}`);
+	return (await Result.fromCallable(fn, Error)).context(`Failed to remove path: ${path$1}`);
 };
 const rmSync$1 = (path$1, options) => {
 	const { force = true, recursive = true } = options || {};
@@ -143,20 +143,20 @@ const rmSync$1 = (path$1, options) => {
 			recursive
 		});
 	};
-	return Result.try(fn, Error).context(`Failed to remove path: ${path$1}`);
+	return Result.fromCallable(fn, Error).context(`Failed to remove path: ${path$1}`);
 };
 const writeFile = async (path$1, data, options) => safeTry(async function* () {
 	yield* await mkdir$1(dirname(pathLikeToPath(path$1).toString()));
 	const fn = async () => {
 		await promises.writeFile(path$1, data, parseEncodingOptions(options));
 	};
-	return (await Result.try(fn, Error)).context(`Failed to write file: ${path$1}`);
+	return (await Result.fromCallable(fn, Error)).context(`Failed to write file: ${path$1}`);
 });
 const writeFileSync = (path$1, data, options) => {
 	const fn = () => {
 		fs.writeFileSync(path$1, data, parseEncodingOptions(options));
 	};
-	return Result.try(fn, Error).context(`Failed to write file: ${path$1}`);
+	return Result.fromCallable(fn, Error).context(`Failed to write file: ${path$1}`);
 };
 const writeJson = async (path$1, data, indentOrOptions) => {
 	const { indent, encoding } = parseWriteJsonOptions(indentOrOptions);
