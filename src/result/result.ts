@@ -15,6 +15,13 @@ import type { AsyncFn, Fn, NonEmptyTuple, SyncFn } from "@/types";
 
 const never = null as never;
 
+const transformError = (error: unknown, onThrow: Fn | undefined) => {
+    if (!onThrow) return error;
+    if (onThrow === Error) return normalizeError(error);
+
+    return onThrow(error);
+};
+
 export function ok(): Ok<void>;
 export function ok<T>(value: T): Ok<T>;
 export function ok(value?: unknown): Ok {
@@ -28,50 +35,66 @@ export function err(error?: unknown): Err {
 }
 
 export abstract class Result<T = unknown, E = unknown> {
-    static try<T, E = unknown>(fn: SyncFn<T>): Result<T, E>;
-    static try<T>(fn: SyncFn<T>, onThrow: ErrorConstructor): Result<T, Error>;
-    static try<T, E>(fn: SyncFn<T>, onThrow: (error: unknown) => E): Result<T, E>;
-    static try<T, E = unknown>(fn: AsyncFn<T>): Promise<Result<Awaited<T>, E>>;
-    static try<T>(
-        fn: AsyncFn<T>,
-        onThrowOrReject: ErrorConstructor,
+    static fromValue<T, E = unknown>(data: Promise<T>): Promise<Result<Awaited<T>, E>>;
+    static fromValue<T>(
+        data: Promise<T>,
+        onThrow: ErrorConstructor,
     ): Promise<Result<Awaited<T>, Error>>;
-    static try<T, E>(
-        fn: AsyncFn<T>,
-        onThrowOrReject: (error: unknown) => E,
-    ): Promise<Result<Awaited<T>, E>>;
-    static try<T, E = unknown>(data: Promise<T>): Promise<Result<Awaited<T>, E>>;
-    static try<T>(data: Promise<T>, onThrow: ErrorConstructor): Promise<Result<Awaited<T>, Error>>;
-    static try<T, E>(
+    static fromValue<T, E>(
         data: Promise<T>,
         onThrow: (error: unknown) => E,
     ): Promise<Result<Awaited<T>, E>>;
-    static try<T, E = unknown>(data: T): Result<T, E>;
-    static try<T>(data: T, onThrow: ErrorConstructor): Result<T, Error>;
-    static try<T, E>(data: T, onThrow: (error: unknown) => E): Result<T, E>;
-    static try(fnOrData: unknown, onThrow?: Fn): any {
-        const transformError = (error: unknown) => {
-            if (!onThrow) return error;
-            if (onThrow === Error) return normalizeError(error);
 
-            return onThrow(error);
-        };
+    static fromValue<T, E = unknown>(data: T): Result<T, E>;
+    static fromValue<T>(data: T, onThrow: ErrorConstructor): Result<T, Error>;
+    static fromValue<T, E>(data: T, onThrow: (error: unknown) => E): Result<T, E>;
 
+    static fromValue(data: unknown, onThrow?: Fn): any {
         try {
-            let data = fnOrData;
-
-            if (isFunction(fnOrData)) {
-                data = fnOrData();
+            if (!isPromiseLike(data)) {
+                return ok(data);
             }
-
-            if (!isPromiseLike(data)) return ok(data);
 
             return data.then(
                 value => ok(value),
-                error => Err.fromError(transformError(error), Result.try),
+                error => Err.fromError(transformError(error, onThrow), Result.fromValue),
             );
         } catch (error) {
-            return Err.fromError(transformError(error), Result.try);
+            return Err.fromError(transformError(error, onThrow), Result.fromValue);
+        }
+    }
+
+    static fromCallable<T, E = unknown>(callable: SyncFn<T>): Result<T, E>;
+    static fromCallable<T>(callable: SyncFn<T>, onThrow: ErrorConstructor): Result<T, Error>;
+    static fromCallable<T, E>(callable: SyncFn<T>, onThrow: (error: unknown) => E): Result<T, E>;
+
+    static fromCallable<T, E = unknown>(callable: AsyncFn<T>): Promise<Result<Awaited<T>, E>>;
+    static fromCallable<T>(
+        callable: AsyncFn<T>,
+        onThrowOrReject: ErrorConstructor,
+    ): Promise<Result<Awaited<T>, Error>>;
+    static fromCallable<T, E>(
+        callable: AsyncFn<T>,
+        onThrowOrReject: (error: unknown) => E,
+    ): Promise<Result<Awaited<T>, E>>;
+
+    static fromCallable(callable: unknown, onThrow?: Fn): any {
+        try {
+            if (!isFunction(callable)) {
+                return ok(callable);
+            }
+
+            const data = callable();
+            if (!isPromiseLike(data)) {
+                return ok(data);
+            }
+
+            return data.then(
+                value => ok(value),
+                error => Err.fromError(transformError(error, onThrow), Result.fromCallable),
+            );
+        } catch (error) {
+            return Err.fromError(transformError(error, onThrow), Result.fromCallable);
         }
     }
 
