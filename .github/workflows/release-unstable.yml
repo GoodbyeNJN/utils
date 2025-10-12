@@ -43,7 +43,6 @@ jobs:
           git fetch origin pkg || git checkout -b pkg
           git checkout pkg
           git checkout master -- LICENSE README.md package.json
-          git rm -rf --cached .
           pnpm version "$(pnpm pkg get version | tr -d '"')-$(echo ${{ github.sha }} | cut -c1-7)" --no-git-tag-version
           git add .
           if ! git diff --staged --quiet; then
