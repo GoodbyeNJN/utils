@@ -41,8 +41,10 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git fetch origin pkg || git checkout -b pkg
+          cp -r dist node_modules/dist
           git checkout pkg
           git checkout master -- LICENSE README.md package.json
+          rm -rf dist && cp -r node_modules/dist ./
           pnpm version "$(pnpm pkg get version | tr -d '"')-$(echo ${{ github.sha }} | cut -c1-7)" --no-git-tag-version
           git add .
           if ! git diff --staged --quiet; then
