@@ -37,7 +37,9 @@ export async function $(cmd: string | TemplateStringsArray, ...values: any[]) {
 
         return await promise;
     };
-    const result = (await Result.try(fn, Error)).context(`Failed to execute command: ${cmd}`);
+    const result = (await Result.fromCallable(fn, Error)).context(
+        `Failed to execute command: ${cmd}`,
+    );
 
     return result;
 }

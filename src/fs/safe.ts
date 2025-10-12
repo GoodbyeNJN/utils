@@ -48,7 +48,9 @@ export const appendFile = async (
         const fn = async () => {
             await fsp.appendFile(path, newline ? `\n${data}` : data, parseEncodingOptions(options));
         };
-        const result = (await Result.try(fn, Error)).context(`Failed to append file: ${path}`);
+        const result = (await Result.fromCallable(fn, Error)).context(
+            `Failed to append file: ${path}`,
+        );
 
         return result;
     });
@@ -66,7 +68,7 @@ export const appendFileSync = (
         const fn = () => {
             fs.appendFileSync(path, newline ? `\n${data}` : data, parseEncodingOptions(options));
         };
-        const result = Result.try(fn, Error).context(`Failed to append file: ${path}`);
+        const result = Result.fromCallable(fn, Error).context(`Failed to append file: ${path}`);
 
         return result;
     });
@@ -81,7 +83,7 @@ export const cp = async (
     const fn = async () => {
         await fsp.cp(source, destination, { recursive });
     };
-    const result = (await Result.try(fn, Error)).context(
+    const result = (await Result.fromCallable(fn, Error)).context(
         `Failed to copy path: ${source} to ${destination}`,
     );
 
@@ -98,7 +100,7 @@ export const cpSync = (
     const fn = () => {
         fs.cpSync(source, destination, { recursive });
     };
-    const result = Result.try(fn, Error).context(
+    const result = Result.fromCallable(fn, Error).context(
         `Failed to copy path: ${source} to ${destination}`,
     );
 
@@ -111,7 +113,7 @@ export const exists = async (path: PathLike): Promise<Result<true, Error>> => {
 
         return true as const;
     };
-    const result = (await Result.try(fn, Error)).context(
+    const result = (await Result.fromCallable(fn, Error)).context(
         `Failed to check exists for path: ${path}`,
     );
 
@@ -124,7 +126,9 @@ export const existsSync = (path: PathLike): Result<true, Error> => {
 
         return true as const;
     };
-    const result = Result.try(fn, Error).context(`Failed to check exists for path: ${path}`);
+    const result = Result.fromCallable(fn, Error).context(
+        `Failed to check exists for path: ${path}`,
+    );
 
     return result;
 };
@@ -140,7 +144,9 @@ export const mkdir = async (
     const fn = async () => {
         await fsp.mkdir(path, { recursive });
     };
-    const result = (await Result.try(fn, Error)).context(`Failed to create directory: ${path}`);
+    const result = (await Result.fromCallable(fn, Error)).context(
+        `Failed to create directory: ${path}`,
+    );
 
     return result;
 };
@@ -153,7 +159,7 @@ export const mkdirSync = (path: PathLike, options?: MkdirOptions): Result<void, 
     const fn = () => {
         fs.mkdirSync(path, { recursive });
     };
-    const result = Result.try(fn, Error).context(`Failed to create directory: ${path}`);
+    const result = Result.fromCallable(fn, Error).context(`Failed to create directory: ${path}`);
 
     return result;
 };
@@ -173,7 +179,9 @@ export async function readFile(path: any, options?: any): Promise<Result<any, Er
         const fn = async () => {
             return await fsp.readFile(path, parseEncodingOptions(options));
         };
-        const result = (await Result.try(fn, Error)).context(`Failed to read file: ${path}`);
+        const result = (await Result.fromCallable(fn, Error)).context(
+            `Failed to read file: ${path}`,
+        );
 
         return result;
     });
@@ -191,7 +199,7 @@ export function readFileSync(path: any, options?: any): Result<any, Error> {
         const fn = () => {
             return fs.readFileSync(path, parseEncodingOptions(options));
         };
-        const result = Result.try(fn, Error).context(`Failed to read file: ${path}`);
+        const result = Result.fromCallable(fn, Error).context(`Failed to read file: ${path}`);
 
         return result;
     });
@@ -222,7 +230,7 @@ export const readFileByLine = async (
 
             return reader[Symbol.asyncIterator]();
         };
-        const result = Result.try(fn, Error).context(`Failed to read file: ${path}`);
+        const result = Result.fromCallable(fn, Error).context(`Failed to read file: ${path}`);
 
         return result;
     });
@@ -259,7 +267,7 @@ export const rm = async (path: PathLike, options?: RmOptions): Promise<Result<vo
     const fn = async () => {
         await fsp.rm(path, { force, recursive });
     };
-    const result = (await Result.try(fn, Error)).context(`Failed to remove path: ${path}`);
+    const result = (await Result.fromCallable(fn, Error)).context(`Failed to remove path: ${path}`);
 
     return result;
 };
@@ -270,7 +278,7 @@ export const rmSync = (path: PathLike, options?: RmOptions): Result<void, Error>
     const fn = () => {
         fs.rmSync(path, { force, recursive });
     };
-    const result = Result.try(fn, Error).context(`Failed to remove path: ${path}`);
+    const result = Result.fromCallable(fn, Error).context(`Failed to remove path: ${path}`);
 
     return result;
 };
@@ -286,7 +294,9 @@ export const writeFile = async (
         const fn = async () => {
             await fsp.writeFile(path, data, parseEncodingOptions(options));
         };
-        const result = (await Result.try(fn, Error)).context(`Failed to write file: ${path}`);
+        const result = (await Result.fromCallable(fn, Error)).context(
+            `Failed to write file: ${path}`,
+        );
 
         return result;
     });
@@ -299,7 +309,7 @@ export const writeFileSync = (
     const fn = () => {
         fs.writeFileSync(path, data, parseEncodingOptions(options));
     };
-    const result = Result.try(fn, Error).context(`Failed to write file: ${path}`);
+    const result = Result.fromCallable(fn, Error).context(`Failed to write file: ${path}`);
 
     return result;
 };

@@ -13,7 +13,7 @@ const safeParse = <T = any>(
     const fn = () => {
         return JSON.parse(text, reviver);
     };
-    const result = Result.try<T>(fn, Error).context(
+    const result = Result.fromCallable<T>(fn, Error).context(
         `Failed to parse JSON string: ${text.length > 100 ? text.slice(0, 100) + "..." : text}`,
     );
 
