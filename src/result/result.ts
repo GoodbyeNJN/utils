@@ -100,7 +100,7 @@ export abstract class Result<T = unknown, E = unknown> {
 
     static all<T extends NonEmptyTuple<Result>>(results: T): ResultAll<T>;
     static all<T extends readonly Result[]>(results: T): ResultAll<T>;
-    static all(results: Result[]) {
+    static all(results: Result[]): ResultAll<Result[]> {
         let acc: Result<unknown[]> = ok([]);
 
         for (const result of results) {
@@ -117,7 +117,7 @@ export abstract class Result<T = unknown, E = unknown> {
 
     static allSettled<T extends NonEmptyTuple<Result>>(results: T): ResultAllSettled<T>;
     static allSettled<T extends readonly Result[]>(results: T): ResultAllSettled<T>;
-    static allSettled(results: Result[]) {
+    static allSettled(results: Result[]): ResultAllSettled<Result[]> {
         let acc: Result<unknown[], unknown[]> = ok([]);
 
         for (const result of results) {
@@ -194,7 +194,7 @@ export abstract class Result<T = unknown, E = unknown> {
      */
     and<R extends Result<unknown, E>>(result: R): Result<InferOkType<R>, E>;
     and<U>(result: Result<U, E>): Result<U, E>;
-    and(result: Result) {
+    and(result: Result): Result {
         return this.isErr() ? this : result;
     }
 
@@ -203,7 +203,7 @@ export abstract class Result<T = unknown, E = unknown> {
      */
     andThen<R extends Result>(fn: (value: T) => R): Result<InferOkType<R>, InferErrType<R> | E>;
     andThen<U, F>(fn: (value: T) => Result<U, F>): Result<U, E | F>;
-    andThen(fn: Fn) {
+    andThen(fn: Fn): Result {
         return this.isErr() ? this : fn(this.value);
     }
 
@@ -212,7 +212,7 @@ export abstract class Result<T = unknown, E = unknown> {
      */
     or<R extends Result<T, unknown>>(result: R): Result<T, InferErrType<R>>;
     or<F>(result: Result<T, F>): Result<T, F>;
-    or(result: Result) {
+    or(result: Result): Result {
         return this.isOk() ? this : result;
     }
 
@@ -221,7 +221,7 @@ export abstract class Result<T = unknown, E = unknown> {
      */
     orElse<R extends Result>(fn: (error: E) => R): Result<InferOkType<R> | T, InferErrType<R>>;
     orElse<U, F>(fn: (error: E) => Result<U, F>): Result<T | U, F>;
-    orElse(fn: Fn) {
+    orElse(fn: Fn): Result {
         return this.isOk() ? this : fn(this.error);
     }
 
