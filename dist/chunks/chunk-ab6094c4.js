@@ -445,9 +445,9 @@ const configure = import_safe_stable_stringify.configure;
 //#endregion
 //#region src/result/helper.ts
 function safeTry(body, self) {
-	const next = body.call(self).next();
-	if (isPromiseLike(next)) return next.then((res) => res.value);
-	return next.value;
+	const yieldErr = body.call(self).next();
+	if (isPromiseLike(yieldErr)) return yieldErr.then((res) => res.value);
+	return yieldErr.value;
 }
 
 //#endregion
