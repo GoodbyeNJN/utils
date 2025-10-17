@@ -30,10 +30,10 @@ export function safeTry<YieldErr extends Err, GeneratorReturnResult extends Resu
     >
 >;
 export function safeTry(body: Fn<Generator | AsyncGenerator>, self?: any): any {
-    const next = body.call(self).next();
-    if (isPromiseLike(next)) {
-        return next.then(res => res.value);
+    const yieldErr = body.call(self).next();
+    if (isPromiseLike(yieldErr)) {
+        return yieldErr.then(res => res.value);
     }
 
-    return next.value;
+    return yieldErr.value;
 }
