@@ -45,7 +45,7 @@ declare function isDynamicPattern(pattern: string, options?: {
 }): boolean;
 //#endregion
 //#region src/index.d.ts
-interface GlobOptions {
+interface GlobOptions$1 {
   /**
   * Whether to return absolute paths. Disable to have relative paths.
   * @default false
@@ -146,8 +146,16 @@ type FileSystemAdapter = Partial<FSLike>;
 */
 //#endregion
 //#region src/fs/glob.d.ts
-declare const glob: (patterns: string | readonly string[], options?: Omit<GlobOptions, "patterns">) => Promise<string[]>;
-declare const globSync: (patterns: string | readonly string[], options?: Omit<GlobOptions, "patterns">) => string[];
+interface GlobOptions extends Omit<GlobOptions$1, "patterns"> {
+  /**
+   * Provide patterns as the first argument instead.
+   */
+  patterns: string | string[];
+}
+declare function glob(patterns: string | string[], options?: Omit<GlobOptions, "patterns">): Promise<string[]>;
+declare function glob(options: GlobOptions): Promise<string[]>;
+declare function globSync(patterns: string | string[], options?: Omit<GlobOptions, "patterns">): string[];
+declare function globSync(options: GlobOptions): string[];
 //#endregion
 //#region src/fs/types.d.ts
 type PathLike = string | URL;

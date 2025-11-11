@@ -1,5 +1,5 @@
 import { Result, __commonJS, __toESM, err, ok, removePrefix, safeParse, safeTry, stringify } from "./chunks/chunk-87c18507.js";
-import { e$3 as e } from "./chunks/chunk-a14ca88a.js";
+import { e$3 as e, o$3 as o, t$6 as t, y$4 as y } from "./chunks/chunk-a14ca88a.js";
 import * as nativeFs$1 from "fs";
 import nativeFs from "fs";
 import path, { basename, dirname, normalize, posix, relative, resolve, sep } from "path";
@@ -1453,7 +1453,7 @@ var require_parse = /* @__PURE__ */ __commonJS({ "node_modules/.pnpm/picomatch@4
 					brace.value = brace.output = "\\{";
 					value = output = "\\}";
 					state.output = out;
-					for (const t of toks) state.output += t.output || t.value;
+					for (const t$1 of toks) state.output += t$1.output || t$1.value;
 				}
 				push({
 					type: "brace",
@@ -2494,14 +2494,27 @@ function globSync$1(patternsOrOptions, options) {
 
 //#endregion
 //#region src/fs/glob.ts
-const glob = (patterns, options) => glob$1(patterns, {
-	expandDirectories: false,
-	...options
-});
-const globSync = (patterns, options = {}) => globSync$1(patterns, {
-	expandDirectories: false,
-	...options
-});
+const normalizeArgs = (patternsOrOptions, maybeOptions) => {
+	const patternsAsArgument = t(patternsOrOptions) || o(patternsOrOptions);
+	return {
+		patterns: patternsAsArgument ? patternsOrOptions : patternsOrOptions.patterns,
+		options: patternsAsArgument ? maybeOptions || {} : y(patternsOrOptions, ["patterns"])
+	};
+};
+function glob(...args) {
+	const { patterns, options } = normalizeArgs(...args);
+	return glob$1(patterns, {
+		expandDirectories: false,
+		...options
+	});
+}
+function globSync(...args) {
+	const { patterns, options } = normalizeArgs(...args);
+	return globSync$1(patterns, {
+		expandDirectories: false,
+		...options
+	});
+}
 
 //#endregion
 //#region src/fs/safe.ts
