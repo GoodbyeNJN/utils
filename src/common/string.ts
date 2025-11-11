@@ -68,6 +68,9 @@ export const toForwardSlash = (str: string) => str.replace(/\\/g, "/");
 export const joinWithSlash = (...paths: string[]) => join("/", ...paths);
 export const splitWithSlash = (path: string) => split("/", path);
 
+export const concatTemplateStrings = (template: TemplateStringsArray, values: any[]) =>
+    template.reduce((acc, part, index) => acc + part + (values[index] ?? ""), "");
+
 /**
  * @example
  * ```ts
@@ -81,9 +84,7 @@ export const splitWithSlash = (path: string) => split("/", path);
 export function unindent(template: string): string;
 export function unindent(template: TemplateStringsArray, ...values: any[]): string;
 export function unindent(template: string | TemplateStringsArray, ...values: any[]) {
-    const string = isString(template)
-        ? template
-        : template.reduce((acc, part, index) => acc + part + (values[index] ?? ""), "");
+    const string = isString(template) ? template : concatTemplateStrings(template, values);
     const lines = string.split("\n");
     const whitespaceLines = lines.map(line => REGEXP_WHITESPACE.test(line));
 

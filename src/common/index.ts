@@ -13,6 +13,7 @@ export { $, quoteShellArg } from "./shell";
 export {
     addPrefix,
     addSuffix,
+    concatTemplateStrings,
     join,
     joinWithSlash,
     removePrefix,
