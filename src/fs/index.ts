@@ -1,3 +1,4 @@
+export { convertPathToPattern, escapePath, glob, globSync, isDynamicPattern } from "./glob";
 export {
     appendFile as safeAppendFile,
     appendFileSync as safeAppendFileSync,
@@ -42,6 +43,7 @@ export {
 } from "./unsafe";
 export { VFile } from "./vfile";
 
+export type { FileSystemAdapter, GlobOptions } from "./glob";
 export type {
     AppendFileOptions,
     BufferEncodingOptions,
