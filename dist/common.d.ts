@@ -81,11 +81,15 @@ declare const createLock: () => {
 declare const PromiseWithResolvers: <T>() => PromiseWithResolvers<T>;
 //#endregion
 //#region src/common/shell.d.ts
+interface ShellExecOptions {
+  onStdout?: "ignore" | "print" | ((chunk: string) => void);
+  onStderr?: "ignore" | "print" | ((chunk: string) => void);
+}
 interface ShellExecResult {
   stdout: string;
   stderr: string;
 }
-declare function $(cmd: string): Promise<Result<ShellExecResult, Error>>;
+declare function $(cmd: string, options?: ShellExecOptions): Promise<Result<ShellExecResult, Error>>;
 declare function $(cmd: TemplateStringsArray, ...values: any[]): Promise<Result<ShellExecResult, Error>>;
 declare const quoteShellArg: (arg: string) => string;
 //#endregion
@@ -99,6 +103,7 @@ declare const split: (separator: string, path: string) => string[];
 declare const toForwardSlash: (str: string) => string;
 declare const joinWithSlash: (...paths: string[]) => string;
 declare const splitWithSlash: (path: string) => string[];
+declare const concatTemplateStrings: (template: TemplateStringsArray, values: any[]) => string;
 /**
  * @example
  * ```ts
@@ -154,4 +159,4 @@ type ThrottleOptions = Options;
 declare const debounce: <T extends Fn>(fn: T, wait?: number, options?: Options) => WrappedFn<T>;
 declare const throttle: <T extends Fn>(fn: T, wait?: number, options?: Options) => WrappedFn<T>;
 //#endregion
-export { $, type DebounceOptions, type DebouncedFn, PromiseWithResolvers, type ThrottleOptions, type ThrottledFn, addPrefix, addSuffix, createLock, createSingleton, debounce, errorToMessage, getErrorMessage, join, joinWithSlash, linear, normalizeError, unsafeParse as parse, parseKeyValuePairs, parseValueToBoolean, quoteShellArg, removePrefix, removeSuffix, safeParse, scale, sleep, split, splitWithSlash, stringify, template, throttle, toForwardSlash, unindent };
+export { $, type DebounceOptions, type DebouncedFn, PromiseWithResolvers, type ThrottleOptions, type ThrottledFn, addPrefix, addSuffix, concatTemplateStrings, createLock, createSingleton, debounce, errorToMessage, getErrorMessage, join, joinWithSlash, linear, normalizeError, unsafeParse as parse, parseKeyValuePairs, parseValueToBoolean, quoteShellArg, removePrefix, removeSuffix, safeParse, scale, sleep, split, splitWithSlash, stringify, template, throttle, toForwardSlash, unindent };

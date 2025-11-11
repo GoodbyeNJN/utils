@@ -1,4 +1,4 @@
-import { isPromiseLike, l$1 as l, o$5 as o, r$4 as r, t$4 as t, t$6 as t$1, u } from "./chunk-a14ca88a.js";
+import { isPromiseLike, l$1 as l, o$5 as o, r$4 as r, t$4 as t$1, t$6 as t, u } from "./chunk-a14ca88a.js";
 
 //#region rolldown:runtime
 var __create = Object.create;
@@ -475,7 +475,7 @@ var Result = class Result {
 	}
 	static fromCallable(callable, onThrow) {
 		try {
-			if (!t(callable)) return ok(callable);
+			if (!t$1(callable)) return ok(callable);
 			const data = callable();
 			if (!isPromiseLike(data)) return ok(data);
 			return data.then((value) => ok(value), (error) => Err.fromError(transformError(error, onThrow), Result.fromCallable));
@@ -670,7 +670,7 @@ var Err = class Err extends Result {
 	format(presetOrOptions) {
 		const options = this.normalize(presetOrOptions);
 		const message = this.toError().message;
-		const contexts = this["contexts"].slice().toReversed().map((ctx) => t(ctx) ? ctx() : ctx);
+		const contexts = this["contexts"].slice().toReversed().map((ctx) => t$1(ctx) ? ctx() : ctx);
 		const stacks = this.stack?.split("\n").map((line) => line.trim()).filter(Boolean) || ["<no stack trace>"];
 		const lines = [`Error: ${contexts.length > 0 ? contexts.at(0) : message}`];
 		if (options.context) lines.push("", "Caused by:", contexts.slice(1).concat(message).map((line, index) => `    ${index}: ${line}`));
@@ -708,7 +708,7 @@ var Err = class Err extends Result {
 			context: true,
 			stack: false
 		};
-		if (t$1(presetOrOptions)) {
+		if (t(presetOrOptions)) {
 			options.context = presetOrOptions === "full" || presetOrOptions === "standard";
 			options.stack = presetOrOptions === "full";
 		} else if (o(presetOrOptions)) {
@@ -739,7 +739,7 @@ const unsafeParse = (text, reviver) => {
 //#region src/common/error.ts
 const normalizeError = (error) => {
 	if (error instanceof Error) return error;
-	if (o(error) && "toError" in error && t(error.toError)) return error.toError();
+	if (o(error) && "toError" in error && t$1(error.toError)) return error.toError();
 	return new Error(stringify(error));
 };
 const getErrorMessage = (error, message = "Unknown error") => error instanceof Error ? error.message : message;
@@ -913,7 +913,7 @@ const createLock = () => {
 	};
 };
 const PromiseWithResolvers = () => {
-	if (t(Promise.withResolvers)) return Promise.withResolvers();
+	if (t$1(Promise.withResolvers)) return Promise.withResolvers();
 	let resolve;
 	let reject;
 	return {
@@ -924,34 +924,6 @@ const PromiseWithResolvers = () => {
 		resolve,
 		reject
 	};
-};
-
-//#endregion
-//#region src/common/shell.ts
-const REGEXP_NULL_CHAR = /\x00+/g;
-const REGEXP_SAFE_CHARS = /^[A-Za-z0-9,:=_./-]+$/;
-const REGEXP_SINGLE_QUOTES = /'+/g;
-async function $(cmd, ...values) {
-	const { exec } = await import("node:child_process");
-	const command = t$1(cmd) ? cmd : cmd.reduce((acc, part, index) => acc + part + (values[index] ?? ""), "");
-	const fn = async () => {
-		const { promise, reject, resolve } = PromiseWithResolvers();
-		exec(command, (error, stdout, stderr) => {
-			if (error) reject(error);
-			else resolve({
-				stdout: stdout.trim(),
-				stderr: stderr.trim()
-			});
-		});
-		return await promise;
-	};
-	return (await Result.fromCallable(fn, Error)).context(`Failed to execute command: ${cmd}`);
-}
-const quoteShellArg = (arg) => {
-	if (!arg) return "''";
-	const cleaned = String(arg).replace(REGEXP_NULL_CHAR, "");
-	if (REGEXP_SAFE_CHARS.exec(cleaned)?.[0].length === cleaned.length) return cleaned;
-	return `'${cleaned.replace(REGEXP_SINGLE_QUOTES, (matched) => matched.length === 1 ? `'\\''` : `'"${matched}"'`)}'`.replace(/^''/, "").replace(/''$/, "");
 };
 
 //#endregion
@@ -994,8 +966,9 @@ const split = (separator, path) => {
 const toForwardSlash = (str) => str.replace(/\\/g, "/");
 const joinWithSlash = (...paths) => join("/", ...paths);
 const splitWithSlash = (path) => split("/", path);
+const concatTemplateStrings = (template$1, values) => template$1.reduce((acc, part, index) => acc + part + (values[index] ?? ""), "");
 function unindent(template$1, ...values) {
-	const lines = (t$1(template$1) ? template$1 : template$1.reduce((acc, part, index) => acc + part + (values[index] ?? ""), "")).split("\n");
+	const lines = (t(template$1) ? template$1 : concatTemplateStrings(template$1, values)).split("\n");
 	const whitespaceLines = lines.map((line) => REGEXP_WHITESPACE.test(line));
 	const commonIndent = lines.reduce((min, line, idx) => {
 		if (whitespaceLines[idx]) return min;
@@ -1012,13 +985,67 @@ function template(str, ...args) {
 	const [firstArg, fallback] = args;
 	if (r(firstArg)) {
 		const mapping = firstArg;
-		return str.replace(/\{(\w+)\}/g, (_, key) => mapping[key] || ((t(fallback) ? fallback(key) : fallback) ?? key));
+		return str.replace(/\{(\w+)\}/g, (_, key) => mapping[key] || ((t$1(fallback) ? fallback(key) : fallback) ?? key));
 	} else return str.replace(/\{(\d+)\}/g, (_, key) => {
 		const index = Number(key);
 		if (Number.isNaN(index)) return key;
 		return args[index];
 	});
 }
+
+//#endregion
+//#region src/common/shell.ts
+const REGEXP_NULL_CHAR = /\x00+/g;
+const REGEXP_SAFE_CHARS = /^[A-Za-z0-9,:=_./-]+$/;
+const REGEXP_SINGLE_QUOTES = /'+/g;
+const noop = () => {};
+const pipeToStdout = (chunk) => process.stdout.write(chunk);
+const pipeToStderr = (chunk) => process.stderr.write(chunk);
+async function $(cmd, ...values) {
+	const { spawn } = await import("node:child_process");
+	const [command, options] = t(cmd) ? [cmd, values[0] || {}] : [concatTemplateStrings(cmd, values), {}];
+	const onStdout = options.onStdout === "ignore" ? noop : options.onStdout === "print" ? pipeToStdout : options.onStdout || noop;
+	const onStderr = options.onStderr === "ignore" ? noop : options.onStderr === "print" ? pipeToStderr : options.onStderr || noop;
+	const fn = async () => {
+		const { promise, reject, resolve } = PromiseWithResolvers();
+		const child = spawn(command, {
+			shell: true,
+			stdio: [
+				"inherit",
+				"pipe",
+				"pipe"
+			]
+		});
+		let stdout = "";
+		let stderr = "";
+		child.stdout?.on("data", (data) => {
+			const chunk = data.toString();
+			stdout += chunk;
+			onStdout(chunk);
+		});
+		child.stderr?.on("data", (data) => {
+			const chunk = data.toString();
+			stderr += chunk;
+			onStderr(chunk);
+		});
+		child.on("error", reject);
+		child.on("close", (code) => {
+			if (code === 0) resolve({
+				stdout: stdout.trim(),
+				stderr: stderr.trim()
+			});
+			else reject(/* @__PURE__ */ new Error(`Command exited with code ${code}`));
+		});
+		return await promise;
+	};
+	return (await Result.fromCallable(fn, Error)).context(`Failed to execute command: ${cmd}`);
+}
+const quoteShellArg = (arg) => {
+	if (!arg) return "''";
+	const cleaned = String(arg).replace(REGEXP_NULL_CHAR, "");
+	if (REGEXP_SAFE_CHARS.exec(cleaned)?.[0].length === cleaned.length) return cleaned;
+	return `'${cleaned.replace(REGEXP_SINGLE_QUOTES, (matched) => matched.length === 1 ? `'\\''` : `'"${matched}"'`)}'`.replace(/^''/, "").replace(/''$/, "");
+};
 
 //#endregion
 //#region src/common/throttle.ts
@@ -1055,4 +1082,4 @@ const throttle = (fn, wait = 0, options = {}) => {
 };
 
 //#endregion
-export { $, Err, Ok, PromiseWithResolvers, Result, __commonJS, __toESM, addPrefix, addSuffix, createLock, createSingleton, debounce, err, errorToMessage, getErrorMessage, join, joinWithSlash, linear, normalizeError, ok, parseKeyValuePairs, parseValueToBoolean, quoteShellArg, removePrefix, removeSuffix, safeParse, safeTry, scale, sleep, split, splitWithSlash, stringify, template, throttle, toForwardSlash, unindent, unsafeParse };
+export { $, Err, Ok, PromiseWithResolvers, Result, __commonJS, __toESM, addPrefix, addSuffix, concatTemplateStrings, createLock, createSingleton, debounce, err, errorToMessage, getErrorMessage, join, joinWithSlash, linear, normalizeError, ok, parseKeyValuePairs, parseValueToBoolean, quoteShellArg, removePrefix, removeSuffix, safeParse, safeTry, scale, sleep, split, splitWithSlash, stringify, template, throttle, toForwardSlash, unindent, unsafeParse };
