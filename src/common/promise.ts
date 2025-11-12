@@ -2,13 +2,25 @@ import { isFunction } from "@/remeda";
 
 import type { AsyncFn, Fn } from "@/types";
 
+export interface Singleton<T> {
+    (): Promise<T>;
+    reset: () => Promise<void>;
+}
+
+export interface Lock {
+    run: <T = void>(fn: AsyncFn<T>) => Promise<T>;
+    wait: () => Promise<void>;
+    isWaiting: () => boolean;
+    clear: () => void;
+}
+
 export interface PromiseWithResolvers<T> {
     promise: Promise<T>;
     resolve: (value: T | PromiseLike<T>) => void;
     reject: (reason?: any) => void;
 }
 
-export const sleep = (ms: number, callback?: Fn) =>
+export const sleep = (ms: number, callback?: Fn): Promise<void> =>
     new Promise<void>(resolve => {
         setTimeout(async () => {
             await callback?.();
@@ -17,10 +29,10 @@ export const sleep = (ms: number, callback?: Fn) =>
         }, ms);
     });
 
-export const createSingleton = <T>(fn: AsyncFn<T>) => {
+export const createSingleton = <T>(fn: AsyncFn<T>): Singleton<T> => {
     let p: Promise<T> | undefined;
 
-    const wrapper = () => {
+    const wrapper: Singleton<T> = () => {
         if (!p) {
             p = fn();
         }
@@ -53,11 +65,11 @@ export const createSingleton = <T>(fn: AsyncFn<T>) => {
  * await lock.wait() // it will wait all tasking finished
  * ```
  */
-export const createLock = () => {
+export const createLock = (): Lock => {
     const locks: Promise<any>[] = [];
 
     return {
-        async run<T = void>(fn: AsyncFn<T>): Promise<T> {
+        async run(fn) {
             const p = fn();
             locks.push(p);
 
@@ -71,7 +83,7 @@ export const createLock = () => {
             }
         },
 
-        async wait(): Promise<void> {
+        async wait() {
             await Promise.allSettled(locks);
         },
 
@@ -85,7 +97,7 @@ export const createLock = () => {
     };
 };
 
-export const PromiseWithResolvers = <T>(): PromiseWithResolvers<T> => {
+export const createPromiseWithResolvers = <T>(): PromiseWithResolvers<T> => {
     if (isFunction(Promise.withResolvers)) {
         return Promise.withResolvers<T>();
     }

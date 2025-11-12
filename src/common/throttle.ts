@@ -47,13 +47,21 @@ const wrap = <T extends Fn>(fn: T, wait: number, options: Required<Options>): Wr
     return wrapped;
 };
 
-export const debounce = <T extends Fn>(fn: T, wait = 0, options: Options = {}) => {
+export const debounce = <T extends Fn>(
+    fn: T,
+    wait = 0,
+    options: DebounceOptions = {},
+): DebouncedFn<T> => {
     const { leading = false, trailing = true } = options;
 
     return wrap(fn, wait, { leading, trailing });
 };
 
-export const throttle = <T extends Fn>(fn: T, wait = 0, options: Options = {}) => {
+export const throttle = <T extends Fn>(
+    fn: T,
+    wait = 0,
+    options: ThrottleOptions = {},
+): ThrottledFn<T> => {
     const { leading = true, trailing = true } = options;
 
     return wrap(fn, wait, { leading, trailing });

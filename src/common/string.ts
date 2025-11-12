@@ -2,7 +2,7 @@ import { isFunction, isPlainObject, isString } from "@/remeda";
 
 const REGEXP_WHITESPACE = /^\s*$/;
 
-export const addPrefix = (prefix: string, str: string) => {
+export const addPrefix = (prefix: string, str: string): string => {
     if (str.startsWith(prefix)) {
         return str;
     }
@@ -10,7 +10,7 @@ export const addPrefix = (prefix: string, str: string) => {
     return prefix + str;
 };
 
-export const addSuffix = (suffix: string, str: string) => {
+export const addSuffix = (suffix: string, str: string): string => {
     if (str.endsWith(suffix)) {
         return str;
     }
@@ -18,7 +18,7 @@ export const addSuffix = (suffix: string, str: string) => {
     return str + suffix;
 };
 
-export const removePrefix = (prefix: string, str: string) => {
+export const removePrefix = (prefix: string, str: string): string => {
     if (!str.startsWith(prefix)) {
         return str;
     }
@@ -26,7 +26,7 @@ export const removePrefix = (prefix: string, str: string) => {
     return str.slice(prefix.length);
 };
 
-export const removeSuffix = (suffix: string, str: string) => {
+export const removeSuffix = (suffix: string, str: string): string => {
     if (!str.endsWith(suffix)) {
         return str;
     }
@@ -34,7 +34,7 @@ export const removeSuffix = (suffix: string, str: string) => {
     return str.slice(0, -suffix.length);
 };
 
-export const join = (separator: string, ...paths: string[]) => {
+export const join = (separator: string, ...paths: string[]): string => {
     let pathname = "";
     for (const path of paths) {
         const part = removeSuffix(separator, removePrefix(separator, path));
@@ -46,7 +46,7 @@ export const join = (separator: string, ...paths: string[]) => {
 
     return pathname;
 };
-export const split = (separator: string, path: string) => {
+export const split = (separator: string, path: string): string[] => {
     const paths = [];
 
     let part = "";
@@ -64,11 +64,11 @@ export const split = (separator: string, path: string) => {
     return paths;
 };
 
-export const toForwardSlash = (str: string) => str.replace(/\\/g, "/");
-export const joinWithSlash = (...paths: string[]) => join("/", ...paths);
-export const splitWithSlash = (path: string) => split("/", path);
+export const toForwardSlash = (str: string): string => str.replace(/\\/g, "/");
+export const joinWithSlash = (...paths: string[]): string => join("/", ...paths);
+export const splitWithSlash = (path: string): string[] => split("/", path);
 
-export const concatTemplateStrings = (template: TemplateStringsArray, values: any[]) =>
+export const concatTemplateStrings = (template: TemplateStringsArray, values: any[]): string =>
     template.reduce((acc, part, index) => acc + part + (values[index] ?? ""), "");
 
 /**
@@ -83,7 +83,7 @@ export const concatTemplateStrings = (template: TemplateStringsArray, values: an
  */
 export function unindent(template: string): string;
 export function unindent(template: TemplateStringsArray, ...values: any[]): string;
-export function unindent(template: string | TemplateStringsArray, ...values: any[]) {
+export function unindent(template: string | TemplateStringsArray, ...values: any[]): string {
     const string = isString(template) ? template : concatTemplateStrings(template, values);
     const lines = string.split("\n");
     const whitespaceLines = lines.map(line => REGEXP_WHITESPACE.test(line));

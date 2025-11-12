@@ -1,7 +1,7 @@
 import { isString } from "@/remeda";
 import { Result } from "@/result";
 
-import { PromiseWithResolvers } from "./promise";
+import { createPromiseWithResolvers } from "./promise";
 import { concatTemplateStrings } from "./string";
 
 export interface ShellExecOptions {
@@ -30,7 +30,10 @@ export async function $(
     cmd: TemplateStringsArray,
     ...values: any[]
 ): Promise<Result<ShellExecResult, Error>>;
-export async function $(cmd: string | TemplateStringsArray, ...values: any[]) {
+export async function $(
+    cmd: string | TemplateStringsArray,
+    ...values: any[]
+): Promise<Result<ShellExecResult, Error>> {
     const { spawn } = await import("node:child_process");
 
     const [command, options] = isString(cmd)
@@ -50,7 +53,7 @@ export async function $(cmd: string | TemplateStringsArray, ...values: any[]) {
               : options.onStderr || noop;
 
     const fn = async () => {
-        const { promise, reject, resolve } = PromiseWithResolvers<ShellExecResult>();
+        const { promise, reject, resolve } = createPromiseWithResolvers<ShellExecResult>();
 
         const child = spawn(command, {
             shell: true,
@@ -88,7 +91,7 @@ export async function $(cmd: string | TemplateStringsArray, ...values: any[]) {
     return result;
 }
 
-export const quoteShellArg = (arg: string) => {
+export const quoteShellArg = (arg: string): string => {
     if (!arg) return "''";
 
     const cleaned = String(arg).replace(REGEXP_NULL_CHAR, "");

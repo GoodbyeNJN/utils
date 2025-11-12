@@ -6,7 +6,7 @@ import { clamp } from "@/remeda";
  * const value = linear(0.5, [0, 2]) // value: 1
  * ```
  */
-export const linear = (value: number, range: [min: number, max: number]) => {
+export const linear = (value: number, range: [min: number, max: number]): number => {
     const [min, max] = range;
     const interpolation = clamp(value, { min: 0.0, max: 1.0 });
 
@@ -23,7 +23,7 @@ export const scale = (
     value: number,
     inRange: [min: number, max: number],
     outRange: [min: number, max: number],
-) => {
+): number => {
     const [inMin, inMax] = inRange;
     const [outMin, outMax] = outRange;
     const interpolation = (value - inMin) / (inMax - inMin);

@@ -2,7 +2,11 @@ import { configure } from "safe-stable-stringify";
 
 import { Result } from "@/result";
 
-export const stringify = configure({
+import type { stringify as safeStringify } from "safe-stable-stringify";
+
+export type Stringify = typeof safeStringify;
+
+export const stringify: Stringify = configure({
     bigint: true,
 });
 

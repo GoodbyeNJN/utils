@@ -2,7 +2,7 @@ import { isFunction, isObjectType } from "@/remeda";
 
 import { stringify } from "./json";
 
-export const normalizeError = (error: unknown) => {
+export const normalizeError = (error: unknown): Error => {
     if (error instanceof Error) {
         return error;
     }
@@ -14,5 +14,5 @@ export const normalizeError = (error: unknown) => {
     return new Error(stringify(error));
 };
 
-export const getErrorMessage = (error: unknown, message = "Unknown error") =>
+export const getErrorMessage = (error: unknown, message = "Unknown error"): string =>
     error instanceof Error ? error.message : message;
