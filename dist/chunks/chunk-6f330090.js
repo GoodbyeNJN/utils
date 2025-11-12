@@ -743,7 +743,6 @@ const normalizeError = (error) => {
 	return new Error(stringify(error));
 };
 const getErrorMessage = (error, message = "Unknown error") => error instanceof Error ? error.message : message;
-const errorToMessage = (message = "Unknown error") => (error) => getErrorMessage(error, message);
 
 //#endregion
 //#region src/common/math.ts
@@ -775,66 +774,66 @@ const scale = (value, inRange, outRange) => {
 
 //#endregion
 //#region src/common/parse.ts
+const parseKey = (input, raw = input) => {
+	if (input.length === 0) return {
+		value: "",
+		end: 0
+	};
+	else if (/^\s/.test(input)) {
+		const { value: value$1, end: end$1 } = parseKey(input.slice(1), raw);
+		return {
+			value: value$1,
+			end: end$1 + 1
+		};
+	}
+	let value = "";
+	let end = 0;
+	if (input[0] === "'" || input[0] === "\"") {
+		const slice = input.slice(1);
+		const index = slice.indexOf(input[0]);
+		if (index === -1 || !slice.slice(index + 1).startsWith("=")) throw new Error(`Failed to parse key from input: ${raw}`);
+		value = slice.slice(0, index);
+		end = 1 + index + 2;
+	} else {
+		for (const char of input) {
+			if (char === "=") break;
+			end += 1;
+		}
+		value = input.slice(0, end);
+		end += 1;
+	}
+	return {
+		value,
+		end
+	};
+};
+const parseValue = (input, raw = input) => {
+	if (input.length === 0) return {
+		value: "",
+		end: 0
+	};
+	let value = "";
+	let end = 0;
+	if (input[0] === "'" || input[0] === "\"") {
+		const slice = input.slice(1);
+		const index = slice.indexOf(input[0]);
+		if (index === -1 || slice.slice(index + 1).length !== 0 && !/^\s/.test(slice.slice(index + 1))) throw new Error(`Failed to parse value from input: ${raw}`);
+		value = slice.slice(0, index);
+		end = 1 + index + 1;
+	} else {
+		for (const char of input) {
+			if (/\s/.test(char)) break;
+			end += 1;
+		}
+		value = input.slice(0, end);
+		end += 1;
+	}
+	return {
+		value,
+		end
+	};
+};
 const parseKeyValuePairs = (input) => {
-	const parseKey = (input$1, raw = input$1) => {
-		if (input$1.length === 0) return {
-			value: "",
-			end: 0
-		};
-		else if (/^\s/.test(input$1)) {
-			const { value: value$1, end: end$1 } = parseKey(input$1.slice(1), raw);
-			return {
-				value: value$1,
-				end: end$1 + 1
-			};
-		}
-		let value = "";
-		let end = 0;
-		if (input$1[0] === "'" || input$1[0] === "\"") {
-			const slice = input$1.slice(1);
-			const index = slice.indexOf(input$1[0]);
-			if (index === -1 || !slice.slice(index + 1).startsWith("=")) throw new Error(`Failed to parse key from input: ${raw}`);
-			value = slice.slice(0, index);
-			end = 1 + index + 2;
-		} else {
-			for (const char of input$1) {
-				if (char === "=") break;
-				end += 1;
-			}
-			value = input$1.slice(0, end);
-			end += 1;
-		}
-		return {
-			value,
-			end
-		};
-	};
-	const parseValue = (input$1, raw = input$1) => {
-		if (input$1.length === 0) return {
-			value: "",
-			end: 0
-		};
-		let value = "";
-		let end = 0;
-		if (input$1[0] === "'" || input$1[0] === "\"") {
-			const slice = input$1.slice(1);
-			const index = slice.indexOf(input$1[0]);
-			if (index === -1 || slice.slice(index + 1).length !== 0 && !/^\s/.test(slice.slice(index + 1))) throw new Error(`Failed to parse value from input: ${raw}`);
-			value = slice.slice(0, index);
-			end = 1 + index + 1;
-		} else {
-			for (const char of input$1) {
-				if (/\s/.test(char)) break;
-				end += 1;
-			}
-			value = input$1.slice(0, end);
-			end += 1;
-		}
-		return {
-			value,
-			end
-		};
-	};
 	const pairs = {};
 	let offset = 0;
 	while (offset < input.length) {
@@ -912,7 +911,7 @@ const createLock = () => {
 		}
 	};
 };
-const PromiseWithResolvers = () => {
+const createPromiseWithResolvers = () => {
 	if (t$1(Promise.withResolvers)) return Promise.withResolvers();
 	let resolve;
 	let reject;
@@ -1007,7 +1006,7 @@ async function $(cmd, ...values) {
 	const onStdout = options.onStdout === "ignore" ? noop : options.onStdout === "print" ? pipeToStdout : options.onStdout || noop;
 	const onStderr = options.onStderr === "ignore" ? noop : options.onStderr === "print" ? pipeToStderr : options.onStderr || noop;
 	const fn = async () => {
-		const { promise, reject, resolve } = PromiseWithResolvers();
+		const { promise, reject, resolve } = createPromiseWithResolvers();
 		const child = spawn(command, {
 			shell: true,
 			stdio: [
@@ -1082,4 +1081,4 @@ const throttle = (fn, wait = 0, options = {}) => {
 };
 
 //#endregion
-export { $, Err, Ok, PromiseWithResolvers, Result, __commonJS, __toESM, addPrefix, addSuffix, concatTemplateStrings, createLock, createSingleton, debounce, err, errorToMessage, getErrorMessage, join, joinWithSlash, linear, normalizeError, ok, parseKeyValuePairs, parseValueToBoolean, quoteShellArg, removePrefix, removeSuffix, safeParse, safeTry, scale, sleep, split, splitWithSlash, stringify, template, throttle, toForwardSlash, unindent, unsafeParse };
+export { $, Err, Ok, Result, __commonJS, __toESM, addPrefix, addSuffix, concatTemplateStrings, createLock, createPromiseWithResolvers, createSingleton, debounce, err, getErrorMessage, join, joinWithSlash, linear, normalizeError, ok, parseKeyValuePairs, parseValueToBoolean, quoteShellArg, removePrefix, removeSuffix, safeParse, safeTry, scale, sleep, split, splitWithSlash, stringify, template, throttle, toForwardSlash, unindent, unsafeParse };

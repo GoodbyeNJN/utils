@@ -4,7 +4,6 @@ import { AsyncFn, Fn } from "./chunks/chunk-ea0120e4.js";
 //#region src/common/error.d.ts
 declare const normalizeError: (error: unknown) => Error;
 declare const getErrorMessage: (error: unknown, message?: string) => string;
-declare const errorToMessage: (message?: string) => (error: unknown) => string;
 //#endregion
 //#region node_modules/.pnpm/safe-stable-stringify@2.5.0/node_modules/safe-stable-stringify/index.d.ts
 type Replacer = (number | string)[] | null | undefined | ((key: string, value: unknown) => string | number | boolean | null | object);
@@ -24,7 +23,8 @@ declare namespace stringify$1 {
 }
 //#endregion
 //#region src/common/json.d.ts
-declare const stringify: typeof stringify$1;
+type Stringify = typeof stringify$1;
+declare const stringify: Stringify;
 declare const safeParse: <T = any>(text: string, reviver?: (this: any, key: string, value: any) => any) => Result<T, Error>;
 declare const unsafeParse: <T = any>(text: string, reviver?: (this: any, key: string, value: any) => any) => T | undefined;
 //#endregion
@@ -49,16 +49,23 @@ declare const parseKeyValuePairs: (input: string) => Record<string, string>;
 declare const parseValueToBoolean: (value: unknown, defaultValue: boolean) => boolean;
 //#endregion
 //#region src/common/promise.d.ts
+interface Singleton<T> {
+  (): Promise<T>;
+  reset: () => Promise<void>;
+}
+interface Lock {
+  run: <T = void>(fn: AsyncFn<T>) => Promise<T>;
+  wait: () => Promise<void>;
+  isWaiting: () => boolean;
+  clear: () => void;
+}
 interface PromiseWithResolvers<T> {
   promise: Promise<T>;
   resolve: (value: T | PromiseLike<T>) => void;
   reject: (reason?: any) => void;
 }
 declare const sleep: (ms: number, callback?: Fn) => Promise<void>;
-declare const createSingleton: <T>(fn: AsyncFn<T>) => {
-  (): Promise<T>;
-  reset(): Promise<void>;
-};
+declare const createSingleton: <T>(fn: AsyncFn<T>) => Singleton<T>;
 /**
  * @example
  * ```
@@ -72,13 +79,8 @@ declare const createSingleton: <T>(fn: AsyncFn<T>) => {
  * await lock.wait() // it will wait all tasking finished
  * ```
  */
-declare const createLock: () => {
-  run<T = void>(fn: AsyncFn<T>): Promise<T>;
-  wait(): Promise<void>;
-  isWaiting(): boolean;
-  clear(): void;
-};
-declare const PromiseWithResolvers: <T>() => PromiseWithResolvers<T>;
+declare const createLock: () => Lock;
+declare const createPromiseWithResolvers: <T>() => PromiseWithResolvers<T>;
 //#endregion
 //#region src/common/shell.d.ts
 interface ShellExecOptions {
@@ -156,7 +158,7 @@ type DebouncedFn<T extends Fn> = WrappedFn<T>;
 type ThrottledFn<T extends Fn> = WrappedFn<T>;
 type DebounceOptions = Options;
 type ThrottleOptions = Options;
-declare const debounce: <T extends Fn>(fn: T, wait?: number, options?: Options) => WrappedFn<T>;
-declare const throttle: <T extends Fn>(fn: T, wait?: number, options?: Options) => WrappedFn<T>;
+declare const debounce: <T extends Fn>(fn: T, wait?: number, options?: DebounceOptions) => DebouncedFn<T>;
+declare const throttle: <T extends Fn>(fn: T, wait?: number, options?: ThrottleOptions) => ThrottledFn<T>;
 //#endregion
-export { $, type DebounceOptions, type DebouncedFn, PromiseWithResolvers, type ThrottleOptions, type ThrottledFn, addPrefix, addSuffix, concatTemplateStrings, createLock, createSingleton, debounce, errorToMessage, getErrorMessage, join, joinWithSlash, linear, normalizeError, unsafeParse as parse, parseKeyValuePairs, parseValueToBoolean, quoteShellArg, removePrefix, removeSuffix, safeParse, scale, sleep, split, splitWithSlash, stringify, template, throttle, toForwardSlash, unindent };
+export { $, type DebounceOptions, type DebouncedFn, type Lock, type PromiseWithResolvers, type ShellExecOptions, type ShellExecResult, type Singleton, type Stringify, type ThrottleOptions, type ThrottledFn, addPrefix, addSuffix, concatTemplateStrings, createLock, createPromiseWithResolvers, createSingleton, debounce, getErrorMessage, join, joinWithSlash, linear, normalizeError, unsafeParse as parse, parseKeyValuePairs, parseValueToBoolean, quoteShellArg, removePrefix, removeSuffix, safeParse, scale, sleep, split, splitWithSlash, stringify, template, throttle, toForwardSlash, unindent };
