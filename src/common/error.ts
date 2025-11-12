@@ -16,8 +16,3 @@ export const normalizeError = (error: unknown) => {
 
 export const getErrorMessage = (error: unknown, message = "Unknown error") =>
     error instanceof Error ? error.message : message;
-
-export const errorToMessage =
-    (message = "Unknown error") =>
-    (error: unknown) =>
-        getErrorMessage(error, message);

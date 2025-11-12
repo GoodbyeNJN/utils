@@ -1,4 +1,4 @@
-export { errorToMessage, getErrorMessage, normalizeError } from "./error";
+export { getErrorMessage, normalizeError } from "./error";
 
 export { stringify, parse, safeParse } from "./json";
 
