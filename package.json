@@ -46,9 +46,16 @@
         "dist"
     ],
     "scripts": {
-        "build": "pnpm run clean && pnpm run bundle",
-        "bundle": "rolldown -c rolldown.config.ts",
-        "clean": "rm -rf dist"
+        "dev": "pnpm run clean && pnpm run rolldown -w",
+        "build": "pnpm run clean && pnpm run rolldown",
+        "clean": "rm -rf dist",
+        "rolldown": "rolldown -c rolldown.config.ts",
+        "check": "tsc && eslint && prettier --check .",
+        "type": "tsc",
+        "lint": "eslint --fix",
+        "format": "prettier --write .",
+        "test": "vitest",
+        "release": "bumpp"
     },
     "devDependencies": {
         "@goodbyenjn/configs": "^6.1.2",
