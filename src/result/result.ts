@@ -1,19 +1,14 @@
 /* eslint-disable @typescript-eslint/unified-signatures */
 
 import { normalizeError, stringify } from "@/common";
-import { isFunction, isObjectType, isPromiseLike, isString } from "@/remeda";
+import { isFunction, isPromiseLike } from "@/remeda";
 
-import type {
-    FormatPresets,
-    InferErrType,
-    InferOkType,
-    PrintOptions,
-    ResultAll,
-    ResultAllSettled,
-} from "./types";
+import { ResultError } from "./error";
+
+import type { InferErrType, InferOkType, ResultAll, ResultAllSettled } from "./types";
 import type { AsyncFn, Fn, NonEmptyTuple, SyncFn } from "@/types";
 
-const never = null as never;
+const never = undefined as never;
 
 const transformError = (error: unknown, onThrow: Fn | undefined) => {
     if (!onThrow) return error;
@@ -22,19 +17,22 @@ const transformError = (error: unknown, onThrow: Fn | undefined) => {
     return onThrow(error);
 };
 
-export function ok(): Ok<void>;
-export function ok<T>(value: T): Ok<T>;
-export function ok(value?: unknown): Ok {
-    return new Ok(value);
-}
+export type Ok<T = unknown> = Result<T, never>;
+export type Err<E = unknown> = Result<never, E>;
 
-export function err(): Err<void>;
-export function err<E>(error: E): Err<E>;
-export function err(error?: unknown): Err {
-    return Err.fromError(error, err);
-}
+export class Result<T = unknown, E = unknown> {
+    static ok(): Ok<void>;
+    static ok<T>(value: T): Ok<T>;
+    static ok(value?: unknown): Ok {
+        return new Result(true, never, value);
+    }
 
-export abstract class Result<T = unknown, E = unknown> {
+    static err(): Err<void>;
+    static err<E>(error: E): Err<E>;
+    static err(error?: unknown): Err {
+        return new Result(false, error, never);
+    }
+
     static fromValue<T, E = unknown>(data: Promise<T>): Promise<Result<Awaited<T>, E>>;
     static fromValue<T>(
         data: Promise<T>,
@@ -52,15 +50,15 @@ export abstract class Result<T = unknown, E = unknown> {
     static fromValue(data: unknown, onThrow?: Fn): any {
         try {
             if (!isPromiseLike(data)) {
-                return ok(data);
+                return this.ok(data);
             }
 
             return data.then(
-                value => ok(value),
-                error => Err.fromError(transformError(error, onThrow), Result.fromValue),
+                value => this.ok(value),
+                error => this.err(transformError(error, onThrow)),
             );
         } catch (error) {
-            return Err.fromError(transformError(error, onThrow), Result.fromValue);
+            return this.err(transformError(error, onThrow));
         }
     }
 
@@ -81,35 +79,35 @@ export abstract class Result<T = unknown, E = unknown> {
     static fromCallable(callable: unknown, onThrow?: Fn): any {
         try {
             if (!isFunction(callable)) {
-                return ok(callable);
+                return this.ok(callable);
             }
 
             const data = callable();
             if (!isPromiseLike(data)) {
-                return ok(data);
+                return this.ok(data);
             }
 
             return data.then(
-                value => ok(value),
-                error => Err.fromError(transformError(error, onThrow), Result.fromCallable),
+                value => this.ok(value),
+                error => this.err(transformError(error, onThrow)),
             );
         } catch (error) {
-            return Err.fromError(transformError(error, onThrow), Result.fromCallable);
+            return this.err(transformError(error, onThrow));
         }
     }
 
     static all<T extends NonEmptyTuple<Result>>(results: T): ResultAll<T>;
     static all<T extends readonly Result[]>(results: T): ResultAll<T>;
     static all(results: Result[]): ResultAll<Result[]> {
-        let acc: Result<unknown[]> = ok([]);
+        let acc: Result<unknown[]> = this.ok([]);
 
         for (const result of results) {
             if (!result.isOk()) {
-                acc = Err.fromError(result.error, Result.all);
+                acc = this.err(result.#error);
                 break;
             }
 
-            acc = acc.map(values => [...values, result.value]);
+            acc = acc.map(values => [...values, result.#value]);
         }
 
         return acc;
@@ -118,75 +116,75 @@ export abstract class Result<T = unknown, E = unknown> {
     static allSettled<T extends NonEmptyTuple<Result>>(results: T): ResultAllSettled<T>;
     static allSettled<T extends readonly Result[]>(results: T): ResultAllSettled<T>;
     static allSettled(results: Result[]): ResultAllSettled<Result[]> {
-        let acc: Result<unknown[], unknown[]> = ok([]);
+        let acc: Result<unknown[], unknown[]> = this.ok([]);
 
         for (const result of results) {
             if (result.isErr() && acc.isErr()) {
-                acc = acc.mapErr(errors => [...errors, result.error]);
+                acc = acc.mapErr(errors => [...errors, result.#error]);
             } else if (result.isOk() && acc.isOk()) {
-                acc = acc.map(values => [...values, result.value]);
+                acc = acc.map(values => [...values, result.#value]);
             } else if (result.isErr() && acc.isOk()) {
-                acc = Err.fromError([result.error], Result.allSettled);
+                acc = this.err([result.#error]);
             }
         }
 
         return acc;
     }
 
-    protected readonly contexts: (string | Fn<string>)[] = [];
+    readonly #ok: boolean;
 
-    private readonly ok: boolean;
+    readonly #value: T;
 
-    private readonly value: T;
+    readonly #error: E;
 
-    private readonly error: E;
+    readonly #contexts: string[] = [];
 
-    protected constructor(ok: boolean, error: E, value: T) {
-        this.ok = ok;
-        this.error = error;
-        this.value = value;
+    private constructor(ok: boolean, error: E, value: T) {
+        this.#ok = ok;
+        this.#error = error;
+        this.#value = value;
     }
 
     /**
      * Check if `Result` is `OK`
      */
     isOk(): this is Ok<T> {
-        return this.ok;
+        return this.#ok;
     }
 
     /**
      * Check if `Result` is `OK` and the value matches the predicate
      */
     isOkAnd(predicate: (value: T) => boolean): this is Ok<T> {
-        return this.isOk() && predicate(this.value);
+        return this.isOk() && predicate(this.#value);
     }
 
     /**
      * Check if `Result` is `Err`
      */
     isErr(): this is Err<E> {
-        return !this.ok;
+        return !this.#ok;
     }
 
     /**
      * Check if `Result` is `Err` and the error matches the predicate
      */
     isErrAnd(predicate: (error: E) => boolean): this is Err<E> {
-        return this.isErr() && predicate(this.error);
+        return this.isErr() && predicate(this.#error);
     }
 
     /**
      * Maps `Result<T, E>` to `Result<U, E>`
      */
     map<U>(fn: (value: T) => U): Result<U, E> {
-        return this.isErr() ? this : ok(fn(this.value));
+        return this.isErr() ? this : Result.ok(fn(this.#value));
     }
 
     /**
      * Maps `Result<T, E>` to `Result<T, F>`
      */
     mapErr<F>(fn: (error: E) => F): Result<T, F> {
-        return this.isOk() ? this : Err.fromError(fn(this.error), this.mapErr);
+        return this.isOk() ? this : Result.err(fn(this.#error));
     }
 
     /**
@@ -204,7 +202,7 @@ export abstract class Result<T = unknown, E = unknown> {
     andThen<R extends Result>(fn: (value: T) => R): Result<InferOkType<R>, InferErrType<R> | E>;
     andThen<U, F>(fn: (value: T) => Result<U, F>): Result<U, E | F>;
     andThen(fn: Fn): Result {
-        return this.isErr() ? this : fn(this.value);
+        return this.isErr() ? this : fn(this.#value);
     }
 
     /**
@@ -222,7 +220,7 @@ export abstract class Result<T = unknown, E = unknown> {
     orElse<R extends Result>(fn: (error: E) => R): Result<InferOkType<R> | T, InferErrType<R>>;
     orElse<U, F>(fn: (error: E) => Result<U, F>): Result<T | U, F>;
     orElse(fn: Fn): Result {
-        return this.isOk() ? this : fn(this.error);
+        return this.isOk() ? this : fn(this.#error);
     }
 
     /**
@@ -230,7 +228,7 @@ export abstract class Result<T = unknown, E = unknown> {
      */
     inspect(fn: (value: T) => unknown): Result<T, E> {
         try {
-            this.isOk() && fn(this.value);
+            this.isOk() && fn(this.#value);
         } catch {}
 
         return this;
@@ -241,7 +239,7 @@ export abstract class Result<T = unknown, E = unknown> {
      */
     inspectErr(fn: (error: E) => unknown): Result<T, E> {
         try {
-            this.isErr() && fn(this.error);
+            this.isErr() && fn(this.#error);
         } catch {}
 
         return this;
@@ -252,10 +250,15 @@ export abstract class Result<T = unknown, E = unknown> {
      */
     unwrap(): T {
         if (this.isErr()) {
-            throw this.unwrapErr();
+            throw new ResultError(
+                "Called unwrap on an Err value",
+                this.#error,
+                this.#contexts,
+                this.unwrap,
+            );
         }
 
-        return this.value;
+        return this.#value;
     }
 
     /**
@@ -263,31 +266,36 @@ export abstract class Result<T = unknown, E = unknown> {
      */
     unwrapErr(): E {
         if (this.isOk()) {
-            throw this.unwrap();
+            throw new ResultError(
+                "Called unwrapErr on an Ok value",
+                this.#error,
+                this.#contexts,
+                this.unwrapErr,
+            );
         }
 
-        return this.error;
+        return this.#error;
     }
 
     /**
      * Unwrap the `Ok` value, or return the provided value if `Result` is `Err`
      */
     unwrapOr(defaultValue: T): T {
-        return this.isOk() ? this.value : defaultValue;
+        return this.isOk() ? this.#value : defaultValue;
     }
 
     /**
      * Unwrap the `Ok` value, or compute it from a function if `Result` is `Err`
      */
     unwrapOrElse(defaultValueGetter: (error: E) => T): T {
-        return this.isOk() ? this.value : defaultValueGetter(this.error);
+        return this.isOk() ? this.#value : defaultValueGetter(this.#error);
     }
 
     /**
      * Matches the `Result` variant and executes the corresponding function
      */
     match<U, F = U>(ok: (value: T) => U, err: (error: E) => F): U | F {
-        return this.isOk() ? ok(this.value) : err(this.error);
+        return this.isOk() ? ok(this.#value) : err(this.#error);
     }
 
     /**
@@ -295,15 +303,15 @@ export abstract class Result<T = unknown, E = unknown> {
      */
     iter(): [ok: boolean, error: E, value: T] {
         if (this.isOk()) {
-            return [true, never, this.value];
+            return [true, never, this.#value];
         } else {
-            return [false, this.error, never];
+            return [false, this.#error, never];
         }
     }
 
     *[Symbol.iterator](): Generator<Err<E>, T> {
         if (this.isOk()) {
-            return this.value;
+            return this.#value;
         }
 
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -314,157 +322,19 @@ export abstract class Result<T = unknown, E = unknown> {
     }
 
     context(context: string): this {
-        this.contexts.push(context);
+        this.#contexts.push(context);
 
         return this;
     }
 
-    withContext(contextGetter: Fn<string>): this {
-        this.contexts.push(contextGetter);
+    toString(): string {
+        if (this.isErr()) {
+            return new ResultError(undefined, this.#error, this.#contexts).toString();
+        }
 
-        return this;
-    }
-
-    abstract toString(): string;
-
-    abstract toJSON(): string;
-}
-
-export class Ok<T = unknown> extends Result<T, never> {
-    constructor(value: T) {
-        super(true, never, value);
-    }
-
-    override toString(): string {
-        const value = stringify(this["value"]);
-
-        return `Ok(${value})`;
-    }
-
-    override toJSON(): string {
-        return this.toString();
+        return `Ok(${stringify(this.#value)})`;
     }
 }
 
-export class Err<E = unknown> extends Result<never, E> {
-    static fromError<E = unknown>(error: E, caller: Function): Err<E> {
-        const err = new Err(error);
-
-        if (error instanceof Error) {
-            err.stack = error.stack;
-        } else if ("captureStackTrace" in Error) {
-            const dummy = {} as unknown as Error;
-            Error.captureStackTrace(dummy, caller);
-            err.stack = dummy.stack;
-        }
-
-        return err;
-    }
-
-    private stack: string | undefined;
-
-    constructor(error: E) {
-        super(false, error, never);
-    }
-
-    toError(): Error {
-        return normalizeError(this["error"]);
-    }
-
-    format(): string;
-    format(preset: FormatPresets): string;
-    format(options: PrintOptions): string;
-    format(presetOrOptions?: FormatPresets | PrintOptions): string {
-        const options = this.normalize(presetOrOptions);
-
-        const message = this.toError().message;
-        const contexts = this["contexts"]
-            .slice()
-            .toReversed()
-            .map(ctx => (isFunction(ctx) ? ctx() : ctx));
-        const stacks = this.stack
-            ?.split("\n")
-            .map(line => line.trim())
-            .filter(Boolean) || ["<no stack trace>"];
-
-        const lines: (string | string[])[] = [
-            `Error: ${contexts.length > 0 ? contexts.at(0) : message}`,
-        ];
-
-        if (options.context) {
-            lines.push(
-                "",
-                "Caused by:",
-                contexts
-                    .slice(1)
-                    .concat(message)
-                    .map((line, index) => `    ${index}: ${line}`),
-            );
-        }
-
-        if (options.stack) {
-            const top = stacks.at(0) || "";
-            const hasErrorMessage =
-                new RegExp(`^\\w+:\\s+${message}$`).test(top) || /^\w+$/.test(top);
-
-            lines.push(
-                "",
-                "Stack trace:",
-                stacks.slice(hasErrorMessage ? 1 : 0).map(line => `    ${line}`),
-            );
-        }
-
-        const output = lines.flat().join("\n");
-
-        return output;
-    }
-
-    print(): void;
-    print(preset: FormatPresets): void;
-    print(options: PrintOptions): void;
-    print(presetOrOptions?: FormatPresets | PrintOptions): void {
-        const options = this.normalize(presetOrOptions);
-
-        const output = this.format(options);
-
-        switch (options.level) {
-            case "error":
-                console.error(output);
-                break;
-            case "warn":
-                console.warn(output);
-                break;
-            case "info":
-                console.info(output);
-                break;
-        }
-    }
-
-    override toString(): string {
-        return this.format();
-    }
-
-    override toJSON(): string {
-        return this.toString();
-    }
-
-    private normalize(presetOrOptions?: FormatPresets | PrintOptions): Required<PrintOptions> {
-        // Default options, equitable to "standard"
-        const options: Required<PrintOptions> = {
-            level: "error",
-            context: true,
-            stack: false,
-        };
-
-        if (isString(presetOrOptions)) {
-            options.context = presetOrOptions === "full" || presetOrOptions === "standard";
-            options.stack = presetOrOptions === "full";
-        } else if (isObjectType(presetOrOptions)) {
-            options.level = presetOrOptions.level ?? options.level;
-            options.context = presetOrOptions.context ?? options.context;
-            options.stack = presetOrOptions.stack ?? options.stack;
-        }
-
-        return options;
-    }
-}
+export const ok = Result.ok;
+export const err = Result.err;
