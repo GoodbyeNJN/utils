@@ -1,8 +1,8 @@
-import { Result } from "./chunks/chunk-471ae0aa.js";
+import { Result } from "./chunks/chunk-967a6178.js";
 import { AsyncFn, Fn } from "./chunks/chunk-ea0120e4.js";
 
 //#region src/common/error.d.ts
-declare const normalizeError: (error: unknown) => Error;
+declare const normalizeError: (error: unknown, caller?: Function) => Error;
 declare const getErrorMessage: (error: unknown, message?: string) => string;
 //#endregion
 //#region node_modules/.pnpm/safe-stable-stringify@2.5.0/node_modules/safe-stable-stringify/index.d.ts

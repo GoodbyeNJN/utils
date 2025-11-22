@@ -1,4 +1,4 @@
-import { isPromiseLike, l$1 as l, o$5 as o, r$4 as r, t$4 as t$1, t$6 as t, u } from "./chunk-a14ca88a.js";
+import { e$1 as e, e$3 as e$1, i$4 as i, isPromiseLike, l$1 as l, r$2 as r$1, r$4 as r, t$4 as t$1, t$5 as t$2, t$6 as t, u } from "./chunk-a14ca88a.js";
 
 //#region rolldown:runtime
 var __create = Object.create;
@@ -11,8 +11,8 @@ var __commonJS = (cb, mod) => function() {
 	return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
 var __copyProps = (to, from, except, desc) => {
-	if (from && typeof from === "object" || typeof from === "function") for (var keys = __getOwnPropNames(from), i = 0, n = keys.length, key; i < n; i++) {
-		key = keys[i];
+	if (from && typeof from === "object" || typeof from === "function") for (var keys = __getOwnPropNames(from), i$1 = 0, n = keys.length, key; i$1 < n; i$1++) {
+		key = keys[i$1];
 		if (!__hasOwnProp.call(to, key) && key !== except) __defProp(to, key, {
 			get: ((k) => from[k]).bind(null, key),
 			enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
@@ -43,9 +43,9 @@ var require_safe_stable_stringify = /* @__PURE__ */ __commonJS({ "node_modules/.
 	}
 	function sort(array, comparator) {
 		if (array.length > 200 || comparator) return array.sort(comparator);
-		for (let i = 1; i < array.length; i++) {
-			const currentValue = array[i];
-			let position = i;
+		for (let i$1 = 1; i$1 < array.length; i$1++) {
+			const currentValue = array[i$1];
+			let position = i$1;
 			while (position !== 0 && array[position - 1] > currentValue) {
 				array[position] = array[position - 1];
 				position--;
@@ -62,7 +62,7 @@ var require_safe_stable_stringify = /* @__PURE__ */ __commonJS({ "node_modules/.
 		if (array.length < maximumBreadth) maximumBreadth = array.length;
 		const whitespace = separator === "," ? "" : " ";
 		let res = `"0":${whitespace}${array[0]}`;
-		for (let i = 1; i < maximumBreadth; i++) res += `${separator}"${i}":${whitespace}${array[i]}`;
+		for (let i$1 = 1; i$1 < maximumBreadth; i$1++) res += `${separator}"${i$1}":${whitespace}${array[i$1]}`;
 		return res;
 	}
 	function getCircularValueOption(options) {
@@ -158,13 +158,13 @@ var require_safe_stable_stringify = /* @__PURE__ */ __commonJS({ "node_modules/.
 							join$1 = `,\n${indentation}`;
 						}
 						const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
-						let i = 0;
-						for (; i < maximumValuesToStringify - 1; i++) {
-							const tmp$1 = stringifyFnReplacer(String(i), value, stack, replacer, spacer, indentation);
+						let i$1 = 0;
+						for (; i$1 < maximumValuesToStringify - 1; i$1++) {
+							const tmp$1 = stringifyFnReplacer(String(i$1), value, stack, replacer, spacer, indentation);
 							res += tmp$1 !== void 0 ? tmp$1 : "null";
 							res += join$1;
 						}
-						const tmp = stringifyFnReplacer(String(i), value, stack, replacer, spacer, indentation);
+						const tmp = stringifyFnReplacer(String(i$1), value, stack, replacer, spacer, indentation);
 						res += tmp !== void 0 ? tmp : "null";
 						if (value.length - 1 > maximumBreadth) {
 							const removedKeys = value.length - maximumBreadth - 1;
@@ -188,8 +188,8 @@ var require_safe_stable_stringify = /* @__PURE__ */ __commonJS({ "node_modules/.
 					const maximumPropertiesToStringify = Math.min(keyLength, maximumBreadth);
 					if (deterministic && !isTypedArrayWithEntries(value)) keys = sort(keys, comparator);
 					stack.push(value);
-					for (let i = 0; i < maximumPropertiesToStringify; i++) {
-						const key$1 = keys[i];
+					for (let i$1 = 0; i$1 < maximumPropertiesToStringify; i$1++) {
+						const key$1 = keys[i$1];
 						const tmp = stringifyFnReplacer(key$1, value, stack, replacer, spacer, indentation);
 						if (tmp !== void 0) {
 							res += `${separator}${strEscape(key$1)}:${whitespace}${tmp}`;
@@ -232,13 +232,13 @@ var require_safe_stable_stringify = /* @__PURE__ */ __commonJS({ "node_modules/.
 							join$1 = `,\n${indentation}`;
 						}
 						const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
-						let i = 0;
-						for (; i < maximumValuesToStringify - 1; i++) {
-							const tmp$1 = stringifyArrayReplacer(String(i), value[i], stack, replacer, spacer, indentation);
+						let i$1 = 0;
+						for (; i$1 < maximumValuesToStringify - 1; i$1++) {
+							const tmp$1 = stringifyArrayReplacer(String(i$1), value[i$1], stack, replacer, spacer, indentation);
 							res += tmp$1 !== void 0 ? tmp$1 : "null";
 							res += join$1;
 						}
-						const tmp = stringifyArrayReplacer(String(i), value[i], stack, replacer, spacer, indentation);
+						const tmp = stringifyArrayReplacer(String(i$1), value[i$1], stack, replacer, spacer, indentation);
 						res += tmp !== void 0 ? tmp : "null";
 						if (value.length - 1 > maximumBreadth) {
 							const removedKeys = value.length - maximumBreadth - 1;
@@ -294,13 +294,13 @@ var require_safe_stable_stringify = /* @__PURE__ */ __commonJS({ "node_modules/.
 						let res$1 = `\n${indentation}`;
 						const join$2 = `,\n${indentation}`;
 						const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
-						let i = 0;
-						for (; i < maximumValuesToStringify - 1; i++) {
-							const tmp$1 = stringifyIndent(String(i), value[i], stack, spacer, indentation);
+						let i$1 = 0;
+						for (; i$1 < maximumValuesToStringify - 1; i$1++) {
+							const tmp$1 = stringifyIndent(String(i$1), value[i$1], stack, spacer, indentation);
 							res$1 += tmp$1 !== void 0 ? tmp$1 : "null";
 							res$1 += join$2;
 						}
-						const tmp = stringifyIndent(String(i), value[i], stack, spacer, indentation);
+						const tmp = stringifyIndent(String(i$1), value[i$1], stack, spacer, indentation);
 						res$1 += tmp !== void 0 ? tmp : "null";
 						if (value.length - 1 > maximumBreadth) {
 							const removedKeys = value.length - maximumBreadth - 1;
@@ -327,8 +327,8 @@ var require_safe_stable_stringify = /* @__PURE__ */ __commonJS({ "node_modules/.
 					}
 					if (deterministic) keys = sort(keys, comparator);
 					stack.push(value);
-					for (let i = 0; i < maximumPropertiesToStringify; i++) {
-						const key$1 = keys[i];
+					for (let i$1 = 0; i$1 < maximumPropertiesToStringify; i$1++) {
+						const key$1 = keys[i$1];
 						const tmp = stringifyIndent(key$1, value[key$1], stack, spacer, indentation);
 						if (tmp !== void 0) {
 							res += `${separator}${strEscape(key$1)}: ${tmp}`;
@@ -369,13 +369,13 @@ var require_safe_stable_stringify = /* @__PURE__ */ __commonJS({ "node_modules/.
 						if (maximumDepth < stack.length + 1) return "\"[Array]\"";
 						stack.push(value);
 						const maximumValuesToStringify = Math.min(value.length, maximumBreadth);
-						let i = 0;
-						for (; i < maximumValuesToStringify - 1; i++) {
-							const tmp$1 = stringifySimple(String(i), value[i], stack);
+						let i$1 = 0;
+						for (; i$1 < maximumValuesToStringify - 1; i$1++) {
+							const tmp$1 = stringifySimple(String(i$1), value[i$1], stack);
 							res += tmp$1 !== void 0 ? tmp$1 : "null";
 							res += ",";
 						}
-						const tmp = stringifySimple(String(i), value[i], stack);
+						const tmp = stringifySimple(String(i$1), value[i$1], stack);
 						res += tmp !== void 0 ? tmp : "null";
 						if (value.length - 1 > maximumBreadth) {
 							const removedKeys = value.length - maximumBreadth - 1;
@@ -398,8 +398,8 @@ var require_safe_stable_stringify = /* @__PURE__ */ __commonJS({ "node_modules/.
 					}
 					if (deterministic) keys = sort(keys, comparator);
 					stack.push(value);
-					for (let i = 0; i < maximumPropertiesToStringify; i++) {
-						const key$1 = keys[i];
+					for (let i$1 = 0; i$1 < maximumPropertiesToStringify; i$1++) {
+						const key$1 = keys[i$1];
 						const tmp = stringifySimple(key$1, value[key$1], stack);
 						if (tmp !== void 0) {
 							res += `${separator}${strEscape(key$1)}:${tmp}`;
@@ -451,119 +451,170 @@ function safeTry(body, self) {
 }
 
 //#endregion
+//#region src/result/error.ts
+const prepare = (message, error, contexts) => {
+	let cause;
+	let msg;
+	if (t$2(error)) {
+		cause = error;
+		msg = error.message;
+	} else if (t(error) || e$1(error) || i(error) || e(error) || r$1(error)) msg = error.toString();
+	else if (error === void 0) msg = "";
+	else if (error === null) msg = "null";
+	else msg = stringify(error);
+	const ctxs = contexts.reverse().concat(msg || []);
+	if (message) msg = message;
+	else while (ctxs.length > 0) {
+		msg = ctxs.shift();
+		if (msg) break;
+	}
+	const ctx = ctxs.map((line, index) => `    ${index}: ${line}`).join("\n");
+	return {
+		cause,
+		msg,
+		ctx
+	};
+};
+const format = (msg, ctx) => `
+Message:
+    ${msg || "<empty message>"}
+
+Context:
+    ${ctx.trim() || "<empty context>"}
+`;
+var ResultError = class ResultError extends Error {
+	#msg;
+	#ctx;
+	constructor(message, error, contexts, caller = ResultError) {
+		const { cause, msg, ctx } = prepare(message, error, contexts);
+		const str = `
+${format(msg, ctx)}
+Stack trace:
+        `.trimEnd();
+		super(str, cause ? { cause } : void 0);
+		Error.captureStackTrace(this, caller || this.constructor);
+		this.#msg = msg;
+		this.#ctx = ctx;
+	}
+	toString() {
+		return format(this.#msg, this.#ctx).trim();
+	}
+};
+
+//#endregion
 //#region src/result/result.ts
-const never = null;
+const never = void 0;
 const transformError = (error, onThrow) => {
 	if (!onThrow) return error;
-	if (onThrow === Error) return normalizeError(error);
+	if (onThrow === Error) return normalizeError(error, transformError);
 	return onThrow(error);
 };
-function ok(value) {
-	return new Ok(value);
-}
-function err(error) {
-	return Err.fromError(error, err);
-}
 var Result = class Result {
+	static ok(value) {
+		return new Result(true, never, value);
+	}
+	static err(error) {
+		return new Result(false, error, never);
+	}
 	static fromValue(data, onThrow) {
 		try {
-			if (!isPromiseLike(data)) return ok(data);
-			return data.then((value) => ok(value), (error) => Err.fromError(transformError(error, onThrow), Result.fromValue));
+			if (!isPromiseLike(data)) return this.ok(data);
+			return data.then((value) => this.ok(value), (error) => this.err(transformError(error, onThrow)));
 		} catch (error) {
-			return Err.fromError(transformError(error, onThrow), Result.fromValue);
+			return this.err(transformError(error, onThrow));
 		}
 	}
 	static fromCallable(callable, onThrow) {
 		try {
-			if (!t$1(callable)) return ok(callable);
+			if (!t$1(callable)) return this.ok(callable);
 			const data = callable();
-			if (!isPromiseLike(data)) return ok(data);
-			return data.then((value) => ok(value), (error) => Err.fromError(transformError(error, onThrow), Result.fromCallable));
+			if (!isPromiseLike(data)) return this.ok(data);
+			return data.then((value) => this.ok(value), (error) => this.err(transformError(error, onThrow)));
 		} catch (error) {
-			return Err.fromError(transformError(error, onThrow), Result.fromCallable);
+			return this.err(transformError(error, onThrow));
 		}
 	}
 	static all(results) {
-		let acc = ok([]);
+		let acc = this.ok([]);
 		for (const result of results) {
 			if (!result.isOk()) {
-				acc = Err.fromError(result.error, Result.all);
+				acc = this.err(result.#error);
 				break;
 			}
-			acc = acc.map((values) => [...values, result.value]);
+			acc = acc.map((values) => [...values, result.#value]);
 		}
 		return acc;
 	}
 	static allSettled(results) {
-		let acc = ok([]);
-		for (const result of results) if (result.isErr() && acc.isErr()) acc = acc.mapErr((errors) => [...errors, result.error]);
-		else if (result.isOk() && acc.isOk()) acc = acc.map((values) => [...values, result.value]);
-		else if (result.isErr() && acc.isOk()) acc = Err.fromError([result.error], Result.allSettled);
+		let acc = this.ok([]);
+		for (const result of results) if (result.isErr() && acc.isErr()) acc = acc.mapErr((errors) => [...errors, result.#error]);
+		else if (result.isOk() && acc.isOk()) acc = acc.map((values) => [...values, result.#value]);
+		else if (result.isErr() && acc.isOk()) acc = this.err([result.#error]);
 		return acc;
 	}
-	contexts = [];
-	ok;
-	value;
-	error;
+	#ok;
+	#value;
+	#error;
+	#contexts = [];
 	constructor(ok$1, error, value) {
-		this.ok = ok$1;
-		this.error = error;
-		this.value = value;
+		this.#ok = ok$1;
+		this.#error = error;
+		this.#value = value;
 	}
 	/**
 	* Check if `Result` is `OK`
 	*/
 	isOk() {
-		return this.ok;
+		return this.#ok;
 	}
 	/**
 	* Check if `Result` is `OK` and the value matches the predicate
 	*/
 	isOkAnd(predicate) {
-		return this.isOk() && predicate(this.value);
+		return this.isOk() && predicate(this.#value);
 	}
 	/**
 	* Check if `Result` is `Err`
 	*/
 	isErr() {
-		return !this.ok;
+		return !this.#ok;
 	}
 	/**
 	* Check if `Result` is `Err` and the error matches the predicate
 	*/
 	isErrAnd(predicate) {
-		return this.isErr() && predicate(this.error);
+		return this.isErr() && predicate(this.#error);
 	}
 	/**
 	* Maps `Result<T, E>` to `Result<U, E>`
 	*/
 	map(fn) {
-		return this.isErr() ? this : ok(fn(this.value));
+		return this.isErr() ? this : Result.ok(fn(this.#value));
 	}
 	/**
 	* Maps `Result<T, E>` to `Result<T, F>`
 	*/
 	mapErr(fn) {
-		return this.isOk() ? this : Err.fromError(fn(this.error), this.mapErr);
+		return this.isOk() ? this : Result.err(fn(this.#error));
 	}
 	and(result) {
 		return this.isErr() ? this : result;
 	}
 	andThen(fn) {
-		return this.isErr() ? this : fn(this.value);
+		return this.isErr() ? this : fn(this.#value);
 	}
 	or(result) {
 		return this.isOk() ? this : result;
 	}
 	orElse(fn) {
-		return this.isOk() ? this : fn(this.error);
+		return this.isOk() ? this : fn(this.#error);
 	}
 	/**
 	* Calls the function with the value if `Result` is `Ok` and returns the result unchanged
 	*/
 	inspect(fn) {
 		try {
-			this.isOk() && fn(this.value);
+			this.isOk() && fn(this.#value);
 		} catch {}
 		return this;
 	}
@@ -572,7 +623,7 @@ var Result = class Result {
 	*/
 	inspectErr(fn) {
 		try {
-			this.isErr() && fn(this.error);
+			this.isErr() && fn(this.#error);
 		} catch {}
 		return this;
 	}
@@ -580,33 +631,33 @@ var Result = class Result {
 	* Unwrap the `Ok` value, or throw an error if `Result` is `Err`
 	*/
 	unwrap() {
-		if (this.isErr()) throw this.unwrapErr();
-		return this.value;
+		if (this.isErr()) throw new ResultError("Called unwrap on an Err value", this.#error, this.#contexts, this.unwrap);
+		return this.#value;
 	}
 	/**
 	* Unwrap the `Err` value, or throw an error if `Result` is `Ok`
 	*/
 	unwrapErr() {
-		if (this.isOk()) throw this.unwrap();
-		return this.error;
+		if (this.isOk()) throw new ResultError("Called unwrapErr on an Ok value", this.#error, this.#contexts, this.unwrapErr);
+		return this.#error;
 	}
 	/**
 	* Unwrap the `Ok` value, or return the provided value if `Result` is `Err`
 	*/
 	unwrapOr(defaultValue) {
-		return this.isOk() ? this.value : defaultValue;
+		return this.isOk() ? this.#value : defaultValue;
 	}
 	/**
 	* Unwrap the `Ok` value, or compute it from a function if `Result` is `Err`
 	*/
 	unwrapOrElse(defaultValueGetter) {
-		return this.isOk() ? this.value : defaultValueGetter(this.error);
+		return this.isOk() ? this.#value : defaultValueGetter(this.#error);
 	}
 	/**
 	* Matches the `Result` variant and executes the corresponding function
 	*/
 	match(ok$1, err$1) {
-		return this.isOk() ? ok$1(this.value) : err$1(this.error);
+		return this.isOk() ? ok$1(this.#value) : err$1(this.#error);
 	}
 	/**
 	* Returns an iterable object that yields the `Ok` value and `Err` value
@@ -615,110 +666,31 @@ var Result = class Result {
 		if (this.isOk()) return [
 			true,
 			never,
-			this.value
+			this.#value
 		];
 		else return [
 			false,
-			this.error,
+			this.#error,
 			never
 		];
 	}
 	*[Symbol.iterator]() {
-		if (this.isOk()) return this.value;
+		if (this.isOk()) return this.#value;
 		const self = this;
 		yield self;
 		return self;
 	}
 	context(context) {
-		this.contexts.push(context);
+		this.#contexts.push(context);
 		return this;
 	}
-	withContext(contextGetter) {
-		this.contexts.push(contextGetter);
-		return this;
-	}
-};
-var Ok = class extends Result {
-	constructor(value) {
-		super(true, never, value);
-	}
 	toString() {
-		return `Ok(${stringify(this["value"])})`;
-	}
-	toJSON() {
-		return this.toString();
+		if (this.isErr()) return new ResultError(void 0, this.#error, this.#contexts).toString();
+		return `Ok(${stringify(this.#value)})`;
 	}
 };
-var Err = class Err extends Result {
-	static fromError(error, caller) {
-		const err$1 = new Err(error);
-		if (error instanceof Error) err$1.stack = error.stack;
-		else if ("captureStackTrace" in Error) {
-			const dummy = {};
-			Error.captureStackTrace(dummy, caller);
-			err$1.stack = dummy.stack;
-		}
-		return err$1;
-	}
-	stack;
-	constructor(error) {
-		super(false, error, never);
-	}
-	toError() {
-		return normalizeError(this["error"]);
-	}
-	format(presetOrOptions) {
-		const options = this.normalize(presetOrOptions);
-		const message = this.toError().message;
-		const contexts = this["contexts"].slice().toReversed().map((ctx) => t$1(ctx) ? ctx() : ctx);
-		const stacks = this.stack?.split("\n").map((line) => line.trim()).filter(Boolean) || ["<no stack trace>"];
-		const lines = [`Error: ${contexts.length > 0 ? contexts.at(0) : message}`];
-		if (options.context) lines.push("", "Caused by:", contexts.slice(1).concat(message).map((line, index) => `    ${index}: ${line}`));
-		if (options.stack) {
-			const top = stacks.at(0) || "";
-			const hasErrorMessage = (/* @__PURE__ */ new RegExp(`^\\w+:\\s+${message}$`)).test(top) || /^\w+$/.test(top);
-			lines.push("", "Stack trace:", stacks.slice(hasErrorMessage ? 1 : 0).map((line) => `    ${line}`));
-		}
-		return lines.flat().join("\n");
-	}
-	print(presetOrOptions) {
-		const options = this.normalize(presetOrOptions);
-		const output = this.format(options);
-		switch (options.level) {
-			case "error":
-				console.error(output);
-				break;
-			case "warn":
-				console.warn(output);
-				break;
-			case "info":
-				console.info(output);
-				break;
-		}
-	}
-	toString() {
-		return this.format();
-	}
-	toJSON() {
-		return this.toString();
-	}
-	normalize(presetOrOptions) {
-		const options = {
-			level: "error",
-			context: true,
-			stack: false
-		};
-		if (t(presetOrOptions)) {
-			options.context = presetOrOptions === "full" || presetOrOptions === "standard";
-			options.stack = presetOrOptions === "full";
-		} else if (o(presetOrOptions)) {
-			options.level = presetOrOptions.level ?? options.level;
-			options.context = presetOrOptions.context ?? options.context;
-			options.stack = presetOrOptions.stack ?? options.stack;
-		}
-		return options;
-	}
-};
+const ok = Result.ok;
+const err = Result.err;
 
 //#endregion
 //#region src/common/json.ts
@@ -737,10 +709,16 @@ const unsafeParse = (text, reviver) => {
 
 //#endregion
 //#region src/common/error.ts
-const normalizeError = (error) => {
-	if (error instanceof Error) return error;
-	if (o(error) && "toError" in error && t$1(error.toError)) return error.toError();
-	return new Error(stringify(error));
+const normalizeError = (error, caller) => {
+	if (t$2(error)) return error;
+	let message;
+	if (t(error) || e$1(error) || i(error) || e(error) || r$1(error)) message = error.toString();
+	else if (error === void 0) message = "undefined";
+	else if (error === null) message = "null";
+	else message = stringify(error);
+	const e$2 = new Error(message);
+	Error.captureStackTrace(e$2, caller || normalizeError);
+	return e$2;
 };
 const getErrorMessage = (error, message = "Unknown error") => error instanceof Error ? error.message : message;
 
@@ -1081,4 +1059,4 @@ const throttle = (fn, wait = 0, options = {}) => {
 };
 
 //#endregion
-export { $, Err, Ok, Result, __commonJS, __toESM, addPrefix, addSuffix, concatTemplateStrings, createLock, createPromiseWithResolvers, createSingleton, debounce, err, getErrorMessage, join, joinWithSlash, linear, normalizeError, ok, parseKeyValuePairs, parseValueToBoolean, quoteShellArg, removePrefix, removeSuffix, safeParse, safeTry, scale, sleep, split, splitWithSlash, stringify, template, throttle, toForwardSlash, unindent, unsafeParse };
+export { $, Result, __commonJS, __toESM, addPrefix, addSuffix, concatTemplateStrings, createLock, createPromiseWithResolvers, createSingleton, debounce, err, getErrorMessage, join, joinWithSlash, linear, normalizeError, ok, parseKeyValuePairs, parseValueToBoolean, quoteShellArg, removePrefix, removeSuffix, safeParse, safeTry, scale, sleep, split, splitWithSlash, stringify, template, throttle, toForwardSlash, unindent, unsafeParse };

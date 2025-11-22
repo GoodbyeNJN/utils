@@ -1,34 +1,6 @@
-import { AsyncFn, Fn, NonEmptyTuple, SyncFn } from "./chunk-ea0120e4.js";
+import { AsyncFn, NonEmptyTuple, SyncFn } from "./chunk-ea0120e4.js";
 
 //#region src/result/types.d.ts
-
-/**
- * Presets for formatting the `Err` result
- *
- * - "full" - Full details including context and stack trace
- * - "standard" - Error message and context, but omits stack trace.
- * - "minimal" - Only the error message without context or stack trace.
- *
- * Default is "standard".
- */
-type FormatPresets = "full" | "standard" | "minimal";
-/**
- * Options for printing the `Err` result
- */
-interface PrintOptions {
-  /**
-   * The log level to use. Default is "error".
-   */
-  level?: "error" | "warn" | "info";
-  /**
-   * Whether to include the context messages. Default is `true`.
-   */
-  context?: boolean;
-  /**
-   * Whether to include the stack trace. Default is `false`.
-   */
-  stack?: boolean;
-}
 type ExtractOkTypes<T extends readonly Result[]> = { [K in keyof T]: T[K] extends Result<infer U, unknown> ? U : never };
 type ExtractErrTypes<T extends readonly Result[]> = { [K in keyof T]: T[K] extends Result<unknown, infer E> ? E : never };
 type InferOkType<R> = R extends Result<infer T, unknown> ? T : never;
@@ -49,11 +21,14 @@ type Traverse<T, Depth extends number = 5> = Combine<T, Depth> extends [infer Ok
 type TraverseWithAllErrors<T, Depth extends number = 5> = Traverse<T, Depth> extends Result<infer Oks, infer Errs> ? Result<Oks, Errs[]> : never;
 //#endregion
 //#region src/result/result.d.ts
-declare function ok(): Ok<void>;
-declare function ok<T>(value: T): Ok<T>;
-declare function err(): Err<void>;
-declare function err<E>(error: E): Err<E>;
-declare abstract class Result<T = unknown, E = unknown> {
+type Ok<T = unknown> = Result<T, never>;
+type Err<E = unknown> = Result<never, E>;
+declare class Result<T = unknown, E = unknown> {
+  #private;
+  static ok(): Ok<void>;
+  static ok<T>(value: T): Ok<T>;
+  static err(): Err<void>;
+  static err<E>(error: E): Err<E>;
   static fromValue<T, E = unknown>(data: Promise<T>): Promise<Result<Awaited<T>, E>>;
   static fromValue<T>(data: Promise<T>, onThrow: ErrorConstructor): Promise<Result<Awaited<T>, Error>>;
   static fromValue<T, E>(data: Promise<T>, onThrow: (error: unknown) => E): Promise<Result<Awaited<T>, E>>;
@@ -70,11 +45,7 @@ declare abstract class Result<T = unknown, E = unknown> {
   static all<T extends readonly Result[]>(results: T): ResultAll<T>;
   static allSettled<T extends NonEmptyTuple<Result>>(results: T): ResultAllSettled<T>;
   static allSettled<T extends readonly Result[]>(results: T): ResultAllSettled<T>;
-  protected readonly contexts: (string | Fn<string>)[];
-  private readonly ok;
-  private readonly value;
-  private readonly error;
-  protected constructor(ok: boolean, error: E, value: T);
+  private constructor();
   /**
    * Check if `Result` is `OK`
    */
@@ -153,30 +124,10 @@ declare abstract class Result<T = unknown, E = unknown> {
   iter(): [ok: boolean, error: E, value: T];
   [Symbol.iterator](): Generator<Err<E>, T>;
   context(context: string): this;
-  withContext(contextGetter: Fn<string>): this;
-  abstract toString(): string;
-  abstract toJSON(): string;
-}
-declare class Ok<T = unknown> extends Result<T, never> {
-  constructor(value: T);
   toString(): string;
-  toJSON(): string;
 }
-declare class Err<E = unknown> extends Result<never, E> {
-  static fromError<E = unknown>(error: E, caller: Function): Err<E>;
-  private stack;
-  constructor(error: E);
-  toError(): Error;
-  format(): string;
-  format(preset: FormatPresets): string;
-  format(options: PrintOptions): string;
-  print(): void;
-  print(preset: FormatPresets): void;
-  print(options: PrintOptions): void;
-  toString(): string;
-  toJSON(): string;
-  private normalize;
-}
+declare const ok: typeof Result.ok;
+declare const err: typeof Result.err;
 //#endregion
 //#region src/result/helper.d.ts
 declare function safeTry<T, E, This>(body: (this: This) => Generator<Err<E>, Result<T, E>>, self?: This): Result<T, E>;
@@ -184,4 +135,4 @@ declare function safeTry<YieldErr extends Err, GeneratorReturnResult extends Res
 declare function safeTry<T, E, This>(body: (this: This) => AsyncGenerator<Err<E>, Result<T, E>>, self?: This): Promise<Result<T, E>>;
 declare function safeTry<YieldErr extends Err, GeneratorReturnResult extends Result, This>(body: (this: This) => AsyncGenerator<YieldErr, GeneratorReturnResult>, self?: This): Promise<Result<InferOkType<GeneratorReturnResult>, InferErrType<YieldErr> | InferErrType<GeneratorReturnResult>>>;
 //#endregion
-export { Err, type ExtractErrTypes, type ExtractOkTypes, type FormatPresets, type InferErrType, type InferOkType, Ok, type PrintOptions, Result, type ResultAll, type ResultAllSettled, err, ok, safeTry };
+export { type Err, type ExtractErrTypes, type ExtractOkTypes, type InferErrType, type InferOkType, type Ok, Result, type ResultAll, type ResultAllSettled, err, ok, safeTry };
