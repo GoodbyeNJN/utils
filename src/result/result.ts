@@ -12,7 +12,7 @@ const never = undefined as never;
 
 const transformError = (error: unknown, onThrow: Fn | undefined) => {
     if (!onThrow) return error;
-    if (onThrow === Error) return normalizeError(error);
+    if (onThrow === Error) return normalizeError(error, transformError);
 
     return onThrow(error);
 };
