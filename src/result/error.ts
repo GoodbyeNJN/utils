@@ -5,10 +5,12 @@ import { isBigInt, isBoolean, isError, isNumber, isString, isSymbol } from "@/re
 
 const prepare = (message: string | undefined, error: unknown, contexts: string[]) => {
     let cause: unknown;
-    let msg: string;
+    let emsg: string;
+
+    // 1. Determine error message and cause from the provided error
     if (isError(error)) {
         cause = error;
-        msg = error.message;
+        emsg = error.message;
     } else if (
         isString(error) ||
         isNumber(error) ||
@@ -16,27 +18,33 @@ const prepare = (message: string | undefined, error: unknown, contexts: string[]
         isBoolean(error) ||
         isSymbol(error)
     ) {
-        msg = error.toString();
+        emsg = error.toString();
     } else if (error === undefined) {
-        msg = "";
+        emsg = "";
     } else if (error === null) {
-        msg = "null";
+        emsg = "null";
     } else {
-        msg = stringify(error);
+        emsg = stringify(error);
     }
 
-    // Show most recent context first
-    const ctxs = contexts.reverse().concat(msg || []);
+    // 2. Concat error message to contexts as the innermost context
+    const ctxs = contexts.reverse().concat(emsg || []);
+
+    let msg = "";
+    // 3. Use provided message as the main message if available
     if (message) {
-        // If an additional message is provided, use it as the main reason
         msg = message;
     } else {
-        // If no additional message, use the first context as the main reason
+        // 4. Otherwise, use the first non-empty context as the main message
         while (ctxs.length > 0) {
+            // 5. The main message is removed from contexts
             msg = ctxs.shift()!;
             if (msg) break;
         }
+        // 6. Them main message may still be empty, that's okay
     }
+
+    // 7. Format the remaining contexts
     const ctx = ctxs.map((line, index) => `    ${index}: ${line}`).join("\n");
 
     return { cause, msg, ctx };
