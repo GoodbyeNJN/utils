@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { Result } from "./chunks/chunk-967a6178.js";
+import { Result } from "./chunks/chunk-221a9598.js";
 import "./chunks/chunk-ea0120e4.js";
 import * as nativeFs$1 from "fs";
 
@@ -195,7 +195,7 @@ declare function readFile$1(path: PathLike, options: BufferEncodingOptions): Pro
 declare function readFile$1(path: PathLike, options?: StringEncodingOptions): Promise<Result<string, Error>>;
 declare function readFileSync$1(path: PathLike, options: BufferEncodingOptions): Result<Buffer, Error>;
 declare function readFileSync$1(path: PathLike, options?: StringEncodingOptions): Result<string, Error>;
-declare const readFileByLine$1: (path: PathLike, options?: StringEncodingOptions) => Promise<Result<AsyncIterator<string>, Error>>;
+declare const readFileByLine$1: (path: PathLike, options?: StringEncodingOptions) => Promise<Result<AsyncIterable<string>, Error>>;
 declare const readJson$1: <T = any>(path: PathLike, options?: StringEncodingOptions) => Promise<Result<T, Error>>;
 declare const readJsonSync$1: <T = any>(path: PathLike, options?: StringEncodingOptions) => Result<T, Error>;
 declare const rm$1: (path: PathLike, options?: RmOptions) => Promise<Result<void, Error>>;
@@ -218,7 +218,7 @@ declare function readFile(path: PathLike, options: BufferEncodingOptions): Promi
 declare function readFile(path: PathLike, options?: StringEncodingOptions): Promise<string | undefined>;
 declare function readFileSync(path: PathLike, options: BufferEncodingOptions): Buffer | undefined;
 declare function readFileSync(path: PathLike, options?: StringEncodingOptions): string | undefined;
-declare const readFileByLine: (path: PathLike, options?: StringEncodingOptions) => Promise<AsyncIterator<string> | undefined>;
+declare const readFileByLine: (path: PathLike, options?: StringEncodingOptions) => Promise<AsyncIterable<string> | undefined>;
 declare const readJson: <T = any>(path: PathLike, options?: StringEncodingOptions) => Promise<T | undefined>;
 declare const readJsonSync: <T = any>(path: PathLike, options?: StringEncodingOptions) => T | undefined;
 declare const rm: (path: PathLike, options?: RmOptions) => Promise<void>;

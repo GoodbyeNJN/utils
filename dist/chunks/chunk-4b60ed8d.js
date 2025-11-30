@@ -1,4 +1,4 @@
-import { e$1 as e, e$3 as e$1, i$4 as i, isPromiseLike, l$1 as l, r$2 as r$1, r$4 as r, t$4 as t$1, t$5 as t$2, t$6 as t, u } from "./chunk-a14ca88a.js";
+import { e$1 as e, e$3 as e$1, i$4 as i, isPromiseLike, l$1 as l, r$2 as r$1, r$4 as r, t$4 as t, t$5 as t$2, t$6 as t$1, u } from "./chunk-a14ca88a.js";
 
 //#region rolldown:runtime
 var __create = Object.create;
@@ -454,15 +454,16 @@ function safeTry(body, self) {
 //#region src/result/error.ts
 const prepare = (message, error, contexts) => {
 	let cause;
-	let msg;
+	let emsg;
 	if (t$2(error)) {
 		cause = error;
-		msg = error.message;
-	} else if (t(error) || e$1(error) || i(error) || e(error) || r$1(error)) msg = error.toString();
-	else if (error === void 0) msg = "";
-	else if (error === null) msg = "null";
-	else msg = stringify(error);
-	const ctxs = contexts.reverse().concat(msg || []);
+		emsg = error.message;
+	} else if (t$1(error) || e$1(error) || i(error) || e(error) || r$1(error)) emsg = error.toString();
+	else if (error === void 0) emsg = "";
+	else if (error === null) emsg = "null";
+	else emsg = stringify(error);
+	const ctxs = contexts.reverse().concat(emsg || []);
+	let msg = "";
 	if (message) msg = message;
 	else while (ctxs.length > 0) {
 		msg = ctxs.shift();
@@ -516,23 +517,23 @@ var Result = class Result {
 	static err(error) {
 		return new Result(false, error, never);
 	}
-	static fromValue(data, onThrow) {
-		try {
-			if (!isPromiseLike(data)) return this.ok(data);
-			return data.then((value) => this.ok(value), (error) => this.err(transformError(error, onThrow)));
-		} catch (error) {
-			return this.err(transformError(error, onThrow));
-		}
-	}
 	static fromCallable(callable, onThrow) {
 		try {
-			if (!t$1(callable)) return this.ok(callable);
+			if (!t(callable)) {
+				const error = /* @__PURE__ */ new TypeError("Provided argument is not callable");
+				return this.err(transformError(error, onThrow));
+			}
 			const data = callable();
 			if (!isPromiseLike(data)) return this.ok(data);
 			return data.then((value) => this.ok(value), (error) => this.err(transformError(error, onThrow)));
 		} catch (error) {
 			return this.err(transformError(error, onThrow));
 		}
+	}
+	static toSafeCallable(callable, onThrow) {
+		return (...args) => {
+			return this.fromCallable(() => callable(...args), onThrow);
+		};
 	}
 	static all(results) {
 		let acc = this.ok([]);
@@ -712,7 +713,7 @@ const unsafeParse = (text, reviver) => {
 const normalizeError = (error, caller) => {
 	if (t$2(error)) return error;
 	let message;
-	if (t(error) || e$1(error) || i(error) || e(error) || r$1(error)) message = error.toString();
+	if (t$1(error) || e$1(error) || i(error) || e(error) || r$1(error)) message = error.toString();
 	else if (error === void 0) message = "undefined";
 	else if (error === null) message = "null";
 	else message = stringify(error);
@@ -890,7 +891,7 @@ const createLock = () => {
 	};
 };
 const createPromiseWithResolvers = () => {
-	if (t$1(Promise.withResolvers)) return Promise.withResolvers();
+	if (t(Promise.withResolvers)) return Promise.withResolvers();
 	let resolve;
 	let reject;
 	return {
@@ -945,7 +946,7 @@ const joinWithSlash = (...paths) => join("/", ...paths);
 const splitWithSlash = (path) => split("/", path);
 const concatTemplateStrings = (template$1, values) => template$1.reduce((acc, part, index) => acc + part + (values[index] ?? ""), "");
 function unindent(template$1, ...values) {
-	const lines = (t(template$1) ? template$1 : concatTemplateStrings(template$1, values)).split("\n");
+	const lines = (t$1(template$1) ? template$1 : concatTemplateStrings(template$1, values)).split("\n");
 	const whitespaceLines = lines.map((line) => REGEXP_WHITESPACE.test(line));
 	const commonIndent = lines.reduce((min, line, idx) => {
 		if (whitespaceLines[idx]) return min;
@@ -962,7 +963,7 @@ function template(str, ...args) {
 	const [firstArg, fallback] = args;
 	if (r(firstArg)) {
 		const mapping = firstArg;
-		return str.replace(/\{(\w+)\}/g, (_, key) => mapping[key] || ((t$1(fallback) ? fallback(key) : fallback) ?? key));
+		return str.replace(/\{(\w+)\}/g, (_, key) => mapping[key] || ((t(fallback) ? fallback(key) : fallback) ?? key));
 	} else return str.replace(/\{(\d+)\}/g, (_, key) => {
 		const index = Number(key);
 		if (Number.isNaN(index)) return key;
@@ -980,19 +981,33 @@ const pipeToStdout = (chunk) => process.stdout.write(chunk);
 const pipeToStderr = (chunk) => process.stderr.write(chunk);
 async function $(cmd, ...values) {
 	const { spawn } = await import("node:child_process");
-	const [command, options] = t(cmd) ? [cmd, values[0] || {}] : [concatTemplateStrings(cmd, values), {}];
+	const [command, options] = t$1(cmd) ? [cmd, values[0] || {}] : [concatTemplateStrings(cmd, values), {}];
+	const stdio = [
+		"inherit",
+		"pipe",
+		"pipe"
+	];
+	let onStdin = noop;
+	if (options.onStdin !== void 0) {
+		stdio[0] = "pipe";
+		if (t(options.onStdin)) onStdin = options.onStdin;
+		else {
+			const chunk = options.onStdin;
+			onStdin = (stdin) => stdin.write(chunk);
+		}
+	}
 	const onStdout = options.onStdout === "ignore" ? noop : options.onStdout === "print" ? pipeToStdout : options.onStdout || noop;
 	const onStderr = options.onStderr === "ignore" ? noop : options.onStderr === "print" ? pipeToStderr : options.onStderr || noop;
 	const fn = async () => {
 		const { promise, reject, resolve } = createPromiseWithResolvers();
 		const child = spawn(command, {
 			shell: true,
-			stdio: [
-				"inherit",
-				"pipe",
-				"pipe"
-			]
+			stdio
 		});
+		if (stdio[0] === "pipe" && child.stdin) {
+			await onStdin(child.stdin);
+			child.stdin?.end();
+		}
 		let stdout = "";
 		let stderr = "";
 		child.stdout?.on("data", (data) => {

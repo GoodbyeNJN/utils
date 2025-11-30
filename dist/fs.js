@@ -1,4 +1,4 @@
-import { Result, __commonJS, __toESM, err, ok, removePrefix, safeParse, safeTry, stringify } from "./chunks/chunk-1eac1f41.js";
+import { Result, __commonJS, __toESM, err, ok, removePrefix, safeParse, safeTry, stringify } from "./chunks/chunk-4b60ed8d.js";
 import { e$3 as e, o$3 as o, t$6 as t, y$4 as y } from "./chunks/chunk-a14ca88a.js";
 import * as nativeFs$1 from "fs";
 import nativeFs from "fs";
@@ -2611,7 +2611,7 @@ function readFileSync$1(path$2, options) {
 		return Result.fromCallable(fn, Error).context(`Failed to read file: ${path$2}`);
 	});
 }
-const readFileByLine$1 = async (path$2, options) => safeTry(async function* () {
+const readFileByLine$1 = (path$2, options) => safeTry(async function* () {
 	yield* await exists$1(path$2);
 	const { createInterface } = await import("node:readline");
 	const fn = () => {
@@ -2625,7 +2625,7 @@ const readFileByLine$1 = async (path$2, options) => safeTry(async function* () {
 		return createInterface({
 			input: stream,
 			crlfDelay: Infinity
-		})[Symbol.asyncIterator]();
+		});
 	};
 	return Result.fromCallable(fn, Error).context(`Failed to read file: ${path$2}`);
 });

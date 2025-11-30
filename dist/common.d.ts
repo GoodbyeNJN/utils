@@ -1,5 +1,5 @@
-import { Result } from "./chunks/chunk-967a6178.js";
-import { AsyncFn, Fn } from "./chunks/chunk-ea0120e4.js";
+import { Result } from "./chunks/chunk-221a9598.js";
+import { AsyncFn, Fn, Promisable } from "./chunks/chunk-ea0120e4.js";
 
 //#region src/common/error.d.ts
 declare const normalizeError: (error: unknown, caller?: Function) => Error;
@@ -84,8 +84,9 @@ declare const createPromiseWithResolvers: <T>() => PromiseWithResolvers<T>;
 //#endregion
 //#region src/common/shell.d.ts
 interface ShellExecOptions {
-  onStdout?: "ignore" | "print" | ((chunk: string) => void);
-  onStderr?: "ignore" | "print" | ((chunk: string) => void);
+  onStdin?: string | Buffer | ((stdin: NodeJS.WritableStream) => Promisable<any>);
+  onStdout?: "ignore" | "print" | ((chunk: string) => Promisable<any>);
+  onStderr?: "ignore" | "print" | ((chunk: string) => Promisable<any>);
 }
 interface ShellExecResult {
   stdout: string;
