@@ -33,35 +33,6 @@ export class Result<T = unknown, E = unknown> {
         return new Result(false, error, never);
     }
 
-    static fromValue<T, E = unknown>(data: Promise<T>): Promise<Result<Awaited<T>, E>>;
-    static fromValue<T>(
-        data: Promise<T>,
-        onThrow: ErrorConstructor,
-    ): Promise<Result<Awaited<T>, Error>>;
-    static fromValue<T, E>(
-        data: Promise<T>,
-        onThrow: (error: unknown) => E,
-    ): Promise<Result<Awaited<T>, E>>;
-
-    static fromValue<T, E = unknown>(data: T): Result<T, E>;
-    static fromValue<T>(data: T, onThrow: ErrorConstructor): Result<T, Error>;
-    static fromValue<T, E>(data: T, onThrow: (error: unknown) => E): Result<T, E>;
-
-    static fromValue(data: unknown, onThrow?: Fn): any {
-        try {
-            if (!isPromiseLike(data)) {
-                return this.ok(data);
-            }
-
-            return data.then(
-                value => this.ok(value),
-                error => this.err(transformError(error, onThrow)),
-            );
-        } catch (error) {
-            return this.err(transformError(error, onThrow));
-        }
-    }
-
     static fromCallable<T, E = unknown>(callable: SyncFn<T>): Result<T, E>;
     static fromCallable<T>(callable: SyncFn<T>, onThrow: ErrorConstructor): Result<T, Error>;
     static fromCallable<T, E>(callable: SyncFn<T>, onThrow: (error: unknown) => E): Result<T, E>;
@@ -79,7 +50,9 @@ export class Result<T = unknown, E = unknown> {
     static fromCallable(callable: unknown, onThrow?: Fn): any {
         try {
             if (!isFunction(callable)) {
-                return this.ok(callable);
+                const error = new TypeError("Provided argument is not callable");
+
+                return this.err(transformError(error, onThrow));
             }
 
             const data = callable();
@@ -94,6 +67,36 @@ export class Result<T = unknown, E = unknown> {
         } catch (error) {
             return this.err(transformError(error, onThrow));
         }
+    }
+
+    static toSafeCallable<A extends any[], T, E = unknown>(
+        callable: SyncFn<T, A>,
+    ): SyncFn<Result<T, E>, A>;
+    static toSafeCallable<A extends any[], T>(
+        callable: SyncFn<T, A>,
+        onThrow: ErrorConstructor,
+    ): SyncFn<Result<T, Error>, A>;
+    static toSafeCallable<A extends any[], T, E>(
+        callable: SyncFn<T, A>,
+        onThrow: (error: unknown) => E,
+    ): SyncFn<Result<T, E>, A>;
+
+    static toSafeCallable<A extends any[], T, E = unknown>(
+        callable: AsyncFn<T, A>,
+    ): AsyncFn<Result<Awaited<T>, E>, A>;
+    static toSafeCallable<A extends any[], T>(
+        callable: AsyncFn<T, A>,
+        onThrowOrReject: ErrorConstructor,
+    ): AsyncFn<Result<Awaited<T>, Error>, A>;
+    static toSafeCallable<A extends any[], T, E>(
+        callable: AsyncFn<T, A>,
+        onThrowOrReject: (error: unknown) => E,
+    ): AsyncFn<Result<Awaited<T>, E>, A>;
+
+    static toSafeCallable(callable: unknown, onThrow?: Fn): Fn {
+        return (...args) => {
+            return this.fromCallable(() => (callable as Fn)(...args), onThrow as Fn);
+        };
     }
 
     static all<T extends NonEmptyTuple<Result>>(results: T): ResultAll<T>;

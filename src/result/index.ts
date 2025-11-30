@@ -1,5 +1,5 @@
 export { safeTry } from "./helper";
-export { Result, err, ok } from "./result";
+export { err, ok, Result } from "./result";
 
 export type { Err, Ok } from "./result";
 export type {
