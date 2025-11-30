@@ -1,12 +1,16 @@
-import { isString } from "@/remeda";
+import { isFunction, isString } from "@/remeda";
 import { Result } from "@/result";
 
 import { createPromiseWithResolvers } from "./promise";
 import { concatTemplateStrings } from "./string";
 
+import type { Promisable } from "@/types";
+import type { StdioOptions } from "node:child_process";
+
 export interface ShellExecOptions {
-    onStdout?: "ignore" | "print" | ((chunk: string) => void);
-    onStderr?: "ignore" | "print" | ((chunk: string) => void);
+    onStdin?: string | Buffer | ((stdin: NodeJS.WritableStream) => Promisable<any>);
+    onStdout?: "ignore" | "print" | ((chunk: string) => Promisable<any>);
+    onStderr?: "ignore" | "print" | ((chunk: string) => Promisable<any>);
 }
 
 export interface ShellExecResult {
@@ -18,9 +22,9 @@ const REGEXP_NULL_CHAR = /\x00+/g;
 const REGEXP_SAFE_CHARS = /^[A-Za-z0-9,:=_./-]+$/;
 const REGEXP_SINGLE_QUOTES = /'+/g;
 
-const noop = () => {};
-const pipeToStdout = (chunk: string) => process.stdout.write(chunk);
-const pipeToStderr = (chunk: string) => process.stderr.write(chunk);
+const noop: Fn = () => {};
+const pipeToStdout: Fn = (chunk: string) => process.stdout.write(chunk);
+const pipeToStderr: Fn = (chunk: string) => process.stderr.write(chunk);
 
 export async function $(
     cmd: string,
@@ -39,6 +43,20 @@ export async function $(
     const [command, options] = isString(cmd)
         ? [cmd, (values[0] || {}) as ShellExecOptions]
         : [concatTemplateStrings(cmd, values), {}];
+
+    const stdio: StdioOptions = ["inherit", "pipe", "pipe"];
+
+    let onStdin: (stdin: NodeJS.WritableStream) => Promisable<any> = noop;
+    if (options.onStdin !== undefined) {
+        stdio[0] = "pipe";
+        if (isFunction(options.onStdin)) {
+            onStdin = options.onStdin;
+        } else {
+            const chunk = options.onStdin;
+            onStdin = stdin => stdin.write(chunk);
+        }
+    }
+
     const onStdout =
         options.onStdout === "ignore"
             ? noop
@@ -57,8 +75,13 @@ export async function $(
 
         const child = spawn(command, {
             shell: true,
-            stdio: ["inherit", "pipe", "pipe"],
+            stdio,
         });
+
+        if (stdio[0] === "pipe" && child.stdin) {
+            await onStdin(child.stdin);
+            child.stdin?.end();
+        }
 
         let stdout = "";
         let stderr = "";
