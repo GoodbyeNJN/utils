@@ -205,10 +205,10 @@ export function readFileSync(path: any, options?: any): Result<any, Error> {
     });
 }
 
-export const readFileByLine = async (
+export const readFileByLine = (
     path: PathLike,
     options?: StringEncodingOptions,
-): Promise<Result<AsyncIterator<string>, Error>> =>
+): Promise<Result<AsyncIterable<string>, Error>> =>
     safeTry(async function* () {
         yield* await exists(path);
 
@@ -228,7 +228,7 @@ export const readFileByLine = async (
                 crlfDelay: Infinity,
             });
 
-            return reader[Symbol.asyncIterator]();
+            return reader;
         };
         const result = Result.fromCallable(fn, Error).context(`Failed to read file: ${path}`);
 

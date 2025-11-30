@@ -102,7 +102,7 @@ export function readFileSync(path: any, options?: any): any {
 export const readFileByLine = async (
     path: PathLike,
     options?: StringEncodingOptions,
-): Promise<AsyncIterator<string> | undefined> => {
+): Promise<AsyncIterable<string> | undefined> => {
     const result = await safeReadFileByLine(path, options);
     if (result.isErr()) return undefined;
 
