@@ -232,10 +232,10 @@ export class Result<T = unknown, E = unknown> {
     /**
      * Unwrap the `Ok` value, or throw an error if `Result` is `Err`
      */
-    unwrap(): T {
+    unwrap(message?: string | null): T {
         if (this.isErr()) {
             throw new ResultError(
-                "Called unwrap on an Err value",
+                message !== null ? (message ?? "Called unwrap on an Err value") : undefined,
                 this.#error,
                 this.#contexts,
                 this.unwrap,
@@ -248,10 +248,10 @@ export class Result<T = unknown, E = unknown> {
     /**
      * Unwrap the `Err` value, or throw an error if `Result` is `Ok`
      */
-    unwrapErr(): E {
+    unwrapErr(message?: string | null): E {
         if (this.isOk()) {
             throw new ResultError(
-                "Called unwrapErr on an Ok value",
+                message !== null ? (message ?? "Called unwrapErr on an Ok value") : undefined,
                 this.#error,
                 this.#contexts,
                 this.unwrapErr,

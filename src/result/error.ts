@@ -3,13 +3,13 @@
 import { stringify } from "@/common";
 import { isBigInt, isBoolean, isError, isNumber, isString, isSymbol } from "@/remeda";
 
-const prepare = (message: string | undefined, error: unknown, contexts: string[]) => {
-    let cause: unknown;
+const prepare = (message: string | undefined, contexts: string[], error: unknown) => {
+    let e: unknown;
     let emsg: string;
 
     // 1. Determine error message and cause from the provided error
     if (isError(error)) {
-        cause = error;
+        e = error;
         emsg = error.message;
     } else if (
         isString(error) ||
@@ -44,23 +44,30 @@ const prepare = (message: string | undefined, error: unknown, contexts: string[]
         // 6. Them main message may still be empty, that's okay
     }
 
-    // 7. Format the remaining contexts
+    // 7. Format the display string
     const ctx = ctxs.map((line, index) => `    ${index}: ${line}`).join("\n");
-
-    return { cause, msg, ctx };
-};
-
-const format = (msg: string, ctx: string) => `
+    const display = `
 Message:
     ${msg || "<empty message>"}
 
 Context:
     ${ctx.trim() || "<empty context>"}
-`;
+`.trim();
+
+    // 8. Prepare the error constructor options
+    const options: ErrorOptions | undefined = e ? { cause: e } : undefined;
+
+    return { message: msg, contexts: ctxs, error: e, display, options };
+};
 
 export class ResultError extends Error {
-    #msg: string;
-    #ctx: string;
+    static isResultError(value: unknown): value is ResultError {
+        return value instanceof ResultError;
+    }
+
+    #message: string;
+    #contexts: string[];
+    #display: string;
 
     constructor(
         message: string | undefined,
@@ -68,23 +75,32 @@ export class ResultError extends Error {
         contexts: string[],
         caller: Function = ResultError,
     ) {
-        const { cause, msg, ctx } = prepare(message, error, contexts);
-        const str = `
-${format(msg, ctx)}
-Stack trace:
-        `.trimEnd();
+        const prepared = prepare(message, contexts, error);
 
-        super(str, cause ? { cause } : undefined);
+        super(
+            `
 
+${prepared.display}
+
+Stack trace:`,
+            prepared.options,
+        );
         Error.captureStackTrace(this, caller || this.constructor);
 
-        this.#msg = msg;
-        this.#ctx = ctx;
+        this.#message = prepared.message;
+        this.#contexts = prepared.contexts;
+        this.#display = prepared.display;
+    }
+
+    get msg(): string {
+        return this.#message;
+    }
+
+    get ctx(): string[] {
+        return this.#contexts.slice();
     }
 
     override toString(): string {
-        const str = format(this.#msg, this.#ctx).trim();
-
-        return str;
+        return this.#display;
     }
 }
