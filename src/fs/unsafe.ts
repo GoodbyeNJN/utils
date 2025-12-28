@@ -87,7 +87,7 @@ export async function readFile(path: any, options?: any): Promise<any> {
     const result = await safeReadFile(path, options);
     if (result.isErr()) return undefined;
 
-    return result.unwrap();
+    return result.unwrap(null);
 }
 
 export function readFileSync(path: PathLike, options: BufferEncodingOptions): Buffer | undefined;
@@ -96,7 +96,7 @@ export function readFileSync(path: any, options?: any): any {
     const result = safeReadFileSync(path, options);
     if (result.isErr()) return undefined;
 
-    return result.unwrap();
+    return result.unwrap(null);
 }
 
 export const readFileByLine = async (
@@ -106,7 +106,7 @@ export const readFileByLine = async (
     const result = await safeReadFileByLine(path, options);
     if (result.isErr()) return undefined;
 
-    return result.unwrap();
+    return result.unwrap(null);
 };
 
 export const readJson = async <T = any>(
@@ -116,7 +116,7 @@ export const readJson = async <T = any>(
     const result = await safeReadJson(path, options);
     if (result.isErr()) return undefined;
 
-    return result.unwrap();
+    return result.unwrap(null);
 };
 
 export const readJsonSync = <T = any>(
@@ -126,7 +126,7 @@ export const readJsonSync = <T = any>(
     const result = safeReadJsonSync(path, options);
     if (result.isErr()) return undefined;
 
-    return result.unwrap();
+    return result.unwrap(null);
 };
 
 export const rm = async (path: PathLike, options?: RmOptions): Promise<void> => {

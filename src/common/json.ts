@@ -31,7 +31,7 @@ const unsafeParse = <T = any>(
     const result = safeParse<T>(text, reviver);
     if (result.isErr()) return undefined;
 
-    return result.unwrap();
+    return result.unwrap(null);
 };
 
 export { safeParse, unsafeParse as parse };
