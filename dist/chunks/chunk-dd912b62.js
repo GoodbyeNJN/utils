@@ -708,7 +708,7 @@ const safeParse = (text, reviver) => {
 const unsafeParse = (text, reviver) => {
 	const result = safeParse(text, reviver);
 	if (result.isErr()) return void 0;
-	return result.unwrap();
+	return result.unwrap(null);
 };
 
 //#endregion

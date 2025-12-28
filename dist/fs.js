@@ -1,4 +1,4 @@
-import { Result, __commonJS, __toESM, err, ok, removePrefix, safeParse, safeTry, stringify } from "./chunks/chunk-a1f3c6be.js";
+import { Result, __commonJS, __toESM, err, ok, removePrefix, safeParse, safeTry, stringify } from "./chunks/chunk-dd912b62.js";
 import { e$3 as e, o$3 as o, t$6 as t, y$4 as y } from "./chunks/chunk-a14ca88a.js";
 import * as nativeFs$1 from "fs";
 import nativeFs from "fs";
@@ -2710,27 +2710,27 @@ const mkdirSync = (path$2, options) => {
 async function readFile(path$2, options) {
 	const result = await readFile$1(path$2, options);
 	if (result.isErr()) return void 0;
-	return result.unwrap();
+	return result.unwrap(null);
 }
 function readFileSync(path$2, options) {
 	const result = readFileSync$1(path$2, options);
 	if (result.isErr()) return void 0;
-	return result.unwrap();
+	return result.unwrap(null);
 }
 const readFileByLine = async (path$2, options) => {
 	const result = await readFileByLine$1(path$2, options);
 	if (result.isErr()) return void 0;
-	return result.unwrap();
+	return result.unwrap(null);
 };
 const readJson = async (path$2, options) => {
 	const result = await readJson$1(path$2, options);
 	if (result.isErr()) return void 0;
-	return result.unwrap();
+	return result.unwrap(null);
 };
 const readJsonSync = (path$2, options) => {
 	const result = readJsonSync$1(path$2, options);
 	if (result.isErr()) return void 0;
-	return result.unwrap();
+	return result.unwrap(null);
 };
 const rm = async (path$2, options) => {
 	await rm$1(path$2, options);
