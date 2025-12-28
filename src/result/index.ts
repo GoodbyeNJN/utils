@@ -8,5 +8,4 @@ export type {
     InferErrType,
     InferOkType,
     ResultAll,
-    ResultAllSettled,
 } from "./types";

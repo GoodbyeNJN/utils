@@ -15,11 +15,6 @@ export type ResultAll<T extends readonly Result[]> =
         ? Traverse<T>
         : Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number]>;
 
-export type ResultAllSettled<T extends readonly Result[]> =
-    IsLiteralArray<T> extends 1
-        ? TraverseWithAllErrors<T>
-        : Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number][]>;
-
 // #region Combine - Types
 
 // This is a helper type to prevent infinite recursion in typing rules.
@@ -142,10 +137,5 @@ type Traverse<T, Depth extends number = 5> =
     Combine<T, Depth> extends [infer Oks, infer Errs]
         ? Result<EmptyArrayToNever<Oks, 1>, MembersToUnion<Errs>>
         : never;
-
-// Traverses an array of results and returns a single result containing
-// the oks combined and the array of errors combined.
-type TraverseWithAllErrors<T, Depth extends number = 5> =
-    Traverse<T, Depth> extends Result<infer Oks, infer Errs> ? Result<Oks, Errs[]> : never;
 
 // #endregion

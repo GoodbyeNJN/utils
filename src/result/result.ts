@@ -5,7 +5,7 @@ import { isFunction, isPromiseLike } from "@/remeda";
 
 import { ResultError } from "./error";
 
-import type { InferErrType, InferOkType, ResultAll, ResultAllSettled } from "./types";
+import type { InferErrType, InferOkType, ResultAll } from "./types";
 import type { AsyncFn, Fn, NonEmptyTuple, SyncFn } from "@/types";
 
 const never = undefined as never;
@@ -102,36 +102,17 @@ export class Result<T = unknown, E = unknown> {
     static all<T extends NonEmptyTuple<Result>>(results: T): ResultAll<T>;
     static all<T extends readonly Result[]>(results: T): ResultAll<T>;
     static all(results: Result[]): ResultAll<Result[]> {
-        let acc: Result<unknown[]> = this.ok([]);
+        const values: unknown[] = [];
 
         for (const result of results) {
-            if (!result.isOk()) {
-                acc = this.err(result.#error);
-                break;
+            if (result.isErr()) {
+                return this.err(result.#error);
             }
 
-            acc = acc.map(values => [...values, result.#value]);
+            values.push(result.#value);
         }
 
-        return acc;
-    }
-
-    static allSettled<T extends NonEmptyTuple<Result>>(results: T): ResultAllSettled<T>;
-    static allSettled<T extends readonly Result[]>(results: T): ResultAllSettled<T>;
-    static allSettled(results: Result[]): ResultAllSettled<Result[]> {
-        let acc: Result<unknown[], unknown[]> = this.ok([]);
-
-        for (const result of results) {
-            if (result.isErr() && acc.isErr()) {
-                acc = acc.mapErr(errors => [...errors, result.#error]);
-            } else if (result.isOk() && acc.isOk()) {
-                acc = acc.map(values => [...values, result.#value]);
-            } else if (result.isErr() && acc.isOk()) {
-                acc = this.err([result.#error]);
-            }
-        }
-
-        return acc;
+        return this.ok(values);
     }
 
     readonly #ok: boolean;
