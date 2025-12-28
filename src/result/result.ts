@@ -33,6 +33,9 @@ export class Result<T = unknown, E = unknown> {
         return new Result(false, error, never);
     }
 
+    /**
+     * Creates a `Result` from a callable that may throw or return a promise that may reject
+     */
     static fromCallable<T, E = unknown>(callable: SyncFn<T>): Result<T, E>;
     static fromCallable<T>(callable: SyncFn<T>, onThrow: ErrorConstructor): Result<T, Error>;
     static fromCallable<T, E>(callable: SyncFn<T>, onThrow: (error: unknown) => E): Result<T, E>;
@@ -69,6 +72,9 @@ export class Result<T = unknown, E = unknown> {
         }
     }
 
+    /**
+     * Creates a safe callable that always returns a `Result`, catching any thrown errors or rejected promises
+     */
     static toSafeCallable<A extends any[], T, E = unknown>(
         callable: SyncFn<T, A>,
     ): SyncFn<Result<T, E>, A>;
@@ -99,6 +105,10 @@ export class Result<T = unknown, E = unknown> {
         };
     }
 
+    /**
+     * Combines multiple `Result` instances into one `Result` containing an array of all `Ok` values,
+     * or the first `Err` encountered
+     */
     static all<T extends NonEmptyTuple<Result>>(results: T): ResultAll<T>;
     static all<T extends readonly Result[]>(results: T): ResultAll<T>;
     static all(results: Result[]): ResultAll<Result[]> {
