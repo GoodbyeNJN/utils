@@ -1,4 +1,4 @@
-import { Result, err, ok, safeTry } from "./chunks/chunk-4b60ed8d.js";
+import { Result, ResultError, err, ok, safeTry } from "./chunks/chunk-a1f3c6be.js";
 import "./chunks/chunk-a14ca88a.js";
 
-export { Result, err, ok, safeTry };
+export { Result, ResultError, err, ok, safeTry };

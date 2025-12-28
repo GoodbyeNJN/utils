@@ -443,20 +443,12 @@ var import_safe_stable_stringify = /* @__PURE__ */ __toESM(require_safe_stable_s
 const configure = import_safe_stable_stringify.configure;
 
 //#endregion
-//#region src/result/helper.ts
-function safeTry(body, self) {
-	const yieldErr = body.call(self).next();
-	if (isPromiseLike(yieldErr)) return yieldErr.then((res) => res.value);
-	return yieldErr.value;
-}
-
-//#endregion
 //#region src/result/error.ts
-const prepare = (message, error, contexts) => {
-	let cause;
+const prepare = (message, contexts, error) => {
+	let e$2;
 	let emsg;
 	if (t$2(error)) {
-		cause = error;
+		e$2 = error;
 		emsg = error.message;
 	} else if (t$1(error) || e$1(error) || i(error) || e(error) || r$1(error)) emsg = error.toString();
 	else if (error === void 0) emsg = "";
@@ -470,37 +462,58 @@ const prepare = (message, error, contexts) => {
 		if (msg) break;
 	}
 	const ctx = ctxs.map((line, index) => `    ${index}: ${line}`).join("\n");
-	return {
-		cause,
-		msg,
-		ctx
-	};
-};
-const format = (msg, ctx) => `
+	const display = `
 Message:
     ${msg || "<empty message>"}
 
 Context:
     ${ctx.trim() || "<empty context>"}
-`;
+`.trim();
+	return {
+		message: msg,
+		contexts: ctxs,
+		error: e$2,
+		display,
+		options: e$2 ? { cause: e$2 } : void 0
+	};
+};
 var ResultError = class ResultError extends Error {
-	#msg;
-	#ctx;
+	static isResultError(value) {
+		return value instanceof ResultError;
+	}
+	#message;
+	#contexts;
+	#display;
 	constructor(message, error, contexts, caller = ResultError) {
-		const { cause, msg, ctx } = prepare(message, error, contexts);
-		const str = `
-${format(msg, ctx)}
-Stack trace:
-        `.trimEnd();
-		super(str, cause ? { cause } : void 0);
+		const prepared = prepare(message, contexts, error);
+		super(`
+
+${prepared.display}
+
+Stack trace:`, prepared.options);
 		Error.captureStackTrace(this, caller || this.constructor);
-		this.#msg = msg;
-		this.#ctx = ctx;
+		this.#message = prepared.message;
+		this.#contexts = prepared.contexts;
+		this.#display = prepared.display;
+	}
+	get msg() {
+		return this.#message;
+	}
+	get ctx() {
+		return this.#contexts.slice();
 	}
 	toString() {
-		return format(this.#msg, this.#ctx).trim();
+		return this.#display;
 	}
 };
+
+//#endregion
+//#region src/result/helper.ts
+function safeTry(body, self) {
+	const yieldErr = body.call(self).next();
+	if (isPromiseLike(yieldErr)) return yieldErr.then((res) => res.value);
+	return yieldErr.value;
+}
 
 //#endregion
 //#region src/result/result.ts
@@ -536,22 +549,12 @@ var Result = class Result {
 		};
 	}
 	static all(results) {
-		let acc = this.ok([]);
+		const values = [];
 		for (const result of results) {
-			if (!result.isOk()) {
-				acc = this.err(result.#error);
-				break;
-			}
-			acc = acc.map((values) => [...values, result.#value]);
+			if (result.isErr()) return this.err(result.#error);
+			values.push(result.#value);
 		}
-		return acc;
-	}
-	static allSettled(results) {
-		let acc = this.ok([]);
-		for (const result of results) if (result.isErr() && acc.isErr()) acc = acc.mapErr((errors) => [...errors, result.#error]);
-		else if (result.isOk() && acc.isOk()) acc = acc.map((values) => [...values, result.#value]);
-		else if (result.isErr() && acc.isOk()) acc = this.err([result.#error]);
-		return acc;
+		return this.ok(values);
 	}
 	#ok;
 	#value;
@@ -631,15 +634,15 @@ var Result = class Result {
 	/**
 	* Unwrap the `Ok` value, or throw an error if `Result` is `Err`
 	*/
-	unwrap() {
-		if (this.isErr()) throw new ResultError("Called unwrap on an Err value", this.#error, this.#contexts, this.unwrap);
+	unwrap(message) {
+		if (this.isErr()) throw new ResultError(message !== null ? message ?? "Called unwrap on an Err value" : void 0, this.#error, this.#contexts, this.unwrap);
 		return this.#value;
 	}
 	/**
 	* Unwrap the `Err` value, or throw an error if `Result` is `Ok`
 	*/
-	unwrapErr() {
-		if (this.isOk()) throw new ResultError("Called unwrapErr on an Ok value", this.#error, this.#contexts, this.unwrapErr);
+	unwrapErr(message) {
+		if (this.isOk()) throw new ResultError(message !== null ? message ?? "Called unwrapErr on an Ok value" : void 0, this.#error, this.#contexts, this.unwrapErr);
 		return this.#error;
 	}
 	/**
@@ -1074,4 +1077,4 @@ const throttle = (fn, wait = 0, options = {}) => {
 };
 
 //#endregion
-export { $, Result, __commonJS, __toESM, addPrefix, addSuffix, concatTemplateStrings, createLock, createPromiseWithResolvers, createSingleton, debounce, err, getErrorMessage, join, joinWithSlash, linear, normalizeError, ok, parseKeyValuePairs, parseValueToBoolean, quoteShellArg, removePrefix, removeSuffix, safeParse, safeTry, scale, sleep, split, splitWithSlash, stringify, template, throttle, toForwardSlash, unindent, unsafeParse };
+export { $, Result, ResultError, __commonJS, __toESM, addPrefix, addSuffix, concatTemplateStrings, createLock, createPromiseWithResolvers, createSingleton, debounce, err, getErrorMessage, join, joinWithSlash, linear, normalizeError, ok, parseKeyValuePairs, parseValueToBoolean, quoteShellArg, removePrefix, removeSuffix, safeParse, safeTry, scale, sleep, split, splitWithSlash, stringify, template, throttle, toForwardSlash, unindent, unsafeParse };

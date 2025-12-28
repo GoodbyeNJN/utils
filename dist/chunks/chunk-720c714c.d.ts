@@ -1,12 +1,21 @@
 import { AsyncFn, NonEmptyTuple, SyncFn } from "./chunk-ea0120e4.js";
 
+//#region src/result/error.d.ts
+declare class ResultError extends Error {
+  #private;
+  static isResultError(value: unknown): value is ResultError;
+  constructor(message: string | undefined, error: unknown, contexts: string[], caller?: Function);
+  get msg(): string;
+  get ctx(): string[];
+  toString(): string;
+}
+//#endregion
 //#region src/result/types.d.ts
 type ExtractOkTypes<T extends readonly Result[]> = { [K in keyof T]: T[K] extends Result<infer U, unknown> ? U : never };
 type ExtractErrTypes<T extends readonly Result[]> = { [K in keyof T]: T[K] extends Result<unknown, infer E> ? E : never };
 type InferOkType<R> = R extends Result<infer T, unknown> ? T : never;
 type InferErrType<R> = R extends Result<unknown, infer E> ? E : never;
 type ResultAll<T extends readonly Result[]> = IsLiteralArray<T> extends 1 ? Traverse<T> : Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number]>;
-type ResultAllSettled<T extends readonly Result[]> = IsLiteralArray<T> extends 1 ? TraverseWithAllErrors<T> : Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number][]>;
 type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, ...0[]];
 type CollectResults<T, Collected extends unknown[] = [], Depth extends number = 50> = [Depth] extends [never] ? [] : T extends [infer H, ...infer Rest] ? H extends Result<infer L, infer R> ? CollectResults<Rest, [...Collected, [L, R]], Prev[Depth]> : never : Collected;
 type Transpose<A, Transposed extends unknown[][] = [], Depth extends number = 10> = A extends [infer T, ...infer Rest] ? T extends [infer L, infer R] ? Transposed extends [infer PL, infer PR] ? PL extends unknown[] ? PR extends unknown[] ? Transpose<Rest, [[...PL, L], [...PR, R]], Prev[Depth]> : never : never : Transpose<Rest, [[L], [R]], Prev[Depth]> : Transposed : Transposed;
@@ -18,7 +27,6 @@ type IsLiteralArray<T> = T extends {
   length: infer L;
 } ? L extends number ? number extends L ? 0 : 1 : 0 : 0;
 type Traverse<T, Depth extends number = 5> = Combine<T, Depth> extends [infer Oks, infer Errs] ? Result<EmptyArrayToNever<Oks, 1>, MembersToUnion<Errs>> : never;
-type TraverseWithAllErrors<T, Depth extends number = 5> = Traverse<T, Depth> extends Result<infer Oks, infer Errs> ? Result<Oks, Errs[]> : never;
 //#endregion
 //#region src/result/result.d.ts
 type Ok<T = unknown> = Result<T, never>;
@@ -29,22 +37,30 @@ declare class Result<T = unknown, E = unknown> {
   static ok<T>(value: T): Ok<T>;
   static err(): Err<void>;
   static err<E>(error: E): Err<E>;
+  /**
+   * Creates a `Result` from a callable that may throw or return a promise that may reject
+   */
   static fromCallable<T, E = unknown>(callable: SyncFn<T>): Result<T, E>;
   static fromCallable<T>(callable: SyncFn<T>, onThrow: ErrorConstructor): Result<T, Error>;
   static fromCallable<T, E>(callable: SyncFn<T>, onThrow: (error: unknown) => E): Result<T, E>;
   static fromCallable<T, E = unknown>(callable: AsyncFn<T>): Promise<Result<Awaited<T>, E>>;
   static fromCallable<T>(callable: AsyncFn<T>, onThrowOrReject: ErrorConstructor): Promise<Result<Awaited<T>, Error>>;
   static fromCallable<T, E>(callable: AsyncFn<T>, onThrowOrReject: (error: unknown) => E): Promise<Result<Awaited<T>, E>>;
+  /**
+   * Creates a safe callable that always returns a `Result`, catching any thrown errors or rejected promises
+   */
   static toSafeCallable<A extends any[], T, E = unknown>(callable: SyncFn<T, A>): SyncFn<Result<T, E>, A>;
   static toSafeCallable<A extends any[], T>(callable: SyncFn<T, A>, onThrow: ErrorConstructor): SyncFn<Result<T, Error>, A>;
   static toSafeCallable<A extends any[], T, E>(callable: SyncFn<T, A>, onThrow: (error: unknown) => E): SyncFn<Result<T, E>, A>;
   static toSafeCallable<A extends any[], T, E = unknown>(callable: AsyncFn<T, A>): AsyncFn<Result<Awaited<T>, E>, A>;
   static toSafeCallable<A extends any[], T>(callable: AsyncFn<T, A>, onThrowOrReject: ErrorConstructor): AsyncFn<Result<Awaited<T>, Error>, A>;
   static toSafeCallable<A extends any[], T, E>(callable: AsyncFn<T, A>, onThrowOrReject: (error: unknown) => E): AsyncFn<Result<Awaited<T>, E>, A>;
+  /**
+   * Combines multiple `Result` instances into one `Result` containing an array of all `Ok` values,
+   * or the first `Err` encountered
+   */
   static all<T extends NonEmptyTuple<Result>>(results: T): ResultAll<T>;
   static all<T extends readonly Result[]>(results: T): ResultAll<T>;
-  static allSettled<T extends NonEmptyTuple<Result>>(results: T): ResultAllSettled<T>;
-  static allSettled<T extends readonly Result[]>(results: T): ResultAllSettled<T>;
   private constructor();
   /**
    * Check if `Result` is `OK`
@@ -101,11 +117,11 @@ declare class Result<T = unknown, E = unknown> {
   /**
    * Unwrap the `Ok` value, or throw an error if `Result` is `Err`
    */
-  unwrap(): T;
+  unwrap(message?: string | null): T;
   /**
    * Unwrap the `Err` value, or throw an error if `Result` is `Ok`
    */
-  unwrapErr(): E;
+  unwrapErr(message?: string | null): E;
   /**
    * Unwrap the `Ok` value, or return the provided value if `Result` is `Err`
    */
@@ -135,4 +151,4 @@ declare function safeTry<YieldErr extends Err, GeneratorReturnResult extends Res
 declare function safeTry<T, E, This>(body: (this: This) => AsyncGenerator<Err<E>, Result<T, E>>, self?: This): Promise<Result<T, E>>;
 declare function safeTry<YieldErr extends Err, GeneratorReturnResult extends Result, This>(body: (this: This) => AsyncGenerator<YieldErr, GeneratorReturnResult>, self?: This): Promise<Result<InferOkType<GeneratorReturnResult>, InferErrType<YieldErr> | InferErrType<GeneratorReturnResult>>>;
 //#endregion
-export { type Err, type ExtractErrTypes, type ExtractOkTypes, type InferErrType, type InferOkType, type Ok, Result, type ResultAll, type ResultAllSettled, err, ok, safeTry };
+export { type Err, type ExtractErrTypes, type ExtractOkTypes, type InferErrType, type InferOkType, type Ok, Result, type ResultAll, ResultError, err, ok, safeTry };
