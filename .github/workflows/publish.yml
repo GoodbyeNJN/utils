@@ -1,4 +1,4 @@
-name: Release new version
+name: Publish Package
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
       - "v*.*.*"
 
 permissions:
+  id-token: write
   contents: write
 
 jobs:
@@ -46,5 +47,3 @@ jobs:
 
       - name: Publish
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
