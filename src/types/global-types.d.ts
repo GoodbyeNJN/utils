@@ -82,8 +82,8 @@ declare global {
         ObjectType,
         KeysType
     >;
-    type PartialByKey<BaseType, Keys extends keyof BaseType> = Types.SetOptional<BaseType, Keys>;
-    type RequiredByKey<BaseType, Keys extends keyof BaseType> = Types.SetRequired<BaseType, Keys>;
+    type SetOptional<BaseType, Keys extends keyof BaseType> = Types.SetOptional<BaseType, Keys>;
+    type SetRequired<BaseType, Keys extends keyof BaseType> = Types.SetRequired<BaseType, Keys>;
 
     type YieldType<TargetGeneratorFn extends Fn<Generator | AsyncGenerator>> =
         Types.YieldType<TargetGeneratorFn>;

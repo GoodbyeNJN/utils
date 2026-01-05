@@ -3,24 +3,12 @@ export type { Nullable } from "./nullable";
 export type { OmitByKey } from "./omit-by-key";
 export type { YieldType } from "./yield-type";
 
-export type { OverrideProperties as Override } from "type-fest";
-export type { SetOptional as PartialByKey } from "type-fest";
-export type { SetRequired as RequiredByKey } from "type-fest";
-
 // Basic
 export type { Primitive } from "type-fest";
 export type { TypedArray } from "type-fest";
-export type {
-    Class,
-    Constructor,
-    AbstractClass,
-    AbstractConstructor,
-    JsonObject,
-    JsonArray,
-    JsonPrimitive,
-    JsonValue,
-} from "type-fest";
-// export * from "type-fest";
+export type { Class, Constructor, AbstractClass, AbstractConstructor } from "type-fest";
+export type { JsonObject, JsonArray, JsonPrimitive, JsonValue } from "type-fest";
+export type { UppercaseLetter, LowercaseLetter, DigitCharacter, Alphanumeric } from "type-fest";
 
 // Utilities
 export type { KeysOfUnion } from "type-fest";
@@ -65,6 +53,7 @@ export type { SetReadonly } from "type-fest";
 export type { SetRequired } from "type-fest";
 export type { SetRequiredDeep } from "type-fest";
 export type { SetNonNullable } from "type-fest";
+export type { SetNonNullableDeep } from "type-fest";
 export type { ValueOf } from "type-fest";
 export type { AsyncReturnType } from "type-fest";
 export type { ConditionalExcept } from "type-fest";
@@ -110,19 +99,26 @@ export type { LessThan } from "type-fest";
 export type { LessThanOrEqual } from "type-fest";
 export type { Sum } from "type-fest";
 export type { Subtract } from "type-fest";
-export type { StringKeyOf } from "type-fest";
+export type { KeyAsString } from "type-fest";
 export type { Exact } from "type-fest";
 export type { ReadonlyTuple } from "type-fest";
-export type { OptionalKeysOf } from "type-fest";
 export type { OverrideProperties } from "type-fest";
+export type { OptionalKeysOf } from "type-fest";
+export type { IsOptionalKeyOf } from "type-fest";
 export type { HasOptionalKeys } from "type-fest";
 export type { RequiredKeysOf } from "type-fest";
+export type { IsRequiredKeyOf } from "type-fest";
 export type { HasRequiredKeys } from "type-fest";
 export type { ReadonlyKeysOf } from "type-fest";
+export type { IsReadonlyKeyOf } from "type-fest";
 export type { HasReadonlyKeys } from "type-fest";
 export type { WritableKeysOf } from "type-fest";
+export type { IsWritableKeyOf } from "type-fest";
 export type { HasWritableKeys } from "type-fest";
 export type { Spread } from "type-fest";
+export type { SplitOnRestElement } from "type-fest";
+export type { ExtractRestElement } from "type-fest";
+export type { ExcludeRestElement } from "type-fest";
 export type { IsInteger } from "type-fest";
 export type { IsFloat } from "type-fest";
 export type { TupleToObject } from "type-fest";
@@ -150,6 +146,7 @@ export type { ArrayValues } from "type-fest";
 export type { ArraySlice } from "type-fest";
 export type { ArraySplice } from "type-fest";
 export type { ArrayTail } from "type-fest";
+export type { ArrayElement } from "type-fest";
 export type { SetFieldType } from "type-fest";
 export type { Paths } from "type-fest";
 export type { AllUnionFields } from "type-fest";
@@ -157,10 +154,21 @@ export type { SharedUnionFields } from "type-fest";
 export type { SharedUnionFieldsDeep } from "type-fest";
 export type { IsNull } from "type-fest";
 export type { IfNull } from "type-fest";
+export type { IsUndefined } from "type-fest";
 export type { And } from "type-fest";
 export type { Or } from "type-fest";
+export type { Xor } from "type-fest";
+export type { AllExtend } from "type-fest";
 export type { NonEmptyTuple } from "type-fest";
 export type { FindGlobalInstanceType, FindGlobalType } from "type-fest";
+export type { If } from "type-fest";
+export type { IsUnion } from "type-fest";
+export type { IsLowercase } from "type-fest";
+export type { IsUppercase } from "type-fest";
+export type { IsOptional } from "type-fest";
+export type { IsNullable } from "type-fest";
+export type { TupleOf } from "type-fest";
+export type { ExclusifyUnion } from "type-fest";
 
 // Template literal types
 export type { CamelCase } from "type-fest";
@@ -188,8 +196,16 @@ export type { StringRepeat } from "type-fest";
 export type { Includes } from "type-fest";
 export type { Get } from "type-fest";
 export type { LastArrayElement } from "type-fest";
+export type { ConditionalSimplify } from "type-fest";
+export type { ConditionalSimplifyDeep } from "type-fest";
+export type { RemovePrefix } from "type-fest";
 
 // Miscellaneous
 export type { GlobalThis } from "type-fest";
 export type { PackageJson } from "type-fest";
 export type { TsConfigJson } from "type-fest";
+
+// Improved built-in
+export type { ExtendsStrict } from "type-fest";
+export type { ExtractStrict } from "type-fest";
+export type { ExcludeStrict } from "type-fest";
