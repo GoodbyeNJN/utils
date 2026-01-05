@@ -688,6 +688,24 @@ const result = pipe(
 
 Modern browsers are supported through ES module imports.
 
+## Versioning
+
+**Note:** This project does **not** follow Semantic Versioning (semver). Instead, it uses a calendar-based versioning scheme:
+
+**Version Format:** `v<YY>.<M>.<PATCH>`
+
+- `<YY>` - Release year (e.g., 26 for 2026)
+- `<M>` - Release month (1-12)
+- `<PATCH>` - Patch/revision number within the same month (starting from 0)
+
+**Example versions:**
+
+- `v2026.01.0` - First release in January 2026
+- `v2026.01.1` - Second release in January 2026
+- `v2026.02.0` - First release in February 2026
+
+This scheme provides clarity on when features were released while allowing multiple updates within the same month.
+
 ## Development
 
 ```bash
