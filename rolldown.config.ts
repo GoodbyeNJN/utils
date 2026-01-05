@@ -1,3 +1,4 @@
+import fsp from "node:fs/promises";
 import path from "node:path";
 
 import { omit } from "remeda";
@@ -12,6 +13,11 @@ const input = {
     types: "src/types/index.ts",
     globalTypes: "src/types/global-types.d.ts",
 };
+
+await fsp.rm("dist", {
+    force: true,
+    recursive: true,
+});
 
 export default defineConfig([
     {
