@@ -1,4 +1,5 @@
 export { hasOwnProperty } from "./hasOwnProperty";
+export { isFunction } from "./isFunction";
 export { isPromiseLike } from "./isPromiseLike";
 
 export {
@@ -59,7 +60,6 @@ export {
     isDefined,
     isEmpty,
     isError,
-    isFunction,
     isIncludedIn,
     isNonNull,
     isNonNullish,
