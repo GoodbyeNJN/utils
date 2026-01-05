@@ -82,8 +82,12 @@ declare global {
         ObjectType,
         KeysType
     >;
+    type SetNullable<BaseType, Keys extends keyof BaseType> = Types.SetNullable<BaseType, Keys>;
     type SetOptional<BaseType, Keys extends keyof BaseType> = Types.SetOptional<BaseType, Keys>;
     type SetRequired<BaseType, Keys extends keyof BaseType> = Types.SetRequired<BaseType, Keys>;
+
+    type Nullable<T> = Types.Nullable<T>;
+    type Optional<T> = Types.Optional<T>;
 
     type YieldType<TargetGeneratorFn extends Fn<Generator | AsyncGenerator>> =
         Types.YieldType<TargetGeneratorFn>;
