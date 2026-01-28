@@ -110,6 +110,10 @@ const cleaned = removeSuffix(".js", "script.js"); // "script"
 // String joining and splitting
 const path = join("/", "home", "user", "docs"); // "/home/user/docs"
 const parts = split("-", "hello-world-js"); // ["hello", "world", "js"]
+
+// Split string by line breaks (handles both \n and \r\n)
+const lines = splitByLineBreak("line1\nline2\r\nline3");
+console.log(lines); // ["line1", "line2", "line3"]
 ```
 
 #### Promise Utilities
@@ -499,6 +503,7 @@ Common utilities for everyday programming tasks:
 export {
     template,
     unindent,
+    indent,
     addPrefix,
     addSuffix,
     removePrefix,
@@ -508,6 +513,7 @@ export {
     splitWithSlash,
     joinWithSlash,
     toForwardSlash,
+    splitByLineBreak,
     concatTemplateStrings,
 };
 
