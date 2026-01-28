@@ -50,13 +50,58 @@ const greeting = template("Hello, {name}! You are {age} years old.", {
 });
 console.log(greeting); // "Hello, Alice! You are 30 years old."
 
-// Remove common indentation from template strings
+// Remove common indentation from template strings (default: trim start and end)
 const code = unindent`
     function example() {
         return 'formatted';
     }
 `;
-console.log(code); // properly dedented code
+console.log(code);
+/*
+function example() {
+    return 'formatted';
+}
+*/
+
+// Custom trim behavior with factory function
+const codeNoTrim = unindent(false, false)`
+    function example() {
+        return 'formatted';
+    }
+`;
+console.log(codeNoTrim);
+/*
+
+function example() {
+    return 'formatted';
+}
+
+*/
+
+// Only trim start, keep end
+const onlyTrimStart = unindent(true, false)("  hello\n  world\n");
+console.log(onlyTrimStart); // "hello\nworld\n"
+
+// Add indentation to strings
+const indented = indent(2)`
+    if (a) {
+        b()
+    }
+`;
+console.log(indented);
+/*
+      if (a) {
+          b()
+      }
+*/
+
+// With custom string
+const arrowIndented = indent(">>")("line1\nline2");
+console.log(arrowIndented); // ">>line1\n>>line2"
+
+// Only trim start, keep end
+const onlyTrimStart = indent(2, true, false)("hello\nworld\n");
+console.log(onlyTrimStart); // "  hello\n  world\n"
 
 // Prefix and suffix operations
 const withPrefix = addPrefix("@", "myfile"); // "@myfile"
