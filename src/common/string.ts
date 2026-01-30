@@ -107,6 +107,7 @@ interface UnindentFunction extends StringOrTemplateFunction {
 export const unindent: UnindentFunction = (...params): any => {
     let trimStart = true;
     let trimEnd = true;
+
     const unindentImpl: StringOrTemplateFunction = (...params) => {
         const string = isString(params[0])
             ? params[0]
@@ -175,12 +176,12 @@ export const unindent: UnindentFunction = (...params): any => {
         return unindentImpl;
     }
 
-    // Direct call mode
+    // Direct call mode: unindent(str) or unindent`template`
     if (isString(params[0]) || isArray(params[0])) {
         return unindentImpl(...(params as [any]));
     }
 
-    throw new TypeError("Invalid arguments.");
+    throw new TypeError(`First parameter has an invalid type: "${typeof params[0]}"`);
 };
 
 interface IndentFunction {
@@ -249,7 +250,7 @@ export const indent: IndentFunction = (...params) => {
             .join("\n");
     };
 
-    // indent(_, trimStart?, trimEnd?)
+    // Factory function mode: indent(_, trimStart?, trimEnd?)
     if (
         (isBoolean(params[1]) || params[1] === undefined) &&
         (isBoolean(params[2]) || params[2] === undefined)
@@ -258,21 +259,21 @@ export const indent: IndentFunction = (...params) => {
         trimEnd = params[2] !== false;
     }
 
-    // indent(indentNumber)
+    // Factory function mode: indent(indentNumber)
     if (isNumber(params[0])) {
         indentString = " ".repeat(params[0]);
 
         return indentImpl;
     }
 
-    // indent(indentString)
+    // Factory function mode: indent(indentString)
     if (isString(params[0])) {
         indentString = params[0];
 
         return indentImpl;
     }
 
-    throw new TypeError("Invalid arguments.");
+    throw new TypeError(`First parameter has an invalid type: "${typeof params[0]}"`);
 };
 
 /**
