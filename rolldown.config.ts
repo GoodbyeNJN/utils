@@ -10,6 +10,7 @@ const input = {
     fs: "src/fs/index.ts",
     result: "src/result/index.ts",
     remeda: "src/remeda/index.ts",
+    shell: "src/shell/index.ts",
     types: "src/types/index.ts",
     globalTypes: "src/types/global-types.d.ts",
 };

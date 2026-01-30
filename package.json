@@ -35,6 +35,10 @@
             "types": "./dist/result.d.ts",
             "import": "./dist/result.js"
         },
+        "./shell": {
+            "types": "./dist/shell.d.ts",
+            "import": "./dist/shell.js"
+        },
         "./types": {
             "types": "./dist/types.d.ts"
         },
