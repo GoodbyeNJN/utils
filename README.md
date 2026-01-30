@@ -3,7 +3,7 @@
 [![npm version](https://badge.fury.io/js/@goodbyenjn%2Futils.svg)](https://badge.fury.io/js/@goodbyenjn%2Futils)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A modern TypeScript/JavaScript utility library providing a comprehensive collection of type-safe utility functions, functional error handling with the Result pattern, and filesystem operations.
+A modern TypeScript/JavaScript utility library providing a comprehensive collection of type-safe utility functions, functional error handling with the Result pattern, filesystem operations, and shell command execution.
 
 ## Features
 
@@ -12,7 +12,8 @@ A modern TypeScript/JavaScript utility library providing a comprehensive collect
 - 📦 **Modular**: Import only what you need with tree-shakable exports and multiple entry points
 - 🛡️ **Result Pattern**: Functional error handling without exceptions, based on Rust-style Result types
 - 📁 **Safe File System**: Type-safe file system operations with Result-based error handling
-- 🧰 **Common Utilities**: String manipulation, math operations, promise utilities, shell commands, and error handling
+- 🐚 **Shell Execution**: Powerful and flexible shell command execution with piping support
+- 🧰 **Common Utilities**: String manipulation, math operations, promise utilities, and error handling
 - 📊 **Remeda Extensions**: Extended utilities built on top of [Remeda](https://remedajs.com/)
 
 ## Installation
@@ -31,7 +32,8 @@ yarn add @goodbyenjn/utils
 
 ```typescript
 // Import what you need from the main module
-import { sleep, template, $ } from "@goodbyenjn/utils";
+import { sleep, template } from "@goodbyenjn/utils";
+import { $ } from "@goodbyenjn/utils/shell";
 import { safeReadFile } from "@goodbyenjn/utils/fs";
 import { ok, Result } from "@goodbyenjn/utils/result";
 ```
@@ -151,30 +153,32 @@ const result = await promise;
 #### Shell Command Execution
 
 ```typescript
-import { $ } from "@goodbyenjn/utils";
+import { $ } from "@goodbyenjn/utils/shell";
 
-// Execute shell commands safely using template literals
-const result = await $`ls -la`;
-if (result.isOk()) {
-    console.log("Command succeeded:");
-    console.log("stdout:", result.unwrap().stdout);
-    console.log("stderr:", result.unwrap().stderr);
-} else if (result.isErr()) {
-    console.error("Command failed:", result.unwrapErr().message);
+// Execute shell commands with template literals
+const result = await $`npm install`;
+console.log(result.stdout);
+console.log(result.stderr);
+
+// String command with args
+const output = await $("ls", ["-la"]);
+console.log(output.stdout);
+
+// Pipe commands
+const piped = await $`echo "hello"`.pipe`cat`;
+console.log(piped.stdout);
+
+// Iterate output line by line
+for await (const line of $`cat large-file.txt`) {
+    console.log(line);
 }
 
-// Complex command with options
-const { $ } = await import("@goodbyenjn/utils");
-const deployResult = await $`docker build -t myapp .`;
-if (deployResult.isOk()) {
-    const { stdout, stderr } = deployResult.unwrap();
-    console.log("Build output:", stdout);
-}
+// Using options
+const result2 = await $("npm", ["install"], { cwd: "/path/to/project" });
 
-// Using quoteShellArg for safe argument escaping
-import { quoteShellArg } from "@goodbyenjn/utils";
-const userInput = "'; rm -rf /;";
-const safeArg = quoteShellArg(userInput); // Properly escaped for shell
+// Factory function with options
+const withCwd = $({ cwd: "/path/to/project" });
+const result3 = await withCwd`npm install`;
 ```
 
 #### Math Utilities
