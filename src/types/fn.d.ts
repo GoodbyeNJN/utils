@@ -9,22 +9,22 @@ export type FnWithThis<Return = any, Args extends readonly any[] = any[], This =
 
 export type AsyncFn<Return = any, Args extends readonly any[] = any[]> = (
     ...args: Args
-) => Promise<Return>;
+) => PromiseLike<Return>;
 
 export type AsyncFnWithThis<Return = any, Args extends readonly any[] = any[], This = unknown> = ((
     this: This,
     ...args: Args
-) => Promise<Return>) & {
+) => PromiseLike<Return>) & {
     prototype: This;
 };
 
 export type SyncFn<Return = any, Args extends readonly any[] = any[]> = (
     ...args: Args
-) => Return extends Promise<any> ? never : Return;
+) => Return extends PromiseLike<any> ? never : Return;
 
 export type SyncFnWithThis<Return = any, Args extends readonly any[] = any[], This = unknown> = ((
     this: This,
     ...args: Args
-) => Return extends Promise<any> ? never : Return) & {
+) => Return extends PromiseLike<any> ? never : Return) & {
     prototype: This;
 };
