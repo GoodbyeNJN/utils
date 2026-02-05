@@ -34,7 +34,7 @@ export const createSingleton = <T>(fn: AsyncFn<T>): Singleton<T> => {
 
     const wrapper: Singleton<T> = () => {
         if (!p) {
-            p = fn();
+            p = Promise.resolve(fn());
         }
 
         return p;
@@ -70,7 +70,7 @@ export const createLock = (): Lock => {
 
     return {
         async run(fn) {
-            const p = fn();
+            const p = Promise.resolve(fn());
             locks.push(p);
 
             try {
