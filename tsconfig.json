@@ -6,5 +6,5 @@
         }
     },
     "include": ["./*", "src", "types", "tests"],
-    "exclude": ["dist"]
+    "exclude": ["dist", "src/types/global-types.d.ts"]
 }
