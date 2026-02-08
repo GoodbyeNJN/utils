@@ -1,5 +1,7 @@
 import { isArray, isBoolean, isFunction, isNumber, isPlainObject, isString } from "@/remeda";
 
+import type { TemplateFn } from "@/types";
+
 const REGEXP_WHITESPACE_ONLY = /^\s*$/;
 const REGEXP_WHITESPACE_PREFIX = /^\s*/;
 
@@ -74,15 +76,6 @@ export const splitByLineBreak = (str: string): string[] => str.split(/\r?\n/);
 export const concatTemplateStrings = (template: TemplateStringsArray, values: any[]): string =>
     template.reduce((acc, part, index) => acc + part + (values[index] ?? ""), "");
 
-interface StringOrTemplateFunction {
-    (str: string): string;
-    (template: TemplateStringsArray, ...values: any[]): string;
-}
-
-interface UnindentFunction extends StringOrTemplateFunction {
-    (trimStart?: boolean, trimEnd?: boolean): StringOrTemplateFunction;
-}
-
 /**
  * @example
  * ```ts
@@ -104,11 +97,17 @@ interface UnindentFunction extends StringOrTemplateFunction {
  * const str3 = unindent(true, false)("  hello\n  world\n");
  * ```
  */
-export const unindent: UnindentFunction = (...params): any => {
+export function unindent(str: string): string;
+export function unindent(template: TemplateStringsArray, ...values: any[]): string;
+export function unindent(
+    trimStart?: boolean,
+    trimEnd?: boolean,
+): TemplateFn<string> & ((str: string) => string);
+export function unindent(...params: any[]) {
     let trimStart = true;
     let trimEnd = true;
 
-    const unindentImpl: StringOrTemplateFunction = (...params) => {
+    const unindentImpl = (...params: any[]) => {
         const string = isString(params[0])
             ? params[0]
             : concatTemplateStrings(params[0], params.slice(1));
@@ -178,16 +177,10 @@ export const unindent: UnindentFunction = (...params): any => {
 
     // Direct call mode: unindent(str) or unindent`template`
     if (isString(params[0]) || isArray(params[0])) {
-        return unindentImpl(...(params as [any]));
+        return unindentImpl(...params);
     }
 
     throw new TypeError(`First parameter has an invalid type: "${typeof params[0]}"`);
-};
-
-interface IndentFunction {
-    (indentNumber: number, trimStart?: boolean, trimEnd?: boolean): StringOrTemplateFunction;
-    // eslint-disable-next-line @typescript-eslint/unified-signatures
-    (indentString: string, trimStart?: boolean, trimEnd?: boolean): StringOrTemplateFunction;
 }
 
 /**
@@ -211,12 +204,23 @@ interface IndentFunction {
  * const str3 = indent(2, true, false)("hello\nworld\n");
  * ```
  */
-export const indent: IndentFunction = (...params) => {
+export function indent(
+    indentNumber: number,
+    trimStart?: boolean,
+    trimEnd?: boolean,
+): TemplateFn<string> & ((str: string) => string);
+export function indent(
+    // eslint-disable-next-line @typescript-eslint/unified-signatures
+    indentString: string,
+    trimStart?: boolean,
+    trimEnd?: boolean,
+): TemplateFn<string> & ((str: string) => string);
+export function indent(...params: any[]) {
     let indentString: string;
     let trimStart = true;
     let trimEnd = true;
 
-    const indentImpl: StringOrTemplateFunction = (...params) => {
+    const indentImpl = (...params: any[]) => {
         const string = isString(params[0])
             ? params[0]
             : concatTemplateStrings(params[0], params.slice(1));
@@ -274,7 +278,7 @@ export const indent: IndentFunction = (...params) => {
     }
 
     throw new TypeError(`First parameter has an invalid type: "${typeof params[0]}"`);
-};
+}
 
 /**
  * @example

@@ -6,7 +6,8 @@ import { isArray, isPlainObject, isString } from "@/remeda";
 
 import { ShellNonZeroExitError } from "./error";
 
-import type { ShellExec, ShellResult, StringOrTemplateFunction } from "./types";
+import type { ShellExec, ShellResult } from "./types";
+import type { TemplateFn } from "@/types";
 import type { Options, Output, PipeOptions } from "tinyexec";
 
 export const normalizeParams = (
@@ -95,14 +96,16 @@ export class ShellExecProcess extends ExecProcess implements ShellResult {
 
     override pipe(command: string, args?: string[], options?: Partial<PipeOptions>): ShellResult;
     override pipe(template: TemplateStringsArray, ...values: any[]): ShellResult;
-    override pipe(options: Partial<Options>): StringOrTemplateFunction;
-    override pipe(...params: [any, any?, any?, ...any[]]): any {
+    override pipe(
+        options: Partial<Options>,
+    ): TemplateFn<ShellResult> & ((command: string) => ShellResult);
+    override pipe(...params: [any, ...any[]]): any {
         const { command, args, options, factory } = normalizeParams(...params);
         const pipeOptions = { ...options, stdin: this };
 
         if (!factory) return execImpl(command, args, pipeOptions);
 
-        return (...params: [any, any?]) => {
+        return (...params: [any, ...any[]]) => {
             const normalized = normalizeParams(...params, undefined);
 
             return execImpl(normalized.command, normalized.args, pipeOptions);
@@ -138,7 +141,7 @@ export const exec: ShellExec = (...params): any => {
     const { command, args, options, factory } = normalizeParams(...params);
     if (!factory) return execImpl(command, args, options);
 
-    return (...params: [any, any?]) => {
+    return (...params: [any, ...any[]]) => {
         const normalized = normalizeParams(...params, undefined);
 
         return execImpl(normalized.command, normalized.args, options);
