@@ -28,3 +28,5 @@ export type SyncFnWithThis<Return = any, Args extends readonly any[] = any[], Th
 ) => Return extends PromiseLike<any> ? never : Return) & {
     prototype: This;
 };
+
+export type TemplateFn<Return = any> = (template: TemplateStringsArray, ...values: any[]) => Return;
