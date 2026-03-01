@@ -4,14 +4,36 @@ import { beforeEach, describe, expect, test } from "vitest";
 
 import { VFile } from "@/fs/vfile";
 
-const cwd = "/home/user/project";
-const dirname = "src";
-const filename = "index";
-const extname = "js";
-const pathname = path.join(cwd, dirname, `${filename}.${extname}`);
-const basename = `${filename}.${extname}`;
-const absoluteDirname = path.join(cwd, dirname);
-const relativePathname = path.join(dirname, `${filename}.${extname}`);
+const toVFileProperties = (pathname: string, cwd: string) => {
+    const { dir, name, ext } = path.parse(pathname);
+
+    return {
+        cwd,
+        dirname: path.relative(cwd, dir),
+        filename: name,
+        extname: ext.startsWith(".") ? ext.slice(1) : ext,
+        pathname,
+        basename: `${name}${ext}`,
+        absoluteDirname: dir,
+        relativePathname: path.relative(cwd, pathname),
+    };
+};
+
+const expectVFile = (actual: VFile, pathname: string, cwd: string) => {
+    const expected = toVFileProperties(pathname, cwd);
+
+    expect(actual.cwd).toBe(expected.cwd);
+    expect(actual.dirname).toBe(expected.dirname);
+    expect(actual.filename).toBe(expected.filename);
+    expect(actual.extname).toBe(expected.extname);
+    expect(actual.pathname).toBe(expected.pathname);
+    expect(actual.basename).toBe(expected.basename);
+    expect(actual.absoluteDirname).toBe(expected.absoluteDirname);
+    expect(actual.relativePathname).toBe(expected.relativePathname);
+};
+
+const { cwd, dirname, filename, extname, pathname, basename, absoluteDirname, relativePathname } =
+    toVFileProperties("/home/user/project/src/pages/index.js", "/home/user/project");
 
 let vfile: VFile;
 
@@ -24,62 +46,87 @@ beforeEach(() => {
 
 describe("constructor", () => {
     test("should create a VFile with relative pathname", () => {
-        const file = new VFile({
+        const vfile = new VFile({
             pathname: relativePathname,
             cwd,
         });
-        expect(file.pathname).toBe(pathname);
+        expectVFile(vfile, pathname, cwd);
     });
 
     test("should create a VFile with absolute pathname", () => {
-        const file = new VFile({
+        const vfile = new VFile({
             pathname,
             cwd,
         });
-        expect(file.pathname).toBe(pathname);
+        expectVFile(vfile, pathname, cwd);
     });
 
     test("should create a VFile with content", () => {
         const content = "console.log('hello')";
-        const file = new VFile({
+        const vfile = new VFile({
             pathname: relativePathname,
             cwd,
             content,
         });
-        expect(file.content).toBe(content);
+        expect(vfile.content).toBe(content);
     });
 
     test("should set default content to empty string", () => {
-        const file = new VFile({
+        const vfile = new VFile({
             pathname: relativePathname,
             cwd,
         });
-        expect(file.content).toBe("");
+        expect(vfile.content).toBe("");
     });
 
     test("should create a VFile with custom cwd", () => {
         const cwd = "/custom/path";
-        const file = new VFile({
+        const vfile = new VFile({
             pathname: relativePathname,
             cwd,
         });
-        expect(file.cwd).toBe(cwd);
+        expectVFile(vfile, path.join(cwd, relativePathname), cwd);
     });
 
     test("should set default cwd to process.cwd()", () => {
-        const file = new VFile({
+        const cwd = process.cwd();
+        const vfile = new VFile({
             pathname: relativePathname,
         });
-        expect(file.cwd).toBe(process.cwd());
+        expectVFile(vfile, path.join(cwd, relativePathname), cwd);
     });
 
     test("should create a VFile with dot file", () => {
-        const file = new VFile({
-            pathname: path.join(cwd, "src/.env"),
+        const pathname = path.join(cwd, "src/.env");
+        const vfile = new VFile({
+            pathname,
             cwd,
         });
-        expect(file.filename).toBe(".env");
-        expect(file.extname).toBe("");
+        expectVFile(vfile, pathname, cwd);
+    });
+});
+
+describe("content", () => {
+    test("should get content", () => {
+        expect(vfile.content).toBe("");
+    });
+
+    test("should set content", () => {
+        const content = "some content";
+        vfile.content = content;
+        expect(vfile.content).toBe(content);
+    });
+});
+
+describe("cwd", () => {
+    test("should get cwd", () => {
+        expect(vfile.cwd).toBe(cwd);
+    });
+
+    test("should set cwd", () => {
+        const cwd = "/custom/path";
+        vfile.cwd = cwd;
+        expectVFile(vfile, path.join(cwd, relativePathname), cwd);
     });
 });
 
@@ -89,14 +136,9 @@ describe("dirname", () => {
     });
 
     test("should set dirname", () => {
-        vfile.dirname = "lib";
-        expect(vfile.dirname).toBe("lib");
-        expect(vfile.filename).toBe("index");
-        expect(vfile.extname).toBe("js");
-        expect(vfile.pathname).toBe(path.join(cwd, "lib/index.js"));
-        expect(vfile.basename).toBe("index.js");
-        expect(vfile.absoluteDirname).toBe(path.join(cwd, "lib"));
-        expect(vfile.relativePathname).toBe("lib/index.js");
+        const dirname = "lib";
+        vfile.dirname = dirname;
+        expectVFile(vfile, path.join(cwd, dirname, basename), cwd);
     });
 });
 
@@ -106,25 +148,15 @@ describe("filename", () => {
     });
 
     test("should set filename", () => {
-        vfile.filename = "app";
-        expect(vfile.dirname).toBe("src");
-        expect(vfile.filename).toBe("app");
-        expect(vfile.extname).toBe("js");
-        expect(vfile.pathname).toBe(path.join(cwd, "src/app.js"));
-        expect(vfile.basename).toBe("app.js");
-        expect(vfile.absoluteDirname).toBe(path.join(cwd, "src"));
-        expect(vfile.relativePathname).toBe("src/app.js");
+        const filename = "app";
+        vfile.filename = filename;
+        expectVFile(vfile, path.join(cwd, dirname, `${filename}.${extname}`), cwd);
     });
 
     test("should set filename with dot file", () => {
-        vfile.filename = ".env";
-        expect(vfile.dirname).toBe("src");
-        expect(vfile.filename).toBe(".env");
-        expect(vfile.extname).toBe("js");
-        expect(vfile.pathname).toBe(path.join(cwd, "src/.env.js"));
-        expect(vfile.basename).toBe(".env.js");
-        expect(vfile.absoluteDirname).toBe(path.join(cwd, "src"));
-        expect(vfile.relativePathname).toBe("src/.env.js");
+        const filename = ".env";
+        vfile.filename = filename;
+        expectVFile(vfile, path.join(cwd, dirname, `${filename}.${extname}`), cwd);
     });
 });
 
@@ -134,14 +166,9 @@ describe("extname", () => {
     });
 
     test("should set extname", () => {
-        vfile.extname = "ts";
-        expect(vfile.dirname).toBe("src");
-        expect(vfile.filename).toBe("index");
-        expect(vfile.extname).toBe("ts");
-        expect(vfile.pathname).toBe(path.join(cwd, "src/index.ts"));
-        expect(vfile.basename).toBe("index.ts");
-        expect(vfile.absoluteDirname).toBe(path.join(cwd, "src"));
-        expect(vfile.relativePathname).toBe("src/index.ts");
+        const extname = "ts";
+        vfile.extname = extname;
+        expectVFile(vfile, path.join(cwd, dirname, `${filename}.${extname}`), cwd);
     });
 });
 
@@ -153,25 +180,13 @@ describe("pathname", () => {
     test("should set pathname", () => {
         const pathname = path.join(cwd, "docs/README.md");
         vfile.pathname = pathname;
-        expect(vfile.dirname).toBe("docs");
-        expect(vfile.filename).toBe("README");
-        expect(vfile.extname).toBe("md");
-        expect(vfile.pathname).toBe(pathname);
-        expect(vfile.basename).toBe("README.md");
-        expect(vfile.absoluteDirname).toBe(path.join(cwd, "docs"));
-        expect(vfile.relativePathname).toBe("docs/README.md");
+        expectVFile(vfile, pathname, cwd);
     });
 
     test("should set pathname with dot file", () => {
         const pathname = path.join(cwd, "src/.env");
         vfile.pathname = pathname;
-        expect(vfile.dirname).toBe("src");
-        expect(vfile.filename).toBe(".env");
-        expect(vfile.extname).toBe("");
-        expect(vfile.pathname).toBe(pathname);
-        expect(vfile.basename).toBe(".env");
-        expect(vfile.absoluteDirname).toBe(path.join(cwd, "src"));
-        expect(vfile.relativePathname).toBe("src/.env");
+        expectVFile(vfile, pathname, cwd);
     });
 });
 
@@ -181,36 +196,21 @@ describe("basename", () => {
     });
 
     test("should set basename", () => {
-        vfile.basename = "main.ts";
-        expect(vfile.dirname).toBe("src");
-        expect(vfile.filename).toBe("main");
-        expect(vfile.extname).toBe("ts");
-        expect(vfile.pathname).toBe(path.join(cwd, "src/main.ts"));
-        expect(vfile.basename).toBe("main.ts");
-        expect(vfile.absoluteDirname).toBe(path.join(cwd, "src"));
-        expect(vfile.relativePathname).toBe("src/main.ts");
+        const basename = "main.ts";
+        vfile.basename = basename;
+        expectVFile(vfile, path.join(cwd, dirname, basename), cwd);
     });
 
     test("should set basename without extension", () => {
-        vfile.basename = "Makefile";
-        expect(vfile.dirname).toBe("src");
-        expect(vfile.filename).toBe("Makefile");
-        expect(vfile.extname).toBe("");
-        expect(vfile.pathname).toBe(path.join(cwd, "src/Makefile"));
-        expect(vfile.basename).toBe("Makefile");
-        expect(vfile.absoluteDirname).toBe(path.join(cwd, "src"));
-        expect(vfile.relativePathname).toBe("src/Makefile");
+        const basename = "Makefile";
+        vfile.basename = basename;
+        expectVFile(vfile, path.join(cwd, dirname, basename), cwd);
     });
 
     test("should set basename with dot file", () => {
-        vfile.basename = ".env";
-        expect(vfile.dirname).toBe("src");
-        expect(vfile.filename).toBe(".env");
-        expect(vfile.extname).toBe("");
-        expect(vfile.pathname).toBe(path.join(cwd, "src/.env"));
-        expect(vfile.basename).toBe(".env");
-        expect(vfile.absoluteDirname).toBe(path.join(cwd, "src"));
-        expect(vfile.relativePathname).toBe("src/.env");
+        const basename = ".env";
+        vfile.basename = basename;
+        expectVFile(vfile, path.join(cwd, dirname, basename), cwd);
     });
 });
 
@@ -220,14 +220,9 @@ describe("absoluteDirname", () => {
     });
 
     test("should set absoluteDirname", () => {
-        vfile.absoluteDirname = path.join(cwd, "lib");
-        expect(vfile.dirname).toBe("lib");
-        expect(vfile.filename).toBe("index");
-        expect(vfile.extname).toBe("js");
-        expect(vfile.pathname).toBe(path.join(cwd, "lib/index.js"));
-        expect(vfile.basename).toBe("index.js");
-        expect(vfile.absoluteDirname).toBe(path.join(cwd, "lib"));
-        expect(vfile.relativePathname).toBe("lib/index.js");
+        const absoluteDirname = path.join(cwd, "lib");
+        vfile.absoluteDirname = absoluteDirname;
+        expectVFile(vfile, path.join(absoluteDirname, basename), cwd);
     });
 });
 
@@ -237,25 +232,15 @@ describe("relativePathname", () => {
     });
 
     test("should set relativePathname", () => {
-        vfile.relativePathname = "lib/module.ts";
-        expect(vfile.dirname).toBe("lib");
-        expect(vfile.filename).toBe("module");
-        expect(vfile.extname).toBe("ts");
-        expect(vfile.pathname).toBe(path.join(cwd, "lib/module.ts"));
-        expect(vfile.basename).toBe("module.ts");
-        expect(vfile.absoluteDirname).toBe(path.join(cwd, "lib"));
-        expect(vfile.relativePathname).toBe("lib/module.ts");
+        const relativePathname = "lib/module.ts";
+        vfile.relativePathname = relativePathname;
+        expectVFile(vfile, path.join(cwd, relativePathname), cwd);
     });
 
     test("should set relativePathname with dot file", () => {
-        vfile.relativePathname = "src/.env";
-        expect(vfile.dirname).toBe("src");
-        expect(vfile.filename).toBe(".env");
-        expect(vfile.extname).toBe("");
-        expect(vfile.pathname).toBe(path.join(cwd, "src/.env"));
-        expect(vfile.basename).toBe(".env");
-        expect(vfile.absoluteDirname).toBe(path.join(cwd, "src"));
-        expect(vfile.relativePathname).toBe("src/.env");
+        const relativePathname = "src/.env";
+        vfile.relativePathname = relativePathname;
+        expectVFile(vfile, path.join(cwd, relativePathname), cwd);
     });
 });
 
@@ -267,6 +252,10 @@ describe("clone", () => {
         expect(cloned.dirname).toBe(vfile.dirname);
         expect(cloned.filename).toBe(vfile.filename);
         expect(cloned.extname).toBe(vfile.extname);
+        expect(cloned.pathname).toBe(vfile.pathname);
+        expect(cloned.basename).toBe(vfile.basename);
+        expect(cloned.absoluteDirname).toBe(vfile.absoluteDirname);
+        expect(cloned.relativePathname).toBe(vfile.relativePathname);
     });
 
     test("should clone with content", () => {
