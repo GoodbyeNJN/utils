@@ -50,14 +50,17 @@ export class VFile {
 
     constructor(options: VFileOptions) {
         const { pathname, content, cwd } = options;
-
-        this.pathname = pathname;
-
         if (content) {
             this.content = content;
         }
         if (cwd) {
             this.cwd = cwd;
+        }
+
+        if (path.isAbsolute(pathname)) {
+            this.pathname = pathname;
+        } else {
+            this.relativePathname = pathname;
         }
     }
 
@@ -78,13 +81,13 @@ export class VFile {
      * `index.js`
      */
     get basename() {
-        return this.filename + "." + this.extname;
+        return this.extname ? this.filename + "." + this.extname : this.filename;
     }
 
     set basename(value) {
         const { name, ext } = path.parse(value);
         this.filename = name;
-        this.extname = removePrefix(ext, ".");
+        this.extname = removePrefix(".", ext);
     }
 
     /**
@@ -122,8 +125,10 @@ export class VFile {
     }
 
     private parse(value: string) {
+        const { name, ext } = path.parse(value);
+
         this.dirname = path.relative(this.cwd, path.dirname(value));
-        this.extname = path.extname(value);
-        this.filename = path.basename(value, this.extname);
+        this.filename = name;
+        this.extname = removePrefix(".", ext);
     }
 }
