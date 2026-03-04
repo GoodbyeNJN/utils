@@ -1,9 +1,10 @@
-import fsp from "node:fs/promises";
-import path from "node:path";
+import { readFile } from "node:fs/promises";
 
 import { omit } from "remeda";
 import { defineConfig } from "rolldown";
 import { dts } from "rolldown-plugin-dts";
+
+import { dependencies } from "./package.json";
 
 const input = {
     common: "src/common/index.ts",
@@ -15,35 +16,31 @@ const input = {
     globalTypes: "src/types/global-types.d.ts",
 };
 
-await fsp.rm("dist", {
-    force: true,
-    recursive: true,
-});
-
 export default defineConfig([
     {
         input: omit(input, ["globalTypes"]),
 
         output: {
             dir: "dist",
+            cleanDir: true,
             format: "esm",
             hashCharacters: "hex",
             chunkFileNames: "chunks/chunk-[hash].js",
+            comments: false,
         },
 
+        external: Object.keys(dependencies),
         platform: "node",
-        tsconfig: "./tsconfig.json",
 
         plugins: [
-            dts({
-                resolve: true,
-            }),
+            dts(),
             {
                 name: "emit-globals-types",
-                async buildStart() {
+                async buildEnd() {
                     this.emitFile({
-                        type: "chunk",
-                        id: path.resolve(input.globalTypes),
+                        type: "prebuilt-chunk",
+                        fileName: "global-types.d.ts",
+                        code: await readFile(input.globalTypes, "utf-8"),
                     });
                 },
             },
