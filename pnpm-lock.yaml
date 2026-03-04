@@ -7,6 +7,16 @@ settings:
 importers:
 
   .:
+    dependencies:
+      remeda:
+        specifier: ^2.33.6
+        version: 2.33.6
+      rotery:
+        specifier: ^0.7.0
+        version: 0.7.0
+      type-fest:
+        specifier: ^5.4.4
+        version: 5.4.4
     devDependencies:
       '@goodbyenjn/configs':
         specifier: ^6.1.4
@@ -26,18 +36,12 @@ importers:
       prettier:
         specifier: ^3.8.1
         version: 3.8.1
-      remeda:
-        specifier: ^2.33.6
-        version: 2.33.6
       rolldown:
         specifier: 1.0.0-rc.6
         version: 1.0.0-rc.6
       rolldown-plugin-dts:
         specifier: ^0.22.3
         version: 0.22.3(rolldown@1.0.0-rc.6)(typescript@5.9.3)
-      rotery:
-        specifier: ^0.7.0
-        version: 0.7.0
       safe-stable-stringify:
         specifier: ^2.5.0
         version: 2.5.0
@@ -47,9 +51,6 @@ importers:
       tinyglobby:
         specifier: ^0.2.15
         version: 0.2.15
-      type-fest:
-        specifier: ^5.4.4
-        version: 5.4.4
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -1432,7 +1433,11 @@ snapshots:
       '@unrs/resolver-binding-win32-ia32-msvc': 1.11.1
       '@unrs/resolver-binding-win32-x64-msvc': 1.11.1
 
-  '@goodbyenjn/utils@file:': {}
+  '@goodbyenjn/utils@file:':
+    dependencies:
+      remeda: 2.33.6
+      rotery: 0.7.0
+      type-fest: 5.4.4
 
   '@humanfs/core@0.19.1': {}
 

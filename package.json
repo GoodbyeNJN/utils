@@ -46,6 +46,7 @@
             "types": "./dist/global-types.d.ts"
         }
     },
+    "sideEffects": false,
     "files": [
         "dist"
     ],
@@ -60,6 +61,11 @@
         "test": "vitest",
         "release": "bumpp"
     },
+    "dependencies": {
+        "remeda": "^2.33.6",
+        "rotery": "^0.7.0",
+        "type-fest": "^5.4.4"
+    },
     "devDependencies": {
         "@goodbyenjn/configs": "^6.1.4",
         "@goodbyenjn/utils": "file:",
@@ -67,14 +73,11 @@
         "args-tokenizer": "^0.3.0",
         "eslint": "^9.39.3",
         "prettier": "^3.8.1",
-        "remeda": "^2.33.6",
         "rolldown": "1.0.0-rc.6",
         "rolldown-plugin-dts": "^0.22.3",
-        "rotery": "^0.7.0",
         "safe-stable-stringify": "^2.5.0",
         "tinyexec": "^1.0.2",
         "tinyglobby": "^0.2.15",
-        "type-fest": "^5.4.4",
         "typescript": "^5.9.3",
         "vite-tsconfig-paths": "^6.1.1",
         "vitest": "^4.0.18"
