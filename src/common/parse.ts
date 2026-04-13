@@ -91,7 +91,7 @@ export const parseKeyValuePairs = (input: string): Record<string, string> => {
     return pairs;
 };
 
-export const parseValueToBoolean = (value: unknown, defaultValue: boolean): boolean => {
+export const parseValueToBoolean = <T>(value: unknown, defaultValue: T | boolean): T | boolean => {
     const str = String(value).trim().toLowerCase();
 
     if (/^(?:y|yes|true|1|on)$/.test(str)) return true;
