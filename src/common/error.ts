@@ -5,7 +5,17 @@ import { stringify } from "./json";
 export const normalizeError = (error: unknown, caller?: Function): Error => {
     if (isError(error)) return error;
 
-    let message: string;
+    const e = new Error(getErrorMessage(error));
+    Error.captureStackTrace(e, caller || normalizeError);
+
+    return e;
+};
+
+export const getErrorMessage = (error: unknown, message?: string): string => {
+    if (isError(error)) return error.message;
+    if (message !== undefined) return message;
+
+    let msg: string;
     if (
         isString(error) ||
         isNumber(error) ||
@@ -13,20 +23,14 @@ export const normalizeError = (error: unknown, caller?: Function): Error => {
         isBoolean(error) ||
         isSymbol(error)
     ) {
-        message = error.toString();
+        msg = error.toString();
     } else if (error === undefined) {
-        message = "undefined";
+        msg = "undefined";
     } else if (error === null) {
-        message = "null";
+        msg = "null";
     } else {
-        message = stringify(error);
+        msg = stringify(error);
     }
 
-    const e = new Error(message);
-    Error.captureStackTrace(e, caller || normalizeError);
-
-    return e;
+    return msg;
 };
-
-export const getErrorMessage = (error: unknown, message = "Unknown error"): string =>
-    error instanceof Error ? error.message : message;
