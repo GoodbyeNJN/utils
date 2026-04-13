@@ -116,6 +116,10 @@ const parts = split("-", "hello-world-js"); // ["hello", "world", "js"]
 // Split string by line breaks (handles both \n and \r\n)
 const lines = splitByLineBreak("line1\nline2\r\nline3");
 console.log(lines); // ["line1", "line2", "line3"]
+
+// Parse boolean value with custom default
+const isEnabled = parseValueToBoolean("yes", false); // true
+const debugMode = parseValueToBoolean("invalid", "auto"); // "auto"
 ```
 
 #### Promise Utilities
@@ -307,7 +311,7 @@ const pattern = convertPathToPattern("/home/user/project");
 ### Result Pattern - Functional Error Handling
 
 ```typescript
-import { err, ok, Result, safeTry } from "@goodbyenjn/utils/result";
+import { err, ok, Result } from "@goodbyenjn/utils/result";
 
 // Create results explicitly
 const success = ok(42);
@@ -315,7 +319,7 @@ const failure = err("Something went wrong");
 
 // Handle results with chainable methods
 const doubled = success
-    .map(value => value * 2)
+    .map(value => value * 2) // Supports async: .map(async v => v * 2) returns Promise<Result>
     .mapErr(err => `Error: ${err}`)
     .unwrapOr(0); // 84
 
@@ -323,28 +327,36 @@ const doubled = success
 const result: Result<string, Error> = ok("value");
 const transformed = result.mapErr(() => new Error("Custom error"));
 
-// Convert throwing functions to Result
+// Convert throwing functions or promises to Result
 async function fetchUser(id: string) {
-    // If the function throws, it's caught and wrapped in Err
-    const user = await Result.fromCallable(() => JSON.parse(userJson));
+    // Result.try catches thrown errors
+    const user = await Result.try(() => JSON.parse(userJson));
+    // Or handle promise rejections
+    const user = await Result.try(fetch(`/api/users/${id}`));
 
     return user.map(u => u.name).mapErr(err => new Error(`Failed to parse user: ${err.message}`));
 }
+
+// Wrap a function to always return a Result
+const safeParse = Result.wrap(JSON.parse, Error);
+const data = safeParse('{"valid": true}'); // Result<any, Error>
 
 // Combine multiple Results
 const results = [ok(1), ok(2), err("oops"), ok(4)];
 const combined = Result.all(...results); // Err("oops")
 
-// Safe try-catch alternative
-const safeTryExample = await safeTry(async () => {
-    return await fetch("/api/data").then(r => r.json());
-});
+// Generator-based "do" notation for flattening Results
+const finalResult = Result.gen(function* () {
+    const a = yield* ok(10);
+    const b = yield* ok(20);
+    return a + b;
+}); // ok(30)
 
-if (safeTryExample.isOk()) {
-    console.log("Data:", safeTryExample.unwrap());
-} else {
-    console.error("Failed:", safeTryExample.unwrapErr());
-}
+// Supports async generators
+const asyncFinal = await Result.gen(async function* () {
+    const user = yield* await fetchUser("1");
+    return user.name;
+});
 ```
 
 ### Type Utilities
@@ -356,46 +368,56 @@ import type {
     YieldType,
     OmitByKey,
     SetNullable,
+    TemplateFn,
 } from "@goodbyenjn/utils/types";
+
+// ... (other types)
+
+// Template string function type
+const myTag: TemplateFn<string> = (strings, ...values) => {
+    return strings[0] + values[0];
+};
+```
 
 // Nullable type for values that can be null or undefined
 type User = {
-    id: string;
-    name: string;
-    email: Nullable<string>; // string | null | undefined
+id: string;
+name: string;
+email: Nullable<string>; // string | null | undefined
 };
 
 // Optional type (undefined but not null)
 type Profile = {
-    bio: Optional<string>; // string | undefined
+bio: Optional<string>; // string | undefined
 };
 
 // Extract yield type from generators
-function* numberGenerator() {
-    yield 1;
-    yield 2;
-    yield 3;
+function\* numberGenerator() {
+yield 1;
+yield 2;
+yield 3;
 }
 
 type NumberType = YieldType<typeof numberGenerator>; // number
 
 // Omit properties by their value type
 type Config = {
-    name: string;
-    debug: boolean;
-    verbose: boolean;
-    timeout: number;
+name: string;
+debug: boolean;
+verbose: boolean;
+timeout: number;
 };
 type WithoutBooleans = OmitByKey<Config, boolean>; // { name: string; timeout: number }
 
 // Set specific properties to nullable
 type APIResponse = {
-    id: number;
-    name: string;
-    email: string;
+id: number;
+name: string;
+email: string;
 };
 type PartialResponse = SetNullable<APIResponse, "email" | "name">; // email and name become nullable
-```
+
+````
 
 ### Extended Remeda Utilities
 
@@ -492,7 +514,7 @@ const totalAge = sumBy(
 // Chunk array into groups
 const chunked = chunk(users, 2);
 // [[user1, user2], [user3]]
-```
+````
 
 ## API Reference
 
