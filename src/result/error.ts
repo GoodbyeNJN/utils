@@ -1,106 +1,84 @@
-/* eslint-disable max-params */
+import { getErrorMessage } from "@/common";
+import { isError } from "@/remeda";
 
-import { stringify } from "@/common";
-import { isBigInt, isBoolean, isError, isNumber, isString, isSymbol } from "@/remeda";
+import type { Result } from "./result";
 
-const prepare = (message: string | undefined, contexts: string[], error: unknown) => {
-    let e: unknown;
-    let emsg: string;
-
+const prepare = (result: Result, msg?: string) => {
     // 1. Determine error message and cause from the provided error
-    if (isError(error)) {
-        e = error;
-        emsg = error.message;
-    } else if (
-        isString(error) ||
-        isNumber(error) ||
-        isBigInt(error) ||
-        isBoolean(error) ||
-        isSymbol(error)
-    ) {
-        emsg = error.toString();
-    } else if (error === undefined) {
-        emsg = "";
-    } else if (error === null) {
-        emsg = "null";
-    } else {
-        emsg = stringify(error);
-    }
+    const cause = result["error"];
+    const reason = cause === undefined ? "" : getErrorMessage(cause);
 
     // 2. Concat error message to contexts as the innermost context
-    const ctxs = contexts.reverse().concat(emsg || []);
+    const contexts = result["contexts"].reverse().concat(reason || []);
 
-    let msg = "";
+    let message = "";
     // 3. Use provided message as the main message if available
-    if (message) {
-        msg = message;
+    if (msg) {
+        message = msg;
     } else {
         // 4. Otherwise, use the first non-empty context as the main message
-        while (ctxs.length > 0) {
+        while (contexts.length > 0) {
             // 5. The main message is removed from contexts
-            msg = ctxs.shift()!;
-            if (msg) break;
+            message = contexts.shift()!;
+            if (message) break;
         }
-        // 6. Them main message may still be empty, that's okay
+        // 6. The main message may still be empty, that's okay
     }
 
-    // 7. Format the display string
-    const ctx = ctxs.map((line, index) => `    ${index}: ${line}`).join("\n");
-    const display = `
+    // 7. Format into a string with message and contexts
+    const ctx = contexts.map((line, index) => `    ${index}: ${line}`).join("\n");
+    const formatted = `
 Message:
-    ${msg || "<empty message>"}
-
+    ${message || "<empty message>"}
 Context:
     ${ctx.trim() || "<empty context>"}
 `.trim();
 
     // 8. Prepare the error constructor options
-    const options: ErrorOptions | undefined = e ? { cause: e } : undefined;
+    const options: ErrorOptions | undefined = isError(cause) ? { cause } : undefined;
 
-    return { message: msg, contexts: ctxs, error: e, display, options };
+    return { message, contexts, formatted, options };
 };
 
 export class ResultError extends Error {
-    static isResultError(value: unknown): value is ResultError {
+    static is(value: unknown): value is ResultError {
         return value instanceof ResultError;
     }
 
-    #message: string;
-    #contexts: string[];
-    #display: string;
+    static fmt(result: Result, message?: string): string {
+        return prepare(result, message).formatted;
+    }
 
-    constructor(
-        message: string | undefined,
-        error: unknown,
-        contexts: string[],
-        caller: Function = ResultError,
-    ) {
-        const prepared = prepare(message, contexts, error);
+    #msg: string;
+    #ctx: string[];
+    #formatted: string;
+
+    constructor(result: Result, message?: string, caller: Function = ResultError) {
+        const prepared = prepare(result, message);
 
         super(
             `
-
-${prepared.display}
-
+--------------------
+${prepared.formatted}
 Stack trace:`,
             prepared.options,
         );
         Error.captureStackTrace(this, caller || this.constructor);
 
-        this.#message = prepared.message;
-        this.#contexts = prepared.contexts;
-        this.#display = prepared.display;
+        this.#msg = prepared.message;
+        this.#ctx = prepared.contexts;
+        this.#formatted = prepared.formatted;
     }
 
     get msg(): string {
-        return this.#message;
+        return this.#msg;
     }
 
-    get ctx(): string[] {
-        return this.#contexts.slice();
+    get contexts(): string[] {
+        return this.#ctx;
     }
 
     override toString(): string {
-        return this.#display;
+        return this.#formatted;
     }
 }
