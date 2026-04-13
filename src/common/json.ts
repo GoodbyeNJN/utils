@@ -14,14 +14,11 @@ const safeParse = <T = any>(
     text: string,
     reviver?: (this: any, key: string, value: any) => any,
 ): Result<T, Error> => {
-    const fn = () => {
-        return JSON.parse(text, reviver);
-    };
-    const result = Result.fromCallable<T>(fn, Error).context(
+    const result = Result.wrap(JSON.parse, Error)(text, reviver);
+
+    return result.context(
         `Failed to parse JSON string: ${text.length > 100 ? text.slice(0, 100) + "..." : text}`,
     );
-
-    return result;
 };
 
 const unsafeParse = <T = any>(

@@ -3,7 +3,7 @@ import path, { dirname } from "node:path";
 
 import { safeParse, stringify } from "@/common";
 import { isNumber } from "@/remeda";
-import { err, ok, Result, safeTry } from "@/result";
+import { err, ok, Result } from "@/result";
 
 import type {
     AppendFileOptions,
@@ -40,7 +40,7 @@ export const appendFile = async (
     data: string,
     options?: AppendFileOptions,
 ): Promise<Result<void, Error>> =>
-    safeTry(async function* () {
+    Result.gen(async function* () {
         const newline = options?.newline ?? true;
 
         yield* await mkdir(dirname(pathLikeToPath(path).toString()));
@@ -48,9 +48,7 @@ export const appendFile = async (
         const fn = async () => {
             await fsp.appendFile(path, newline ? `\n${data}` : data, parseEncodingOptions(options));
         };
-        const result = (await Result.fromCallable(fn, Error)).context(
-            `Failed to append file: ${path}`,
-        );
+        const result = (await Result.try(fn, Error)).context(`Failed to append file: ${path}`);
 
         return result;
     });
@@ -60,7 +58,7 @@ export const appendFileSync = (
     data: string,
     options?: AppendFileOptions,
 ): Result<void, Error> =>
-    safeTry(function* () {
+    Result.gen(function* () {
         const newline = options?.newline ?? true;
 
         yield* mkdirSync(dirname(pathLikeToPath(path).toString()));
@@ -68,7 +66,7 @@ export const appendFileSync = (
         const fn = () => {
             fs.appendFileSync(path, newline ? `\n${data}` : data, parseEncodingOptions(options));
         };
-        const result = Result.fromCallable(fn, Error).context(`Failed to append file: ${path}`);
+        const result = Result.try(fn, Error).context(`Failed to append file: ${path}`);
 
         return result;
     });
@@ -83,7 +81,7 @@ export const cp = async (
     const fn = async () => {
         await fsp.cp(source, destination, { recursive });
     };
-    const result = (await Result.fromCallable(fn, Error)).context(
+    const result = (await Result.try(fn, Error)).context(
         `Failed to copy path: ${source} to ${destination}`,
     );
 
@@ -100,7 +98,7 @@ export const cpSync = (
     const fn = () => {
         fs.cpSync(source, destination, { recursive });
     };
-    const result = Result.fromCallable(fn, Error).context(
+    const result = Result.try(fn, Error).context(
         `Failed to copy path: ${source} to ${destination}`,
     );
 
@@ -113,7 +111,7 @@ export const exists = async (path: PathLike): Promise<Result<true, Error>> => {
 
         return true as const;
     };
-    const result = (await Result.fromCallable(fn, Error)).context(
+    const result = (await Result.try(fn, Error)).context(
         `Failed to check exists for path: ${path}`,
     );
 
@@ -126,9 +124,7 @@ export const existsSync = (path: PathLike): Result<true, Error> => {
 
         return true as const;
     };
-    const result = Result.fromCallable(fn, Error).context(
-        `Failed to check exists for path: ${path}`,
-    );
+    const result = Result.try(fn, Error).context(`Failed to check exists for path: ${path}`);
 
     return result;
 };
@@ -144,9 +140,7 @@ export const mkdir = async (
     const fn = async () => {
         await fsp.mkdir(path, { recursive });
     };
-    const result = (await Result.fromCallable(fn, Error)).context(
-        `Failed to create directory: ${path}`,
-    );
+    const result = (await Result.try(fn, Error)).context(`Failed to create directory: ${path}`);
 
     return result;
 };
@@ -159,7 +153,7 @@ export const mkdirSync = (path: PathLike, options?: MkdirOptions): Result<void, 
     const fn = () => {
         fs.mkdirSync(path, { recursive });
     };
-    const result = Result.fromCallable(fn, Error).context(`Failed to create directory: ${path}`);
+    const result = Result.try(fn, Error).context(`Failed to create directory: ${path}`);
 
     return result;
 };
@@ -173,15 +167,13 @@ export async function readFile(
     options?: StringEncodingOptions,
 ): Promise<Result<string, Error>>;
 export async function readFile(path: any, options?: any): Promise<Result<any, Error>> {
-    return safeTry(async function* () {
+    return Result.gen(async function* () {
         yield* await exists(path);
 
         const fn = async () => {
             return await fsp.readFile(path, parseEncodingOptions(options));
         };
-        const result = (await Result.fromCallable(fn, Error)).context(
-            `Failed to read file: ${path}`,
-        );
+        const result = (await Result.try(fn, Error)).context(`Failed to read file: ${path}`);
 
         return result;
     });
@@ -193,13 +185,13 @@ export function readFileSync(
     options?: StringEncodingOptions,
 ): Result<string, Error>;
 export function readFileSync(path: any, options?: any): Result<any, Error> {
-    return safeTry(function* () {
+    return Result.gen(function* () {
         yield* existsSync(path);
 
         const fn = () => {
             return fs.readFileSync(path, parseEncodingOptions(options));
         };
-        const result = Result.fromCallable(fn, Error).context(`Failed to read file: ${path}`);
+        const result = Result.try(fn, Error).context(`Failed to read file: ${path}`);
 
         return result;
     });
@@ -209,7 +201,7 @@ export const readFileByLine = (
     path: PathLike,
     options?: StringEncodingOptions,
 ): Promise<Result<AsyncIterable<string>, Error>> =>
-    safeTry(async function* () {
+    Result.gen(async function* () {
         yield* await exists(path);
 
         const { createInterface } = await import("node:readline");
@@ -230,7 +222,7 @@ export const readFileByLine = (
 
             return reader;
         };
-        const result = Result.fromCallable(fn, Error).context(`Failed to read file: ${path}`);
+        const result = Result.try(fn, Error).context(`Failed to read file: ${path}`);
 
         return result;
     });
@@ -239,7 +231,7 @@ export const readJson = async <T = any>(
     path: PathLike,
     options?: StringEncodingOptions,
 ): Promise<Result<T, Error>> =>
-    safeTry(async function* () {
+    Result.gen(async function* () {
         const content = yield* await readFile(path, options);
         if (!content) return err(new Error(`JSON file is empty: ${path}`));
 
@@ -252,7 +244,7 @@ export const readJsonSync = <T = any>(
     path: PathLike,
     options?: StringEncodingOptions,
 ): Result<T, Error> =>
-    safeTry(function* () {
+    Result.gen(function* () {
         const content = yield* readFileSync(path, options);
         if (!content) return err(new Error(`JSON file is empty: ${path}`));
 
@@ -267,7 +259,7 @@ export const rm = async (path: PathLike, options?: RmOptions): Promise<Result<vo
     const fn = async () => {
         await fsp.rm(path, { force, recursive });
     };
-    const result = (await Result.fromCallable(fn, Error)).context(`Failed to remove path: ${path}`);
+    const result = (await Result.try(fn, Error)).context(`Failed to remove path: ${path}`);
 
     return result;
 };
@@ -278,7 +270,7 @@ export const rmSync = (path: PathLike, options?: RmOptions): Result<void, Error>
     const fn = () => {
         fs.rmSync(path, { force, recursive });
     };
-    const result = Result.fromCallable(fn, Error).context(`Failed to remove path: ${path}`);
+    const result = Result.try(fn, Error).context(`Failed to remove path: ${path}`);
 
     return result;
 };
@@ -288,15 +280,13 @@ export const writeFile = async (
     data: string,
     options?: StringEncodingOptions,
 ): Promise<Result<void, Error>> =>
-    safeTry(async function* () {
+    Result.gen(async function* () {
         yield* await mkdir(dirname(pathLikeToPath(path).toString()));
 
         const fn = async () => {
             await fsp.writeFile(path, data, parseEncodingOptions(options));
         };
-        const result = (await Result.fromCallable(fn, Error)).context(
-            `Failed to write file: ${path}`,
-        );
+        const result = (await Result.try(fn, Error)).context(`Failed to write file: ${path}`);
 
         return result;
     });
@@ -309,7 +299,7 @@ export const writeFileSync = (
     const fn = () => {
         fs.writeFileSync(path, data, parseEncodingOptions(options));
     };
-    const result = Result.fromCallable(fn, Error).context(`Failed to write file: ${path}`);
+    const result = Result.try(fn, Error).context(`Failed to write file: ${path}`);
 
     return result;
 };
