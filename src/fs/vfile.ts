@@ -1,134 +1,339 @@
+/* eslint-disable @typescript-eslint/method-signature-style */
+
 import path from "node:path";
+import url from "node:url";
 
-import { removePrefix } from "@/common";
+import { nil as _nil, removePrefix } from "@/common";
+import { isString } from "@/remeda";
 
-import { readFile } from "./safe";
+import type { PathLike, StringEncodingOptions } from "./types";
 
-export interface VFileOptions {
-    pathname: string;
-    content?: string | undefined;
-    cwd?: string | undefined;
+const nil = _nil as any;
+
+interface PathnameGetter<T> {
+    /**
+     * @example
+     * ```js
+     * vfile.pathname(); // "/home/user/project/src/page/index.js"
+     * ```
+     */
+    (): string;
+    /**
+     * @example
+     * ```js
+     * vfile.pathname("/home/user/project/src/page/index.js");
+     * ```
+     */
+    (pathname: string): T;
+    /**
+     * @example
+     * ```js
+     * vfile.pathname.relative(); // "src/page/index.js"
+     * ```
+     */
+    relative(): string;
+    /**
+     * @example
+     * ```js
+     * vfile.pathname.relative("src/page/index.js");
+     * ```
+     */
+    relative(pathname: string): T;
 }
 
-export class VFile {
-    static async fromFilepath(pathname: string, cwd?: string) {
-        const vfile = new VFile({
-            pathname,
-            cwd,
-        });
+interface DirnameGetter<T> {
+    /**
+     * @example
+     * ```js
+     * vfile.dirname(); // "src/page"
+     * ```
+     */
+    (): string;
+    /**
+     * @example
+     * ```js
+     * vfile.dirname("src/page");
+     * ```
+     */
+    (dirname: string): T;
+    /**
+     * @example
+     * ```js
+     * vfile.dirname.absolute(); // "/home/user/project/src/page"
+     * ```
+     */
+    absolute(): string;
+    /**
+     * @example
+     * ```js
+     * vfile.dirname.absolute("/home/user/project/src/page");
+     * ```
+     */
+    absolute(dirname: string): T;
+}
 
-        const content = await readFile(pathname);
-
-        return content.map(content => {
-            vfile.content = content;
-            return vfile;
-        });
-    }
-
-    content = "";
+export class BaseVFile {
+    protected _cwd = process.cwd();
+    protected _dirname = "";
+    protected _filename = "";
+    protected _extname = "";
 
     /**
      * @example
-     * `/home/user/project`
+     * ```js
+     * const vfile = new VFile(
+     *   "/home/user/project/src/page/index.js",
+     *   "/home/user/project",
+     * );
+     * ```
      */
-    cwd = process.cwd();
-    /**
-     * @example
-     * `src`
-     */
-    dirname = "";
-    /**
-     * @example
-     * `index`
-     */
-    filename = "";
-    /**
-     * @example
-     * `js`
-     */
-    extname = "";
-
-    constructor(options: VFileOptions) {
-        const { pathname, content, cwd } = options;
-        if (content) {
-            this.content = content;
-        }
+    constructor(filepath: PathLike, cwd?: string) {
         if (cwd) {
-            this.cwd = cwd;
+            this.cwd(cwd);
         }
 
+        const pathname = isString(filepath) ? filepath : url.fileURLToPath(filepath);
         if (path.isAbsolute(pathname)) {
-            this.pathname = pathname;
+            this.pathname(pathname);
         } else {
-            this.relativePathname = pathname;
+            this.pathname.relative(pathname);
         }
     }
 
     /**
      * @example
-     * `/home/user/project/src/index.js`
+     * ```js
+     * vfile.cwd(); // "/home/user/project"
+     * ```
      */
-    get pathname() {
-        return path.resolve(this.cwd, this.dirname, this.basename);
+    cwd(): string;
+    /**
+     * @example
+     * ```js
+     * vfile.cwd("/home/user/project");
+     * ```
+     */
+    cwd(cwd: string): this;
+    cwd(cwd?: string) {
+        if (cwd === undefined) return this._cwd;
+
+        this._cwd = cwd;
+
+        return this;
     }
 
-    set pathname(value) {
-        this.parse(value);
+    get pathname(): PathnameGetter<this> {
+        const obj: any = this.absolutePathname.bind(this);
+        obj.relative = this.relativePathname.bind(this);
+
+        return obj;
+    }
+
+    get dirname(): DirnameGetter<this> {
+        const obj: any = this.relativeDirname.bind(this);
+        obj.absolute = this.absoluteDirname.bind(this);
+
+        return obj;
     }
 
     /**
      * @example
-     * `index.js`
+     * ```js
+     * vfile.filename(); // "index"
+     * ```
      */
-    get basename() {
-        return this.extname ? this.filename + "." + this.extname : this.filename;
-    }
+    filename(): string;
+    /**
+     * @example
+     * ```js
+     * vfile.filename("index");
+     * ```
+     */
+    filename(filename: string): this;
+    filename(filename?: string) {
+        if (filename === undefined) return this._filename;
 
-    set basename(value) {
-        const { name, ext } = path.parse(value);
-        this.filename = name;
-        this.extname = removePrefix(".", ext);
+        this._filename = filename;
+
+        return this;
     }
 
     /**
      * @example
-     * `/home/user/project/src`
+     * ```js
+     * vfile.extname(); // "js"
+     * ```
      */
-    get absoluteDirname() {
-        return path.resolve(this.cwd, this.dirname);
-    }
+    extname(): string;
+    /**
+     * @example
+     * ```js
+     * vfile.extname("js");
+     * ```
+     */
+    extname(extname: string): this;
+    extname(extname?: string) {
+        if (extname === undefined) return this._extname;
 
-    set absoluteDirname(value) {
-        this.dirname = path.relative(this.cwd, value);
+        this._extname = extname;
+
+        return this;
     }
 
     /**
      * @example
-     * `src/index.js`
+     * ```js
+     * vfile.basename(); // "index.js"
+     * ```
      */
-    get relativePathname() {
-        return path.relative(this.cwd, this.pathname);
+    basename(): string;
+    /**
+     * @example
+     * ```js
+     * vfile.basename("index.js");
+     * ```
+     */
+    basename(basename: string): this;
+    basename(basename?: string) {
+        if (basename === undefined) {
+            if (!this._extname) return this._filename;
+
+            return this._filename + "." + this._extname;
+        }
+
+        const { name, ext } = path.parse(basename);
+
+        this._filename = name;
+        this._extname = removePrefix(".", ext);
+
+        return this;
     }
 
-    set relativePathname(value) {
-        this.parse(path.resolve(this.cwd, value));
-    }
-
-    clone() {
-        const vfile = new VFile({
-            pathname: this.pathname,
-            content: this.content,
-            cwd: this.cwd,
-        });
+    clone(): BaseVFile {
+        const vfile = new BaseVFile("");
+        vfile._cwd = this._cwd;
+        vfile._dirname = this._dirname;
+        vfile._filename = this._filename;
+        vfile._extname = this._extname;
 
         return vfile;
     }
 
-    private parse(value: string) {
-        const { name, ext } = path.parse(value);
+    protected absolutePathname(pathname?: string) {
+        if (pathname === undefined) {
+            const basename = this._filename + (this._extname ? "." : "") + this._extname;
 
-        this.dirname = path.relative(this.cwd, path.dirname(value));
-        this.filename = name;
-        this.extname = removePrefix(".", ext);
+            return path.resolve(this._cwd, this._dirname, basename);
+        }
+
+        const { dir, name, ext } = path.parse(pathname);
+        this._dirname = path.relative(this._cwd, dir);
+        this._filename = name;
+        this._extname = removePrefix(".", ext);
+
+        return this;
+    }
+
+    protected relativePathname(pathname?: string) {
+        if (pathname === undefined) {
+            const basename = this._filename + (this._extname ? "." : "") + this._extname;
+
+            return path.join(this._dirname, basename);
+        }
+
+        const { dir, name, ext } = path.parse(pathname);
+        this._dirname = dir;
+        this._filename = name;
+        this._extname = removePrefix(".", ext);
+
+        return this;
+    }
+
+    protected relativeDirname(dirname?: string) {
+        if (dirname === undefined) return this._dirname;
+
+        this._dirname = dirname;
+
+        return this;
+    }
+
+    protected absoluteDirname(dirname?: string) {
+        if (dirname === undefined) {
+            return path.resolve(this._cwd, this._dirname);
+        }
+
+        this._dirname = path.relative(this._cwd, dirname);
+
+        return this;
+    }
+}
+
+export class ExtendVFile<T> extends BaseVFile {
+    protected _encoding: BufferEncoding = "utf-8";
+    protected _linebreak = "\n";
+    protected _transformer?: {
+        parse: (raw: string) => any;
+        stringify: (value: T) => any;
+    };
+    protected _raw: string | any = nil;
+    protected _value: T | any = nil;
+
+    /**
+     * @example
+     * ```js
+     * vfile.encoding(); // "utf-8"
+     * ```
+     */
+    encoding(): typeof this._encoding;
+    /**
+     * @example
+     * ```js
+     * vfile.encoding("utf-8");
+     * ```
+     */
+    encoding(encoding: StringEncodingOptions["encoding"]): this;
+    encoding(encoding?: typeof this._encoding): any {
+        if (encoding === undefined) return this._encoding;
+
+        this._encoding = encoding;
+
+        return this;
+    }
+
+    /**
+     * @example
+     * ```js
+     * vfile.linebreak(); // "\n"
+     * ```
+     */
+    linebreak(): typeof this._linebreak;
+    /**
+     * @example
+     * ```js
+     * vfile.linebreak("\r\n");
+     * ```
+     */
+    linebreak(linebreak: string): this;
+    linebreak(linebreak?: string): any {
+        if (linebreak === undefined) return this._linebreak;
+
+        this._linebreak = linebreak;
+
+        return this;
+    }
+
+    override clone(): ExtendVFile<T> {
+        const vfile = new ExtendVFile<T>("");
+        vfile._cwd = this._cwd;
+        vfile._dirname = this._dirname;
+        vfile._filename = this._filename;
+        vfile._extname = this._extname;
+        vfile._encoding = this._encoding;
+        vfile._linebreak = this._linebreak;
+        vfile._transformer = this._transformer;
+        vfile._raw = this._raw;
+        vfile._value = this._value;
+
+        return vfile;
     }
 }

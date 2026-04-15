@@ -415,3 +415,5 @@ export class Result<T = unknown, E = unknown> {
 
 export const ok = Result.ok;
 export const err = Result.err;
+
+export const isResult = Result.is;

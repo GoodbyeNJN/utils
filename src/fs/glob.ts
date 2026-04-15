@@ -4,8 +4,6 @@ import { isArray, isString, omit } from "@/remeda";
 
 import type { GlobOptions as TinyGlobOptions } from "tinyglobby";
 
-export type { FileSystemAdapter } from "tinyglobby";
-
 export interface GlobOptions extends Omit<TinyGlobOptions, "patterns"> {
     /**
      * Provide patterns as the first argument instead.

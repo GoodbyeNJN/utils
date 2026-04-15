@@ -1,26 +1,28 @@
 export type PathLike = string | URL;
 
 export interface BufferEncodingOptions {
-    encoding?: "buffer" | undefined;
+    encoding: "buffer";
 }
 
 export interface StringEncodingOptions {
-    encoding?: BufferEncoding | undefined;
+    encoding?: BufferEncoding;
 }
 
-export type AppendFileOptions = StringEncodingOptions & { newline?: boolean | undefined };
+export type EncodingOptions = BufferEncodingOptions | StringEncodingOptions;
 
-export type WriteJsonOptions = (StringEncodingOptions & { indent?: number | undefined }) | number;
+export type AppendFileOptions = StringEncodingOptions & { newline?: boolean };
+
+export type WriteJsonOptions = (StringEncodingOptions & { indent?: number }) | number;
 
 export interface MkdirOptions {
-    recursive?: boolean | undefined;
+    recursive?: boolean;
 }
 
 export interface RmOptions {
-    force?: boolean | undefined;
-    recursive?: boolean | undefined;
+    force?: boolean;
+    recursive?: boolean;
 }
 
 export interface CpOptions {
-    recursive?: boolean | undefined;
+    recursive?: boolean;
 }

@@ -1,8 +1,8 @@
 export { getErrorMessage, normalizeError } from "./error";
 
-export { stringify, parse, safeParse } from "./json";
-
 export { linear, scale } from "./math";
+
+export { nil, isNil } from "./nil";
 
 export { parseKeyValuePairs, parseValueToBoolean } from "./parse";
 
@@ -27,7 +27,7 @@ export {
 
 export { debounce, throttle } from "./throttle";
 
-export type { Stringify } from "./json";
+export type { Nil } from "./nil";
 
 export type { Lock, PromiseWithResolvers, Singleton } from "./promise";
 

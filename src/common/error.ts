@@ -1,6 +1,5 @@
+import { stableStringify } from "@/json/stable";
 import { isBigInt, isBoolean, isError, isNumber, isString, isSymbol } from "@/remeda";
-
-import { stringify } from "./json";
 
 export const normalizeError = (error: unknown, caller?: Function): Error => {
     if (isError(error)) return error;
@@ -29,7 +28,7 @@ export const getErrorMessage = (error: unknown, message?: string): string => {
     } else if (error === null) {
         msg = "null";
     } else {
-        msg = stringify(error);
+        msg = stableStringify(error);
     }
 
     return msg;

@@ -1,3 +1,6 @@
+export { isNil } from "@/common";
+export { isResult } from "@/result";
+
 export { hasOwnProperty } from "./hasOwnProperty";
 export { isFunction } from "./isFunction";
 export { isPromiseLike } from "./isPromiseLike";

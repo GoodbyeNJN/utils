@@ -1,55 +1,16 @@
 export { convertPathToPattern, escapePath, glob, globSync, isDynamicPattern } from "./glob";
-export {
-    appendFile as safeAppendFile,
-    appendFileSync as safeAppendFileSync,
-    cp as safeCp,
-    cpSync as safeCpSync,
-    exists as safeExists,
-    existsSync as safeExistsSync,
-    mkdir as safeMkdir,
-    mkdirSync as safeMkdirSync,
-    readFile as safeReadFile,
-    readFileByLine as safeReadFileByLine,
-    readFileSync as safeReadFileSync,
-    readJson as safeReadJson,
-    readJsonSync as safeReadJsonSync,
-    rm as safeRm,
-    rmSync as safeRmSync,
-    writeFile as safeWriteFile,
-    writeFileSync as safeWriteFileSync,
-    writeJson as safeWriteJson,
-    writeJsonSync as safeWriteJsonSync,
-} from "./safe";
-export {
-    appendFile,
-    appendFileSync,
-    cp,
-    cpSync,
-    exists,
-    existsSync,
-    mkdir,
-    mkdirSync,
-    readFile,
-    readFileByLine,
-    readFileSync,
-    readJson,
-    readJsonSync,
-    rm,
-    rmSync,
-    writeFile,
-    writeFileSync,
-    writeJson,
-    writeJsonSync,
-} from "./unsafe";
-export { VFile } from "./vfile";
+export { BaseVFile } from "./vfile";
 
-export type { FileSystemAdapter, GlobOptions } from "./glob";
+export * from "./safe";
+export * from "./unsafe";
+
+export type { GlobOptions } from "./glob";
 export type {
     AppendFileOptions,
     BufferEncodingOptions,
     CpOptions,
     MkdirOptions,
+    RmOptions,
     StringEncodingOptions,
     WriteJsonOptions,
 } from "./types";
-export type { VFileOptions } from "./vfile";

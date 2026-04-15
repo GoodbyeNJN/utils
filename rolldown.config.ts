@@ -8,10 +8,11 @@ import { dependencies } from "./package.json";
 
 const input = {
     common: "src/common/index.ts",
+    exec: "src/exec/index.ts",
     fs: "src/fs/index.ts",
-    result: "src/result/index.ts",
+    json: "src/json/index.ts",
     remeda: "src/remeda/index.ts",
-    shell: "src/shell/index.ts",
+    result: "src/result/index.ts",
     types: "src/types/index.ts",
     globalTypes: "src/types/global-types.d.ts",
 };

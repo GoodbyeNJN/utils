@@ -1,5 +1,5 @@
 export { ResultError } from "./error";
-export { err, ok, Result } from "./result";
+export { err, ok, isResult, Result } from "./result";
 
 export type { Err, Ok } from "./result";
 export type {
