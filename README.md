@@ -11,9 +11,9 @@ A modern TypeScript/JavaScript utility library providing a comprehensive collect
 - 🔒 **Type-safe**: Full TypeScript support with comprehensive type definitions and type inference
 - 📦 **Modular**: Import only what you need with tree-shakable exports and multiple entry points
 - 🛡️ **Result Pattern**: Functional error handling without exceptions, based on Rust-style Result types
-- 📁 **Safe File System**: Type-safe file system operations with Result-based error handling
-- 🐚 **Shell Execution**: Powerful and flexible shell command execution with piping support
-- 🧰 **Common Utilities**: String manipulation, math operations, promise utilities, and error handling
+- 📁 **VFile & FS**: Type-safe file system operations and a powerful virtual file object
+- 🐚 **Exec**: Powerful and flexible command execution with safe and unsafe variants
+- 🧰 **Common Utilities**: String manipulation, math operations, promise utilities, and JSON handling
 - 📊 **Remeda Extensions**: Extended utilities built on top of [Remeda](https://remedajs.com/)
 
 ## Installation
@@ -33,9 +33,10 @@ yarn add @goodbyenjn/utils
 ```typescript
 // Import what you need from the main module
 import { sleep, template } from "@goodbyenjn/utils";
-import { $ } from "@goodbyenjn/utils/shell";
-import { safeReadFile } from "@goodbyenjn/utils/fs";
+import { exec, safeExec } from "@goodbyenjn/utils/exec";
+import { BaseVFile } from "@goodbyenjn/utils/fs";
 import { ok, Result } from "@goodbyenjn/utils/result";
+import { parse, safeParse } from "@goodbyenjn/utils/json";
 ```
 
 ### Common Utilities
@@ -154,34 +155,39 @@ setTimeout(() => resolve("done!"), 1000);
 const result = await promise;
 ```
 
-#### Shell Command Execution
+### Command Execution
 
 ```typescript
-import { $ } from "@goodbyenjn/utils/shell";
+import { exec, safeExec } from "@goodbyenjn/utils/exec";
 
-// Execute shell commands with template literals
-const result = await $`npm install`;
-console.log(result.stdout);
-console.log(result.stderr);
-
-// String command with args
-const output = await $("ls", ["-la"]);
+// 1. Unsafe Execution (throws on failure)
+const output = await exec`npm install`;
 console.log(output.stdout);
 
-// Pipe commands
-const piped = await $`echo "hello"`.pipe`cat`;
+// String command with args
+const lsOutput = await exec("ls", ["-la"]);
+console.log(lsOutput.stdout);
+
+// 2. Safe Execution (returns Result)
+const safeOutput = await safeExec`npm install`;
+if (safeOutput.isOk()) {
+    console.log("Success:", safeOutput.unwrap().stdout);
+} else {
+    // Result contains error information (e.g., NonZeroExitError)
+    console.error("Failed:", safeOutput.unwrapErr().message);
+}
+
+// 3. Pipe Output
+const piped = await exec`echo "hello"`.pipe`cat`;
 console.log(piped.stdout);
 
-// Iterate output line by line
-for await (const line of $`cat large-file.txt`) {
+// 4. Iterate Output
+for await (const line of exec`cat large-file.txt`) {
     console.log(line);
 }
 
-// Using options
-const result2 = await $("npm", ["install"], { cwd: "/path/to/project" });
-
-// Factory function with options
-const withCwd = $({ cwd: "/path/to/project" });
+// 5. Configuration Factory
+const withCwd = exec({ cwd: "/path/to/project" });
 const result3 = await withCwd`npm install`;
 ```
 
@@ -236,6 +242,25 @@ const throttledScroll = throttle(() => {
 window.addEventListener("scroll", throttledScroll);
 ```
 
+#### JSON Handling
+
+```typescript
+import { parse, stringify, safeParse, safeStringify } from "@goodbyenjn/utils/json";
+
+// Standard JSON parsing (returns value or nil)
+const data = parse('{"a": 1}'); // { a: 1 }
+const invalid = parse("bad"); // nil
+
+// Safe JSON parsing (returns Result)
+const result = safeParse('{"a": 1}');
+if (result.isOk()) {
+    console.log(result.unwrap().a);
+}
+
+// Safe stringify
+const json = safeStringify({ a: 1 }); // Result<string, Error>
+```
+
 ### File System Operations
 
 ```typescript
@@ -248,33 +273,50 @@ import {
     safeMkdir,
     safeRm,
     safeReadFileByLine,
+    BaseVFile,
 } from "@goodbyenjn/utils/fs";
 
-// Read text file safely
-const textResult = await safeReadFile("config.txt", "utf8");
+// ... (safe operations)
+
+// BaseVFile - Unified file handling
+const vfile = new BaseVFile("example.json");
+
+// Fluid path manipulation
+vfile.filename("data").extname("ts");
+console.log(vfile.basename()); // "data.ts"
+
+// Cross-platform path handling
+const relative = vfile.pathname.relative(); // "data.ts" (relative to cwd)
+const absolute = vfile.pathname(); // "/full/path/to/data.ts"
+
+// Built-in operations (available in extended VFile implementations)
+// await vfile.read(); // Get content
+// await vfile.write(); // Write content
+```
+
 if (textResult.isOk()) {
-    console.log("File content:", textResult.unwrap());
+console.log("File content:", textResult.unwrap());
 } else {
-    console.error("Failed to read file:", textResult.unwrapErr().message);
+console.error("Failed to read file:", textResult.unwrapErr().message);
 }
 
 // Read and parse JSON safely
 const jsonResult = await safeReadJson("package.json");
 if (jsonResult.isOk()) {
-    const pkg = jsonResult.unwrap();
-    console.log("Package name:", pkg.name);
+const pkg = jsonResult.unwrap();
+console.log("Package name:", pkg.name);
 }
 
 // Write JSON file
 const writeResult = await safeWriteJson("data.json", { users: [] }, { pretty: true });
 if (writeResult.isErr()) {
-    console.error("Write failed:", writeResult.unwrapErr());
+console.error("Write failed:", writeResult.unwrapErr());
 }
 
 // Check if file exists
 const existsResult = await safeExists("path/to/file.txt");
 if (existsResult.isOk() && existsResult.unwrap()) {
-    console.log("File exists!");
+console.log("File exists!");
 }
 
 // Create directories (recursive)
@@ -286,11 +328,12 @@ const rmResult = await safeRm("build", { recursive: true, force: true });
 // Read file line by line
 const lineResult = await safeReadFileByLine("large-file.log");
 if (lineResult.isOk()) {
-    for await (const line of lineResult.unwrap()) {
-        console.log(line);
-    }
+for await (const line of lineResult.unwrap()) {
+console.log(line);
 }
-```
+}
+
+````
 
 ### Glob Patterns
 
@@ -306,7 +349,7 @@ const syncFiles = globSync("**/*.test.ts", { cwd: "tests" });
 
 // Convert file path to glob pattern
 const pattern = convertPathToPattern("/home/user/project");
-```
+````
 
 ### Result Pattern - Functional Error Handling
 
