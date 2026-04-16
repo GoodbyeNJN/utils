@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/method-signature-style */
 
+import type { NonFalsy } from "./utils/non-falsy";
+import type { WidenLiteral } from "./utils/widen-literal";
 import type * as Types from "@goodbyenjn/utils/types";
 
 declare global {
@@ -47,6 +49,62 @@ declare global {
          */
         has<ExistsKey extends K>(key: ExistsKey): this is MapWithExistsKey<K, V, ExistsKey>;
         has(key: K): boolean;
+    }
+}
+
+declare global {
+    interface Array<T> {
+        /**
+         * Returns the elements of an array that meet the condition specified in a callback function.
+         * @param predicate A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array.
+         * @param thisArg An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value.
+         */
+        filter<S extends T>(predicate: BooleanConstructor, thisArg?: any): NonFalsy<NoInfer<S>>[];
+        /**
+         * Determines whether an array includes a certain element, returning true or false as appropriate.
+         * @param searchElement The element to search for.
+         * @param fromIndex The position in this array at which to begin searching for searchElement.
+         */
+        includes(searchElement: T | (WidenLiteral<T> & {}), fromIndex?: number): boolean;
+        /**
+         * Returns the index of the first occurrence of a value in an array, or -1 if it is not present.
+         * @param searchElement The value to locate in the array.
+         * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0.
+         */
+        indexOf(searchElement: T | (WidenLiteral<T> & {}), fromIndex?: number): number;
+        /**
+         * Returns the index of the last occurrence of a specified value in an array, or -1 if it is not present.
+         * @param searchElement The value to locate in the array.
+         * @param fromIndex The array index at which to begin searching backward. If fromIndex is omitted, the search starts at the last index in the array.
+         */
+        lastIndexOf(searchElement: T | (WidenLiteral<T> & {}), fromIndex?: number): number;
+    }
+
+    interface ReadonlyArray<T> {
+        /**
+         * Returns the elements of an array that meet the condition specified in a callback function.
+         * @param predicate A function that accepts up to three arguments. The filter method calls the predicate function one time for each element in the array.
+         * @param thisArg An object to which the this keyword can refer in the predicate function. If thisArg is omitted, undefined is used as the this value.
+         */
+        filter<S extends T>(predicate: BooleanConstructor, thisArg?: any): NonFalsy<NoInfer<S>>[];
+        /**
+         * Determines whether an array includes a certain element, returning true or false as appropriate.
+         * @param searchElement The element to search for.
+         * @param fromIndex The position in this array at which to begin searching for searchElement.
+         */
+        includes(searchElement: T | (WidenLiteral<T> & {}), fromIndex?: number): boolean;
+        /**
+         * Returns the index of the first occurrence of a value in an array.
+         * @param searchElement The value to locate in the array.
+         * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0.
+         */
+        indexOf(searchElement: T | (WidenLiteral<T> & {}), fromIndex?: number): number;
+        /**
+         * Returns the index of the last occurrence of a specified value in an array.
+         * @param searchElement The value to locate in the array.
+         * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at the last index in the array.
+         */
+        lastIndexOf(searchElement: T | (WidenLiteral<T> & {}), fromIndex?: number): number;
     }
 }
 
