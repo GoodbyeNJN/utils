@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/method-signature-style */
 
-import type { NonFalsy } from "./utils/non-falsy";
-import type { WidenLiteral } from "./utils/widen-literal";
 import type * as Types from "@goodbyenjn/utils/types";
 
 declare global {
@@ -51,6 +49,20 @@ declare global {
         has(key: K): boolean;
     }
 }
+
+type WidenLiteral<T> = T extends string
+    ? string
+    : T extends number
+      ? number
+      : T extends boolean
+        ? boolean
+        : T extends bigint
+          ? bigint
+          : T extends symbol
+            ? symbol
+            : T;
+
+type NonFalsy<T> = T extends false | 0 | "" | null | undefined | 0n ? never : T;
 
 declare global {
     interface Array<T> {
