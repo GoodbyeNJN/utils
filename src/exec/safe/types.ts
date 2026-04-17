@@ -8,27 +8,12 @@ import type {
     Output,
 } from "../types";
 import type { Result } from "@/result";
-import type { SetReturnType } from "@/types";
 
-export type ProcessOptions = BaseProcessOptions & ExtendProcessOptions;
+export type ProcessOptions = BaseProcessOptions<ProcessInstance>;
 
-export interface ExtendProcessOptions {
-    stdin: ProcessInstance | string;
-}
+export type ProcessInstance = BaseProcessInstance<Result<Output, Error>, Result<string, Error>>;
 
-export type ProcessInstance = BaseProcessInstance & ExtendProcessInstance;
-
-export interface ExtendProcessInstance
-    extends PromiseLike<Result<Output, Error>>, AsyncIterable<Result<string, Error>> {
-    exec: Exec;
-    pipe: Exec;
-}
-
-export type Exec = SetReturnType<BaseExecSpawn, ProcessInstance> &
-    SetReturnType<BaseExecCommandTemplate, ProcessInstance> &
-    SetReturnType<BaseExecCommandString, ProcessInstance> &
-    SetReturnType<
-        BaseExecFactory,
-        SetReturnType<BaseExecCommandTemplate, ProcessInstance> &
-            SetReturnType<BaseExecCommandString, ProcessInstance>
-    >;
+export type Exec = BaseExecSpawn<ProcessInstance> &
+    BaseExecCommandTemplate<ProcessInstance> &
+    BaseExecCommandString<ProcessInstance> &
+    BaseExecFactory<ProcessInstance>;

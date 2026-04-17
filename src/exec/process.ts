@@ -1,15 +1,24 @@
 import { isString } from "remeda";
 
-import { createPromiseWithResolvers } from "@/common";
+import { concatTemplateStrings, createPromiseWithResolvers } from "@/common";
 
 import { isAbortError } from "./error";
-import { defaultOptions, getProcessOptions, getSpawnCommand } from "./params";
+import {
+    defaultOptions,
+    isCommandStringParams,
+    isCommandTemplateParams,
+    isFactoryParams,
+    isSpawnParams,
+    parseCommandString,
+} from "./params";
 import { spawnProcess } from "./spawn";
 
 import type {
     BaseExec,
     BaseProcessInstance,
     BaseProcessOptions,
+    ExecCommandStringParams,
+    ExecCommandTemplateParams,
     ExecParams,
     KillSignal,
 } from "./types";
@@ -17,12 +26,18 @@ import type { Nullable } from "@/types";
 import type { ChildProcess } from "node:child_process";
 import type { Readable } from "node:stream";
 
-export abstract class BaseProcess implements BaseProcessInstance {
-    protected static execImpl(self: BaseProcess, params: ExecParams): BaseExec {
-        const exec = (...params: ExecParams): any => {
+export abstract class BaseProcess<P, I> implements BaseProcessInstance<P, I> {
+    protected static execImpl<P, I>(self: BaseProcess<P, I>, params: ExecParams) {
+        const execCommandTemplateOrString = (
+            ...params: ExecCommandTemplateParams | ExecCommandStringParams
+        ) => {
+            const input = isCommandTemplateParams(params)
+                ? concatTemplateStrings(params[0], params.slice(1))
+                : params[0];
+
             let cmd;
             try {
-                cmd = getSpawnCommand(params);
+                cmd = parseCommandString(input);
             } catch (error) {
                 self.thrownError = error as Error;
             }
@@ -31,16 +46,23 @@ export abstract class BaseProcess implements BaseProcessInstance {
             return cmd ? self.spawn(cmd.command, cmd.args) : self;
         };
 
-        // Factory case
-        const options = getProcessOptions(params);
-        if (options) {
-            self.options = { ...self.options, ...options };
+        if (isCommandTemplateParams(params) || isCommandStringParams(params)) {
+            return execCommandTemplateOrString(...params);
+        } else if (isSpawnParams(params)) {
+            self.options = { ...self.options, ...params[2] };
 
-            return exec;
+            return self.spawn(params[0], params[1] || []);
+        } else if (isFactoryParams(params)) {
+            self.options = { ...self.options, ...params[0] };
+
+            return execCommandTemplateOrString;
+        } else {
+            self.thrownError = new Error(
+                `Invalid parameters passed to exec: ${JSON.stringify(params)}`,
+            );
+
+            return self;
         }
-
-        // Command string or template case
-        return exec(...params);
     }
 
     protected _process: ChildProcess | undefined;
@@ -82,12 +104,12 @@ export abstract class BaseProcess implements BaseProcessInstance {
             createPromiseWithResolvers<void>());
     }
 
-    exec: any = (...params: ExecParams) => {
+    exec: BaseExec<BaseProcessInstance<P, I>> = (...params: ExecParams): any => {
         return BaseProcess.execImpl(this, params);
     };
 
-    pipe: any = (...params: ExecParams) => {
-        const self = this.construct();
+    pipe: BaseExec<BaseProcessInstance<P, I>> = (...params: ExecParams): any => {
+        const self = this.child();
 
         return BaseProcess.execImpl(self, params);
     };
@@ -96,8 +118,8 @@ export abstract class BaseProcess implements BaseProcessInstance {
         return this.process?.kill(signal) === true;
     }
 
-    then<TResult1 = any, TResult2 = never>(
-        onfulfilled?: ((value: any) => TResult1 | PromiseLike<TResult1>) | null,
+    then<TResult1 = P, TResult2 = never>(
+        onfulfilled?: ((value: P) => TResult1 | PromiseLike<TResult1>) | null,
         onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
     ): Promise<TResult1 | TResult2> {
         return this.thenImpl().then(onfulfilled, onrejected);
@@ -148,9 +170,9 @@ export abstract class BaseProcess implements BaseProcessInstance {
         this.process?.removeAllListeners();
     }
 
-    abstract [Symbol.asyncIterator](): AsyncIterator<any>;
+    abstract [Symbol.asyncIterator](): AsyncIterator<I>;
 
-    protected abstract thenImpl(): Promise<any>;
+    protected abstract thenImpl(): Promise<P>;
 
-    protected abstract construct(): BaseProcess;
+    protected abstract child(): BaseProcess<P, I>;
 }

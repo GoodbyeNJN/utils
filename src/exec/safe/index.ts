@@ -5,10 +5,13 @@ import { BaseProcess } from "../process";
 import { readStreamLines, readStreams } from "../stream";
 
 import type { Exec, ProcessInstance, ProcessOptions } from "./types";
-import type { Output } from "../types";
+import type { ExecParams, Output } from "../types";
 import type { Result } from "@/result";
 
-export class Process extends BaseProcess implements ProcessInstance {
+export class Process
+    extends BaseProcess<Result<Output, Error>, Result<string, Error>>
+    implements ProcessInstance
+{
     declare exec: Exec;
     declare pipe: Exec;
 
@@ -62,12 +65,12 @@ export class Process extends BaseProcess implements ProcessInstance {
         return err(new NonZeroExitError(this, output));
     }
 
-    protected override construct(): Process {
+    protected override child() {
         return new Process({ stdin: this });
     }
 }
 
-export const exec: Exec = (...params: [any, ...any[]]): any => {
+export const exec: Exec = (...params: ExecParams): any => {
     const self = new Process();
 
     return BaseProcess["execImpl"](self, params);

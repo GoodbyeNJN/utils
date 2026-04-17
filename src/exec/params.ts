@@ -1,9 +1,18 @@
 import { tokenizeArgs } from "args-tokenizer";
 
-import { concatTemplateStrings, getErrorMessage } from "@/common";
+import { getErrorMessage } from "@/common";
 import { isArray, isPlainObject, isString } from "@/remeda";
 
-import type { BaseProcessOptions, ExecParams, SpawnCommand, SpawnOptions } from "./types";
+import type {
+    BaseProcessOptions,
+    ExecCommandStringParams,
+    ExecCommandTemplateParams,
+    ExecFactoryParams,
+    ExecParams,
+    ExecSpawnParams,
+    SpawnCommand,
+    SpawnOptions,
+} from "./types";
 
 export const defaultOptions: Partial<BaseProcessOptions> = {
     timeout: undefined,
@@ -14,7 +23,7 @@ export const defaultSpawnOptions: SpawnOptions = {
     windowsHide: true,
 };
 
-const parseCommandString = (input: string): SpawnCommand => {
+export const parseCommandString = (input: string): SpawnCommand => {
     let tokens;
     try {
         tokens = tokenizeArgs(input);
@@ -29,32 +38,28 @@ const parseCommandString = (input: string): SpawnCommand => {
     return { command: tokens[0], args: tokens.slice(1) };
 };
 
-export const getSpawnCommand = (params: ExecParams): SpawnCommand => {
-    const [templateOrString, ...rest] = params;
+export const isSpawnParams = (params: ExecParams): params is ExecSpawnParams => {
+    const [a, b, c] = params;
 
-    let cmd;
-
-    if (isArray(templateOrString)) {
-        // Template string case, should parse input string into command and args
-        const input = concatTemplateStrings(templateOrString, rest);
-        cmd = parseCommandString(input);
-    } else if (isString(templateOrString)) {
-        // Simple command string case
-        cmd = isArray(rest[0])
-            ? { command: templateOrString, args: rest[0] as string[] } // Args array provided
-            : parseCommandString(templateOrString); // No args provided, should parse string into command and args
-    } else {
-        throw new Error(
-            `Invalid first parameter for exec: expected string or template string, got ${typeof templateOrString}.`,
-        );
-    }
-
-    return cmd;
+    return isString(a) && (b === undefined || isArray(b)) && (c === undefined || isPlainObject(c));
 };
 
-export const getProcessOptions = (params: ExecParams): Partial<BaseProcessOptions> | undefined => {
-    const [maybeOptions] = params;
-    if (isPlainObject(maybeOptions)) return maybeOptions;
+export const isCommandTemplateParams = (
+    params: ExecParams,
+): params is ExecCommandTemplateParams => {
+    const [a] = params;
 
-    return undefined;
+    return isArray(a);
+};
+
+export const isCommandStringParams = (params: ExecParams): params is ExecCommandStringParams => {
+    const [a, b, c] = params;
+
+    return isString(a) && b === undefined && c === undefined;
+};
+
+export const isFactoryParams = (params: ExecParams): params is ExecFactoryParams => {
+    const [a, b, c] = params;
+
+    return isPlainObject(a) && b === undefined && c === undefined;
 };
