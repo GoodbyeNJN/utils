@@ -1,9 +1,8 @@
-import { beforeEach, describe, expect, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { mkdir, mkdirSync } from "@/fs/safe/mkdir";
 
 import { fs, vol } from "../../helpers/memfs";
-import { test } from "../../helpers/tester";
 
 vi.mock("node:fs");
 vi.mock("node:fs/promises");

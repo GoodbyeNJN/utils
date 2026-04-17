@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import {
     writeFileSync as unsafeWriteFileSync,
@@ -8,7 +8,6 @@ import {
 } from "@/fs/unsafe/write";
 
 import { fs, vol } from "../../helpers/memfs";
-import { test } from "../../helpers/tester";
 
 vi.mock("node:fs");
 vi.mock("node:fs/promises");
