@@ -119,6 +119,14 @@ export class Result<T = unknown, E = unknown> {
     ): AsyncFn<Result<Awaited<T>, E>, A>;
 
     static wrap(fn: unknown, onThrow?: Fn): Fn {
+        if (!isFunction(fn)) {
+            const error = new TypeError("Argument must be a function");
+
+            return () => {
+                return this.err(transformError(error, onThrow));
+            };
+        }
+
         return (...args) => {
             return this.try(() => (fn as Fn)(...args), onThrow as Fn);
         };
