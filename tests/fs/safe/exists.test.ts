@@ -1,64 +1,58 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, vi } from "vitest";
 
 import { exists, existsSync } from "@/fs/safe/exists";
 
-let tmpDir: string;
+import { fs, vol } from "../../helpers/memfs";
+import { test } from "../../helpers/tester";
+
+vi.mock("node:fs");
+vi.mock("node:fs/promises");
 
 beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), "utils-fs-safe-exists-"));
+    vol.reset();
 });
 
-afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
-});
+const file = "/file.txt";
+const dir = "/dir";
 
 describe("exists", () => {
-    it("should return true for an existing file", async () => {
-        const file = join(tmpDir, "file.txt");
-        writeFileSync(file, "hello");
+    test("should return true for an existing file", async () => {
+        fs.writeFileSync(file, "hello");
 
         expect(await exists(file)).toBe(true);
     });
 
-    it("should return true for an existing directory", async () => {
-        const dir = join(tmpDir, "subdir");
-        mkdirSync(dir);
+    test("should return true for an existing directory", async () => {
+        fs.mkdirSync(dir);
 
         expect(await exists(dir)).toBe(true);
     });
 
-    it("should return false for a non-existing path", async () => {
-        expect(await exists(join(tmpDir, "nonexistent.txt"))).toBe(false);
+    test("should return false for a non-existing path", async () => {
+        expect(await exists(file)).toBe(false);
     });
 
-    it("should accept a URL", async () => {
-        const file = join(tmpDir, "file.txt");
-        writeFileSync(file, "hello");
+    test("should accept a URL", async () => {
+        fs.writeFileSync(file, "hello");
 
         expect(await exists(new URL(`file://${file}`))).toBe(true);
     });
 });
 
 describe("existsSync", () => {
-    it("should return true for an existing file", () => {
-        const file = join(tmpDir, "file.txt");
-        writeFileSync(file, "hello");
+    test("should return true for an existing file", async () => {
+        fs.writeFileSync(file, "hello");
 
         expect(existsSync(file)).toBe(true);
     });
 
-    it("should return true for an existing directory", () => {
-        const dir = join(tmpDir, "subdir");
-        mkdirSync(dir);
+    test("should return true for an existing directory", async () => {
+        fs.mkdirSync(dir);
 
         expect(existsSync(dir)).toBe(true);
     });
 
-    it("should return false for a non-existing path", () => {
-        expect(existsSync(join(tmpDir, "nonexistent.txt"))).toBe(false);
+    test("should return false for a non-existing path", async () => {
+        expect(existsSync(file)).toBe(false);
     });
 });

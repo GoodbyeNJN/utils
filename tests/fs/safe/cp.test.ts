@@ -1,74 +1,71 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, vi } from "vitest";
 
 import { cp, cpSync } from "@/fs/safe/cp";
 
-let tmpDir: string;
+import { fs, vol } from "../../helpers/memfs";
+import { test } from "../../helpers/tester";
+
+vi.mock("node:fs");
+vi.mock("node:fs/promises");
 
 beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), "utils-fs-safe-cp-"));
+    vol.reset();
 });
 
-afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
-});
+const srcFile = "/src.txt";
+const destFile = "/dest.txt";
+const srcDir = "/src";
+const destDir = "/dest";
 
 describe("cp", () => {
-    it("should copy a file and return Ok", async () => {
-        const src = join(tmpDir, "source.txt");
-        const dest = join(tmpDir, "dest.txt");
-        writeFileSync(src, "hello");
+    test("should copy a file and return Ok", async () => {
+        fs.writeFileSync(srcFile, "hello");
 
-        const result = await cp(src, dest);
+        const result = await cp(srcFile, destFile);
 
         expect(result.isOk()).toBe(true);
+        expect(fs.readFileSync(destFile, "utf-8")).toBe("hello");
     });
 
-    it("should copy a directory recursively and return Ok", async () => {
-        const srcDir = join(tmpDir, "src");
-        const destDir = join(tmpDir, "dest");
-        mkdirSync(srcDir);
-        writeFileSync(join(srcDir, "file.txt"), "content");
+    test("should copy a directory recursively and return Ok", async () => {
+        fs.mkdirSync(srcDir);
+        fs.writeFileSync(`${srcDir}${srcFile}`, "content");
 
         const result = await cp(srcDir, destDir);
 
         expect(result.isOk()).toBe(true);
+        expect(fs.readFileSync(`${destDir}${srcFile}`, "utf-8")).toBe("content");
     });
 
-    it("should return Err when source does not exist", async () => {
-        const result = await cp(join(tmpDir, "nonexistent.txt"), join(tmpDir, "dest.txt"));
+    test("should return Err when source does not exist", async () => {
+        const result = await cp(srcFile, destFile);
 
         expect(result.isErr()).toBe(true);
     });
 });
 
 describe("cpSync", () => {
-    it("should copy a file and return Ok", () => {
-        const src = join(tmpDir, "source.txt");
-        const dest = join(tmpDir, "dest.txt");
-        writeFileSync(src, "hello");
+    test("should copy a file and return Ok", async () => {
+        fs.writeFileSync(srcFile, "hello");
 
-        const result = cpSync(src, dest);
+        const result = cpSync(srcFile, destFile);
 
         expect(result.isOk()).toBe(true);
+        expect(fs.readFileSync(destFile, "utf-8")).toBe("hello");
     });
 
-    it("should copy a directory recursively and return Ok", () => {
-        const srcDir = join(tmpDir, "src-sync");
-        const destDir = join(tmpDir, "dest-sync");
-        mkdirSync(srcDir);
-        writeFileSync(join(srcDir, "file.txt"), "content");
+    test("should copy a directory recursively and return Ok", async () => {
+        fs.mkdirSync(srcDir);
+        fs.writeFileSync(`${srcDir}${srcFile}`, "content");
 
         const result = cpSync(srcDir, destDir);
 
         expect(result.isOk()).toBe(true);
+        expect(fs.readFileSync(`${destDir}${srcFile}`, "utf-8")).toBe("content");
     });
 
-    it("should return Err when source does not exist", () => {
-        const result = cpSync(join(tmpDir, "nonexistent.txt"), join(tmpDir, "dest.txt"));
+    test("should return Err when source does not exist", async () => {
+        const result = cpSync(srcFile, destFile);
 
         expect(result.isErr()).toBe(true);
     });

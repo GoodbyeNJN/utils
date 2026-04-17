@@ -1,153 +1,142 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, vi } from "vitest";
 
 import { isNil } from "@/common";
 import { readFile, readFileByLine, readFileSync, readJson, readJsonSync } from "@/fs/unsafe/read";
 
-let tmpDir: string;
+import { fs, vol } from "../../helpers/memfs";
+import { test } from "../../helpers/tester";
+
+vi.mock("node:fs");
+vi.mock("node:fs/promises");
 
 beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), "utils-fs-unsafe-read-"));
+    vol.reset();
 });
 
-afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
-});
+const file = "/file.txt";
+const json = "/data.json";
 
 describe("readFile", () => {
-    it("should return file content as a string", async () => {
-        const file = join(tmpDir, "hello.txt");
-        writeFileSync(file, "hello world");
+    test("should return file content as a string", async () => {
+        fs.writeFileSync(file, "hello world");
 
         const content = await readFile(file);
 
         expect(content).toBe("hello world");
     });
 
-    it("should return Buffer when encoding is 'buffer'", async () => {
-        const file = join(tmpDir, "hello.txt");
-        writeFileSync(file, "hello");
+    test("should return Buffer when encoding is 'buffer'", async () => {
+        fs.writeFileSync(file, "hello");
 
         const content = await readFile(file, { encoding: "buffer" });
 
         expect(content).toBeInstanceOf(Buffer);
     });
 
-    it("should return nil for a non-existing file", async () => {
-        const content = await readFile(join(tmpDir, "nonexistent.txt"));
+    test("should return nil for a non-existing file", async () => {
+        const content = await readFile(file);
 
         expect(isNil(content)).toBe(true);
     });
 });
 
 describe("readFileSync", () => {
-    it("should return file content as a string", () => {
-        const file = join(tmpDir, "hello.txt");
-        writeFileSync(file, "hello world");
+    test("should return file content as a string", () => {
+        fs.writeFileSync(file, "hello world");
 
         const content = readFileSync(file);
 
         expect(content).toBe("hello world");
     });
 
-    it("should return Buffer when encoding is 'buffer'", () => {
-        const file = join(tmpDir, "hello.txt");
-        writeFileSync(file, "hello");
+    test("should return Buffer when encoding is 'buffer'", () => {
+        fs.writeFileSync(file, "hello");
 
         const content = readFileSync(file, { encoding: "buffer" });
 
         expect(content).toBeInstanceOf(Buffer);
     });
 
-    it("should return nil for a non-existing file", () => {
-        const content = readFileSync(join(tmpDir, "nonexistent.txt"));
+    test("should return nil for a non-existing file", () => {
+        const content = readFileSync(file);
 
         expect(isNil(content)).toBe(true);
     });
 });
 
 describe("readJson", () => {
-    it("should parse and return the JSON value", async () => {
-        const file = join(tmpDir, "data.json");
-        writeFileSync(file, JSON.stringify({ key: "value" }));
+    test("should parse and return the JSON value", async () => {
+        fs.writeFileSync(json, JSON.stringify({ key: "value" }));
 
-        const data = await readJson(file);
+        const data = await readJson(json);
 
         expect(data).toEqual({ key: "value" });
     });
 
-    it("should return nil for a file with invalid JSON", async () => {
-        const file = join(tmpDir, "bad.json");
-        writeFileSync(file, "not-json");
+    test("should return nil for a file with invalid JSON", async () => {
+        fs.writeFileSync(json, "not-json");
 
-        const data = await readJson(file);
+        const data = await readJson(json);
 
         expect(isNil(data)).toBe(true);
     });
 
-    it("should return nil when file does not exist", async () => {
-        const data = await readJson(join(tmpDir, "missing.json"));
+    test("should return nil when file does not exist", async () => {
+        const data = await readJson(json);
 
         expect(isNil(data)).toBe(true);
     });
 });
 
 describe("readJsonSync", () => {
-    it("should parse and return the JSON value", () => {
-        const file = join(tmpDir, "data.json");
-        writeFileSync(file, JSON.stringify([1, 2, 3]));
+    test("should parse and return the JSON value", () => {
+        fs.writeFileSync(json, JSON.stringify([1, 2, 3]));
 
-        const data = readJsonSync(file);
+        const data = readJsonSync(json);
 
         expect(data).toEqual([1, 2, 3]);
     });
 
-    it("should return nil for a file with invalid JSON", () => {
-        const file = join(tmpDir, "bad.json");
-        writeFileSync(file, "not-json");
+    test("should return nil for a file with invalid JSON", () => {
+        fs.writeFileSync(json, "not-json");
 
-        const data = readJsonSync(file);
+        const data = readJsonSync(json);
 
         expect(isNil(data)).toBe(true);
     });
 
-    it("should return nil when file does not exist", () => {
-        const data = readJsonSync(join(tmpDir, "missing.json"));
+    test("should return nil when file does not exist", () => {
+        const data = readJsonSync(json);
 
         expect(isNil(data)).toBe(true);
     });
 });
 
 describe("readFileByLine", () => {
-    it("should return an AsyncIterable that yields each line", async () => {
-        const file = join(tmpDir, "lines.txt");
-        writeFileSync(file, "line1\nline2\nline3");
+    test("should return an AsyncIterable that yields each line", async () => {
+        fs.writeFileSync("/lines.txt", "line1\nline2\nline3");
 
-        const reader = await readFileByLine(file);
+        const reader = await readFileByLine("/lines.txt");
 
-        expect(reader).not.toBeNull();
+        expect(isNil(reader)).toBe(false);
 
         const lines: string[] = [];
-        for await (const line of reader!) {
+        for await (const line of reader as AsyncIterable<string>) {
             lines.push(line);
         }
 
         expect(lines).toEqual(["line1", "line2", "line3"]);
     });
 
-    it("should handle an empty file", async () => {
-        const file = join(tmpDir, "empty.txt");
-        writeFileSync(file, "");
+    test("should handle an empty file", async () => {
+        fs.writeFileSync("/empty.txt", "");
 
-        const reader = await readFileByLine(file);
+        const reader = await readFileByLine("/empty.txt");
 
-        expect(reader).not.toBeNull();
+        expect(isNil(reader)).toBe(false);
 
         const lines: string[] = [];
-        for await (const line of reader!) {
+        for await (const line of reader as AsyncIterable<string>) {
             lines.push(line);
         }
 

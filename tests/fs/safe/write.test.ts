@@ -1,8 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, vi } from "vitest";
 
 import {
     writeFileSync as safeWriteFileSync,
@@ -11,129 +7,123 @@ import {
     writeJsonSync,
 } from "@/fs/safe/write";
 
-let tmpDir: string;
+import { fs, vol } from "../../helpers/memfs";
+import { test } from "../../helpers/tester";
+
+vi.mock("node:fs");
+vi.mock("node:fs/promises");
 
 beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), "utils-fs-safe-write-"));
+    vol.reset();
 });
 
-afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
-});
+const file = "/file.txt";
+const subFile = "/dir/file.txt";
+const json = "/data.json";
 
 describe("writeFile", () => {
-    it("should write content and return Ok", async () => {
-        const file = join(tmpDir, "hello.txt");
+    test("should write content and return Ok", async () => {
         const result = await writeFile(file, "hello world");
 
         expect(result.isOk()).toBe(true);
-        expect(readFileSync(file, "utf-8")).toBe("hello world");
+        expect(fs.readFileSync(file, "utf-8")).toBe("hello world");
     });
 
-    it("should create parent directories automatically", async () => {
-        const file = join(tmpDir, "a", "b", "hello.txt");
-        const result = await writeFile(file, "nested");
+    test("should create parent directories automatically", async () => {
+        const result = await writeFile(subFile, "nested");
 
         expect(result.isOk()).toBe(true);
     });
 
-    it("should overwrite existing file content", async () => {
-        const file = join(tmpDir, "file.txt");
-        writeFileSync(file, "old");
+    test("should overwrite existing file content", async () => {
+        fs.writeFileSync(file, "old");
         const result = await writeFile(file, "new");
 
         expect(result.isOk()).toBe(true);
-        expect(readFileSync(file, "utf-8")).toBe("new");
+        expect(fs.readFileSync(file, "utf-8")).toBe("new");
     });
 });
 
 describe("writeFileSync", () => {
-    it("should write content and return Ok", () => {
-        const file = join(tmpDir, "hello.txt");
+    test("should write content and return Ok", () => {
         const result = safeWriteFileSync(file, "hello world");
 
         expect(result.isOk()).toBe(true);
-        expect(readFileSync(file, "utf-8")).toBe("hello world");
+        expect(fs.readFileSync(file, "utf-8")).toBe("hello world");
     });
 
-    it("should create parent directories automatically", () => {
-        const file = join(tmpDir, "a", "b", "hello.txt");
-        const result = safeWriteFileSync(file, "nested");
+    test("should create parent directories automatically", () => {
+        const result = safeWriteFileSync(subFile, "nested");
 
         expect(result.isOk()).toBe(true);
     });
 
-    it("should overwrite existing file content", () => {
-        const file = join(tmpDir, "file.txt");
-        writeFileSync(file, "old");
+    test("should overwrite existing file content", () => {
+        fs.writeFileSync(file, "old");
         const result = safeWriteFileSync(file, "new");
 
         expect(result.isOk()).toBe(true);
-        expect(readFileSync(file, "utf-8")).toBe("new");
+        expect(fs.readFileSync(file, "utf-8")).toBe("new");
     });
 });
 
 describe("writeJson", () => {
-    it("should write a JSON object and return Ok", async () => {
-        const file = join(tmpDir, "data.json");
-        const result = await writeJson(file, { key: "value" });
+    test("should write a JSON object and return Ok", async () => {
+        const result = await writeJson(json, { key: "value" });
 
         expect(result.isOk()).toBe(true);
-        expect(JSON.parse(readFileSync(file, "utf-8"))).toEqual({ key: "value" });
+        expect(JSON.parse(fs.readFileSync(json, "utf-8") as string)).toEqual({
+            key: "value",
+        });
     });
 
-    it("should write with a custom indent", async () => {
-        const file = join(tmpDir, "data.json");
-        const result = await writeJson(file, { a: 1 }, 4);
+    test("should write with a custom indent", async () => {
+        const result = await writeJson(json, { a: 1 }, 4);
 
         expect(result.isOk()).toBe(true);
-        expect(readFileSync(file, "utf-8")).toContain("    ");
+        expect(fs.readFileSync(json, "utf-8")).toContain("    ");
     });
 
-    it("should write an array", async () => {
-        const file = join(tmpDir, "arr.json");
-        const result = await writeJson(file, [1, 2, 3]);
+    test("should write an array", async () => {
+        const result = await writeJson(json, [1, 2, 3]);
 
         expect(result.isOk()).toBe(true);
-        expect(JSON.parse(readFileSync(file, "utf-8"))).toEqual([1, 2, 3]);
+        expect(JSON.parse(fs.readFileSync(json, "utf-8") as string)).toEqual([1, 2, 3]);
     });
 
-    it("should return Err for a non-serializable value", async () => {
-        const file = join(tmpDir, "bad.json");
-        const result = await writeJson(file, undefined);
+    test("should return Err for a non-serializable value", async () => {
+        const result = await writeJson(json, undefined);
 
         expect(result.isErr()).toBe(true);
     });
 });
 
 describe("writeJsonSync", () => {
-    it("should write a JSON object and return Ok", () => {
-        const file = join(tmpDir, "data.json");
-        const result = writeJsonSync(file, { key: "value" });
+    test("should write a JSON object and return Ok", () => {
+        const result = writeJsonSync(json, { key: "value" });
 
         expect(result.isOk()).toBe(true);
-        expect(JSON.parse(readFileSync(file, "utf-8"))).toEqual({ key: "value" });
+        expect(JSON.parse(fs.readFileSync(json, "utf-8") as string)).toEqual({
+            key: "value",
+        });
     });
 
-    it("should write an array", () => {
-        const file = join(tmpDir, "arr.json");
-        const result = writeJsonSync(file, [1, 2, 3]);
+    test("should write an array", () => {
+        const result = writeJsonSync(json, [1, 2, 3]);
 
         expect(result.isOk()).toBe(true);
-        expect(JSON.parse(readFileSync(file, "utf-8"))).toEqual([1, 2, 3]);
+        expect(JSON.parse(fs.readFileSync(json, "utf-8") as string)).toEqual([1, 2, 3]);
     });
 
-    it("should write with a custom indent", () => {
-        const file = join(tmpDir, "data.json");
-        const result = writeJsonSync(file, { a: 1 }, 4);
+    test("should write with a custom indent", () => {
+        const result = writeJsonSync(json, { a: 1 }, 4);
 
         expect(result.isOk()).toBe(true);
-        expect(readFileSync(file, "utf-8")).toContain("    ");
+        expect(fs.readFileSync(json, "utf-8")).toContain("    ");
     });
 
-    it("should return Err for a non-serializable value", () => {
-        const file = join(tmpDir, "bad.json");
-        const result = writeJsonSync(file, undefined);
+    test("should return Err for a non-serializable value", () => {
+        const result = writeJsonSync(json, undefined);
 
         expect(result.isErr()).toBe(true);
     });

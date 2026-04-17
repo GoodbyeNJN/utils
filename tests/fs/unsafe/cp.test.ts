@@ -1,65 +1,56 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, vi } from "vitest";
 
 import { cp, cpSync } from "@/fs/unsafe/cp";
 
-let tmpDir: string;
+import { fs, vol } from "../../helpers/memfs";
+import { test } from "../../helpers/tester";
+
+vi.mock("node:fs");
+vi.mock("node:fs/promises");
 
 beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), "utils-fs-unsafe-cp-"));
+    vol.reset();
 });
 
-afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
-});
+const srcFile = "/src.txt";
+const destFile = "/dest.txt";
+const srcDir = "/src";
+const destDir = "/dest";
 
 describe("cp", () => {
-    it("should copy a file", async () => {
-        const src = join(tmpDir, "source.txt");
-        const dest = join(tmpDir, "dest.txt");
-        writeFileSync(src, "hello");
+    test("should copy a file", async () => {
+        fs.writeFileSync(srcFile, "hello");
 
-        await expect(cp(src, dest)).resolves.toBeUndefined();
+        await expect(cp(srcFile, destFile)).resolves.toBeUndefined();
     });
 
-    it("should copy a directory recursively", async () => {
-        const srcDir = join(tmpDir, "src");
-        const destDir = join(tmpDir, "dest");
-        mkdirSync(srcDir);
-        writeFileSync(join(srcDir, "file.txt"), "content");
+    test("should copy a directory recursively", async () => {
+        fs.mkdirSync(srcDir);
+        fs.writeFileSync(`${srcDir}${srcFile}`, "content");
 
         await expect(cp(srcDir, destDir)).resolves.toBeUndefined();
     });
 
-    it("should throw when source does not exist", async () => {
-        await expect(
-            cp(join(tmpDir, "nonexistent.txt"), join(tmpDir, "dest.txt")),
-        ).rejects.toThrow();
+    test("should throw when source does not exist", async () => {
+        await expect(cp(srcFile, destFile)).rejects.toThrow();
     });
 });
 
 describe("cpSync", () => {
-    it("should copy a file", () => {
-        const src = join(tmpDir, "source.txt");
-        const dest = join(tmpDir, "dest.txt");
-        writeFileSync(src, "hello");
+    test("should copy a file", () => {
+        fs.writeFileSync(srcFile, "hello");
 
-        expect(() => cpSync(src, dest)).not.toThrow();
+        expect(() => cpSync(srcFile, destFile)).not.toThrow();
     });
 
-    it("should copy a directory recursively", () => {
-        const srcDir = join(tmpDir, "src-sync");
-        const destDir = join(tmpDir, "dest-sync");
-        mkdirSync(srcDir);
-        writeFileSync(join(srcDir, "file.txt"), "content");
+    test("should copy a directory recursively", () => {
+        fs.mkdirSync(srcDir);
+        fs.writeFileSync(`${srcDir}${srcFile}`, "content");
 
         expect(() => cpSync(srcDir, destDir)).not.toThrow();
     });
 
-    it("should throw when source does not exist", () => {
-        expect(() => cpSync(join(tmpDir, "nonexistent.txt"), join(tmpDir, "dest.txt"))).toThrow();
+    test("should throw when source does not exist", () => {
+        expect(() => cpSync(srcFile, destFile)).toThrow();
     });
 });

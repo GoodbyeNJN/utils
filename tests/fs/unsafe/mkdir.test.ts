@@ -1,49 +1,46 @@
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, vi } from "vitest";
 
 import { mkdir, mkdirSync } from "@/fs/unsafe/mkdir";
 
-let tmpDir: string;
+import { fs, vol } from "../../helpers/memfs";
+import { test } from "../../helpers/tester";
+
+vi.mock("node:fs");
+vi.mock("node:fs/promises");
 
 beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), "utils-fs-unsafe-mkdir-"));
+    vol.reset();
 });
 
-afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
-});
+const dir = "/dir";
+const nestedDir = "/a/b/c";
 
 describe("mkdir", () => {
-    it("should create a directory without throwing", async () => {
-        const dir = join(tmpDir, "newdir");
+    test("should create a directory without throwing", async () => {
         await expect(mkdir(dir)).resolves.toBeUndefined();
     });
 
-    it("should create nested directories recursively", async () => {
-        const dir = join(tmpDir, "a", "b", "c");
-        await expect(mkdir(dir)).resolves.toBeUndefined();
+    test("should create nested directories recursively", async () => {
+        await expect(mkdir(nestedDir)).resolves.toBeUndefined();
     });
 
-    it("should not throw when directory already exists (idempotent)", async () => {
-        await expect(mkdir(tmpDir)).resolves.toBeUndefined();
+    test("should not throw when directory already exists (idempotent)", async () => {
+        fs.mkdirSync(dir);
+        await expect(mkdir(dir)).resolves.toBeUndefined();
     });
 });
 
 describe("mkdirSync", () => {
-    it("should create a directory without throwing", () => {
-        const dir = join(tmpDir, "newdir");
+    test("should create a directory without throwing", () => {
         expect(() => mkdirSync(dir)).not.toThrow();
     });
 
-    it("should create nested directories recursively", () => {
-        const dir = join(tmpDir, "a", "b", "c");
-        expect(() => mkdirSync(dir)).not.toThrow();
+    test("should create nested directories recursively", () => {
+        expect(() => mkdirSync(nestedDir)).not.toThrow();
     });
 
-    it("should not throw when directory already exists (idempotent)", () => {
-        expect(() => mkdirSync(tmpDir)).not.toThrow();
+    test("should not throw when directory already exists (idempotent)", () => {
+        fs.mkdirSync(dir);
+        expect(() => mkdirSync(dir)).not.toThrow();
     });
 });

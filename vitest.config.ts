@@ -2,10 +2,12 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-    plugins: [tsconfigPaths()],
+    plugins: [
+        tsconfigPaths({
+            projectDiscovery: "lazy",
+        }),
+    ],
     test: {
-        typecheck: {
-            tsconfig: "tsconfig.json",
-        },
+        include: ["tests/**/*.test.ts"],
     },
 });

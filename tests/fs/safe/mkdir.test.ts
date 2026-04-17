@@ -1,60 +1,57 @@
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, vi } from "vitest";
 
 import { mkdir, mkdirSync } from "@/fs/safe/mkdir";
 
-let tmpDir: string;
+import { fs, vol } from "../../helpers/memfs";
+import { test } from "../../helpers/tester";
+
+vi.mock("node:fs");
+vi.mock("node:fs/promises");
 
 beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), "utils-fs-safe-mkdir-"));
+    vol.reset();
 });
 
-afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true });
-});
+const dir = "/dir";
+const nestedDir = "/a/b/c";
 
 describe("mkdir", () => {
-    it("should create a directory and return Ok", async () => {
-        const dir = join(tmpDir, "newdir");
+    test("should create a directory and return Ok", async () => {
         const result = await mkdir(dir);
 
         expect(result.isOk()).toBe(true);
     });
 
-    it("should create nested directories recursively", async () => {
-        const dir = join(tmpDir, "a", "b", "c");
-        const result = await mkdir(dir);
+    test("should create nested directories recursively", async () => {
+        const result = await mkdir(nestedDir);
 
         expect(result.isOk()).toBe(true);
     });
 
-    it("should return Ok when directory already exists (idempotent)", async () => {
-        const result = await mkdir(tmpDir);
+    test("should return Ok when directory already exists (idempotent)", async () => {
+        fs.mkdirSync(dir);
+        const result = await mkdir(dir);
 
         expect(result.isOk()).toBe(true);
     });
 });
 
 describe("mkdirSync", () => {
-    it("should create a directory and return Ok", () => {
-        const dir = join(tmpDir, "newdir");
+    test("should create a directory and return Ok", () => {
         const result = mkdirSync(dir);
 
         expect(result.isOk()).toBe(true);
     });
 
-    it("should create nested directories recursively", () => {
-        const dir = join(tmpDir, "a", "b", "c");
-        const result = mkdirSync(dir);
+    test("should create nested directories recursively", () => {
+        const result = mkdirSync(nestedDir);
 
         expect(result.isOk()).toBe(true);
     });
 
-    it("should return Ok when directory already exists (idempotent)", () => {
-        const result = mkdirSync(tmpDir);
+    test("should return Ok when directory already exists (idempotent)", () => {
+        fs.mkdirSync(dir);
+        const result = mkdirSync(dir);
 
         expect(result.isOk()).toBe(true);
     });

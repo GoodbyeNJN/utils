@@ -1,22 +1,22 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, test } from "vitest";
 
 import { BaseVFile } from "@/fs/vfile";
 
 describe("BaseVFile", () => {
     describe("constructor", () => {
-        it("should accept an absolute path", () => {
+        test("should accept an absolute path", () => {
             const vfile = new BaseVFile("/home/user/project/src/page/index.js");
 
             expect(vfile.pathname()).toBe("/home/user/project/src/page/index.js");
         });
 
-        it("should accept a relative path", () => {
+        test("should accept a relative path", () => {
             const vfile = new BaseVFile("src/page/index.js");
 
             expect(vfile.pathname.relative()).toBe("src/page/index.js");
         });
 
-        it("should accept a custom cwd", () => {
+        test("should accept a custom cwd", () => {
             const vfile = new BaseVFile("src/page/index.js", "/home/user/project");
 
             expect(vfile.cwd()).toBe("/home/user/project");
@@ -24,7 +24,7 @@ describe("BaseVFile", () => {
     });
 
     describe("cwd", () => {
-        it("should get and set the cwd", () => {
+        test("should get and set the cwd", () => {
             const vfile = new BaseVFile("/home/user/file.ts");
 
             vfile.cwd("/other/dir");
@@ -34,13 +34,13 @@ describe("BaseVFile", () => {
     });
 
     describe("filename", () => {
-        it("should return the filename without extension", () => {
+        test("should return the filename without extension", () => {
             const vfile = new BaseVFile("/home/user/project/index.js");
 
             expect(vfile.filename()).toBe("index");
         });
 
-        it("should set the filename", () => {
+        test("should set the filename", () => {
             const vfile = new BaseVFile("/home/user/project/index.js");
             vfile.filename("main");
 
@@ -49,13 +49,13 @@ describe("BaseVFile", () => {
     });
 
     describe("extname", () => {
-        it("should return the extension without the dot", () => {
+        test("should return the extension without the dot", () => {
             const vfile = new BaseVFile("/home/user/project/index.js");
 
             expect(vfile.extname()).toBe("js");
         });
 
-        it("should set the extension", () => {
+        test("should set the extension", () => {
             const vfile = new BaseVFile("/home/user/project/index.js");
             vfile.extname("ts");
 
@@ -64,13 +64,13 @@ describe("BaseVFile", () => {
     });
 
     describe("basename", () => {
-        it("should return filename + extension", () => {
+        test("should return filename + extension", () => {
             const vfile = new BaseVFile("/home/user/project/index.js");
 
             expect(vfile.basename()).toBe("index.js");
         });
 
-        it("should set filename and extension from basename", () => {
+        test("should set filename and extension from basename", () => {
             const vfile = new BaseVFile("/home/user/project/index.js");
             vfile.basename("main.ts");
 
@@ -80,7 +80,7 @@ describe("BaseVFile", () => {
     });
 
     describe("dirname", () => {
-        it("should return the relative dirname", () => {
+        test("should return the relative dirname", () => {
             const vfile = new BaseVFile(
                 "/home/user/project/src/page/index.js",
                 "/home/user/project",
@@ -89,7 +89,7 @@ describe("BaseVFile", () => {
             expect(vfile.dirname()).toBe("src/page");
         });
 
-        it("should return the absolute dirname", () => {
+        test("should return the absolute dirname", () => {
             const vfile = new BaseVFile(
                 "/home/user/project/src/page/index.js",
                 "/home/user/project",
@@ -100,13 +100,13 @@ describe("BaseVFile", () => {
     });
 
     describe("pathname", () => {
-        it("should return the absolute pathname", () => {
+        test("should return the absolute pathname", () => {
             const vfile = new BaseVFile("/home/user/project/index.js");
 
             expect(vfile.pathname()).toBe("/home/user/project/index.js");
         });
 
-        it("should return the relative pathname", () => {
+        test("should return the relative pathname", () => {
             const vfile = new BaseVFile("/home/user/project/src/index.js", "/home/user/project");
 
             expect(vfile.pathname.relative()).toBe("src/index.js");
@@ -114,7 +114,7 @@ describe("BaseVFile", () => {
     });
 
     describe("clone", () => {
-        it("should return a new BaseVFile with the same properties", () => {
+        test("should return a new BaseVFile with the same properties", () => {
             const vfile = new BaseVFile("/home/user/project/src/index.js", "/home/user/project");
             const clone = vfile.clone();
 
