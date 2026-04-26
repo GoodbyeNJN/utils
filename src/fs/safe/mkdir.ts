@@ -6,7 +6,7 @@ import { exists, existsSync } from "./exists";
 
 import type { MkdirOptions, PathLike } from "../types";
 
-const safeMkdir = Result.wrap(fsp.mkdir, Error);
+const safeMkdir = /* #__PURE__ */ Result.wrap(fsp.mkdir, Error);
 export const mkdir = async (
     path: PathLike,
     options?: MkdirOptions,
@@ -20,7 +20,7 @@ export const mkdir = async (
     return result.and(ok()).context(`Failed to create directory: ${path}`);
 };
 
-const safeMkdirSync = Result.wrap(fs.mkdirSync, Error);
+const safeMkdirSync = /* #__PURE__ */ Result.wrap(fs.mkdirSync, Error);
 export const mkdirSync = (path: PathLike, options?: MkdirOptions): Result<void, Error> => {
     const { recursive = true } = options || {};
 

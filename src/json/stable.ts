@@ -1,5 +1,5 @@
 import { configure } from "safe-stable-stringify";
 
-export const stableStringify = configure({
+export const stableStringify = /* #__PURE__ */ configure({
     bigint: true,
 });

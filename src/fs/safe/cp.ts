@@ -4,7 +4,7 @@ import { Result } from "@/result";
 
 import type { CpOptions, PathLike } from "../types";
 
-const safeCp = Result.wrap(fsp.cp, Error);
+const safeCp = /* #__PURE__ */ Result.wrap(fsp.cp, Error);
 export const cp = async (
     source: PathLike,
     destination: PathLike,
@@ -17,7 +17,7 @@ export const cp = async (
     return result.context(`Failed to copy path: ${source} to ${destination}`);
 };
 
-const safeCpSync = Result.wrap(fs.cpSync, Error);
+const safeCpSync = /* #__PURE__ */ Result.wrap(fs.cpSync, Error);
 export const cpSync = (
     source: PathLike,
     destination: PathLike,

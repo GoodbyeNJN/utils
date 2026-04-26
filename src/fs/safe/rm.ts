@@ -4,7 +4,7 @@ import { Result } from "@/result";
 
 import type { PathLike, RmOptions } from "../types";
 
-const safeRm = Result.wrap(fsp.rm, Error);
+const safeRm = /* #__PURE__ */ Result.wrap(fsp.rm, Error);
 export const rm = async (path: PathLike, options?: RmOptions): Promise<Result<void, Error>> => {
     const { force = true, recursive = true } = options || {};
 
@@ -13,7 +13,7 @@ export const rm = async (path: PathLike, options?: RmOptions): Promise<Result<vo
     return result.context(`Failed to remove path: ${path}`);
 };
 
-const safeRmSync = Result.wrap(fs.rmSync, Error);
+const safeRmSync = /* #__PURE__ */ Result.wrap(fs.rmSync, Error);
 export const rmSync = (path: PathLike, options?: RmOptions): Result<void, Error> => {
     const { force = true, recursive = true } = options || {};
 

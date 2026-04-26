@@ -10,7 +10,7 @@ import { mkdir, mkdirSync } from "./mkdir";
 
 import type { PathLike, StringEncodingOptions, WriteJsonOptions } from "../types";
 
-const safeWriteFile = Result.wrap(fsp.writeFile, Error);
+const safeWriteFile = /* #__PURE__ */ Result.wrap(fsp.writeFile, Error);
 export const writeFile = async (
     path: PathLike,
     data: string,
@@ -24,7 +24,7 @@ export const writeFile = async (
         return result.context(`Failed to write file: ${path}`);
     });
 
-const safeWriteFileSync = Result.wrap(fs.writeFileSync, Error);
+const safeWriteFileSync = /* #__PURE__ */ Result.wrap(fs.writeFileSync, Error);
 export const writeFileSync = (
     path: PathLike,
     data: string,

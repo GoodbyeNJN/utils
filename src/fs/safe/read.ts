@@ -9,7 +9,7 @@ import { exists, existsSync } from "./exists";
 
 import type { BufferEncodingOptions, PathLike, StringEncodingOptions } from "../types";
 
-const safeReadFile = Result.wrap(fsp.readFile, Error);
+const safeReadFile = /* #__PURE__ */ Result.wrap(fsp.readFile, Error);
 export async function readFile(
     path: PathLike,
     options: BufferEncodingOptions,
@@ -28,7 +28,7 @@ export async function readFile(path: any, options?: any): Promise<Result<any, Er
     return result.context(`Failed to read file: ${path}`);
 }
 
-const safeReadFileSync = Result.wrap(fs.readFileSync, Error);
+const safeReadFileSync = /* #__PURE__ */ Result.wrap(fs.readFileSync, Error);
 export function readFileSync(path: PathLike, options: BufferEncodingOptions): Result<Buffer, Error>;
 export function readFileSync(
     path: PathLike,

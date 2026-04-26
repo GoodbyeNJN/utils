@@ -2,7 +2,7 @@
 
 import { err, Result } from "@/result";
 
-const safeStringify = Result.wrap(JSON.stringify);
+const safeStringify = /* #__PURE__ */ Result.wrap(JSON.stringify);
 export const stringify: {
     (
         value: any,
@@ -26,7 +26,7 @@ export const stringify: {
         return text;
     });
 
-const safeParse = Result.wrap(JSON.parse);
+const safeParse = /* #__PURE__ */ Result.wrap(JSON.parse);
 export const parse = <T = any>(
     text: string,
     reviver?: (this: any, key: string, value: any) => any,

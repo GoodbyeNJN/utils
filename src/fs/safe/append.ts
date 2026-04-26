@@ -9,7 +9,7 @@ import { mkdir, mkdirSync } from "./mkdir";
 
 import type { AppendFileOptions, PathLike } from "../types";
 
-const safeAppendFile = Result.wrap(fsp.appendFile, Error);
+const safeAppendFile = /* #__PURE__ */ Result.wrap(fsp.appendFile, Error);
 export const appendFile = async (
     path: PathLike,
     data: string,
@@ -29,7 +29,7 @@ export const appendFile = async (
         return result.context(`Failed to append file: ${path}`);
     });
 
-const safeAppendFileSync = Result.wrap(fs.appendFileSync, Error);
+const safeAppendFileSync = /* #__PURE__ */ Result.wrap(fs.appendFileSync, Error);
 export const appendFileSync = (
     path: PathLike,
     data: string,
