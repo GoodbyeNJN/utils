@@ -27,7 +27,11 @@ export default defineConfig([
             format: "esm",
             hashCharacters: "hex",
             chunkFileNames: "chunks/chunk-[hash].js",
-            comments: false,
+            comments: {
+                annotation: true,
+                jsdoc: true,
+                legal: false,
+            },
         },
 
         external: Object.keys(dependencies),
