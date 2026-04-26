@@ -63,6 +63,7 @@
         "lint:fix": "eslint --fix",
         "format": "prettier --write .",
         "test": "vitest",
+        "test:ci": "vitest --run",
         "release": "bumpp"
     },
     "dependencies": {
