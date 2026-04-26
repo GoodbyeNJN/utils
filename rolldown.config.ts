@@ -10,6 +10,7 @@ const input = {
     common: "src/common/index.ts",
     exec: "src/exec/index.ts",
     fs: "src/fs/index.ts",
+    glob: "src/glob/index.ts",
     json: "src/json/index.ts",
     remeda: "src/remeda/index.ts",
     result: "src/result/index.ts",
@@ -29,7 +30,7 @@ export default defineConfig([
             chunkFileNames: "chunks/chunk-[hash].js",
             comments: {
                 annotation: true,
-                jsdoc: true,
+                jsdoc: false,
                 legal: false,
             },
         },

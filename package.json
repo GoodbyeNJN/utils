@@ -31,6 +31,10 @@
             "types": "./dist/fs.d.ts",
             "import": "./dist/fs.js"
         },
+        "./glob": {
+            "types": "./dist/glob.d.ts",
+            "import": "./dist/glob.js"
+        },
         "./json": {
             "types": "./dist/json.d.ts",
             "import": "./dist/json.js"
