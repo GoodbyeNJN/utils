@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { isNil, nil } from "@/common";
 import { VFile } from "@/fs/unsafe/vfile";
+import { None } from "@/option";
 
-import { fs, vol } from "../../helpers/memfs";
+import { fs, vol } from "../memfs";
 
 vi.mock("node:fs");
 vi.mock("node:fs/promises");
@@ -23,26 +23,32 @@ describe("UnsafeVFile", () => {
             const vfile = new VFile(file);
             vfile.raw("hello");
 
-            expect(vfile.raw()).toBe("hello");
+            const result = vfile.raw();
+
+            expect(result.isSome()).toBe(true);
+            expect(result.unwrap()).toBe("hello");
         });
 
         test("should set and get a typed value", () => {
             const vfile = new VFile<string[]>(file);
             vfile.value(["a", "b"]);
 
-            expect(vfile.value()).toEqual(["a", "b"]);
+            const result = vfile.value();
+
+            expect(result.isSome()).toBe(true);
+            expect(result.unwrap()).toEqual(["a", "b"]);
         });
 
-        test("should return nil when no content is set", () => {
+        test("should return None from raw() when no content is set", () => {
             const vfile = new VFile(file);
 
-            expect(isNil(vfile.raw())).toBe(true);
+            expect(vfile.raw().isNone()).toBe(true);
         });
 
-        test("should return nil from value() when no content is set", () => {
+        test("should return None from value() when no content is set", () => {
             const vfile = new VFile(file);
 
-            expect(isNil(vfile.value())).toBe(true);
+            expect(vfile.value().isNone()).toBe(true);
         });
     });
 
@@ -51,16 +57,19 @@ describe("UnsafeVFile", () => {
             const vfile = new VFile(json).transformer("json");
             vfile.raw('{"key":"val"}');
 
-            expect(vfile.value()).toEqual({ key: "val" });
+            const result = vfile.value();
+
+            expect(result.isSome()).toBe(true);
+            expect(result.unwrap()).toEqual({ key: "val" });
         });
 
         test("should use the json transformer to stringify value into raw", () => {
             const vfile = new VFile<{ key: string }>(json).transformer("json");
             vfile.value({ key: "val" });
 
-            const raw = vfile.raw();
-            expect(typeof raw).toBe("string");
-            expect(JSON.parse(raw as string)).toEqual({ key: "val" });
+            const result = vfile.raw();
+            expect(result.isSome()).toBe(true);
+            expect(JSON.parse(result.unwrap())).toEqual({ key: "val" });
         });
 
         test("should return the current transformer when called without arguments", () => {
@@ -75,13 +84,16 @@ describe("UnsafeVFile", () => {
             const vfile = new VFile(file);
             vfile.raw("line1\nline2\nline3");
 
-            expect(vfile.lines()).toEqual(["line1", "line2", "line3"]);
+            const result = vfile.lines();
+
+            expect(result.isSome()).toBe(true);
+            expect(result.unwrap()).toEqual(["line1", "line2", "line3"]);
         });
 
-        test("should return empty array when no content is set", () => {
+        test("should return None when no content is set", () => {
             const vfile = new VFile(file);
 
-            expect(vfile.lines()).toEqual([]);
+            expect(vfile.lines().isNone()).toBe(true);
         });
     });
 
@@ -93,7 +105,7 @@ describe("UnsafeVFile", () => {
             vfile.raw();
             vfile.append("second");
 
-            expect(vfile.raw()).toBe("first\nsecond");
+            expect(vfile.raw().unwrap()).toBe("first\nsecond");
         });
 
         test("should append a value without newline when specified", () => {
@@ -102,23 +114,23 @@ describe("UnsafeVFile", () => {
             vfile.raw();
             vfile.append("second", false);
 
-            expect(vfile.raw()).toBe("firstsecond");
+            expect(vfile.raw().unwrap()).toBe("firstsecond");
         });
 
         test("should set content when VFile has no existing content", () => {
             const vfile = new VFile(file);
             vfile.append("first");
 
-            expect(vfile.raw()).toBe("first");
+            expect(vfile.raw().unwrap()).toBe("first");
         });
 
         test("should throw when the transformer fails to stringify the value", () => {
             const vfile = new VFile(json).transformer({
-                parse: raw => raw,
-                stringify: () => nil,
+                parse: () => None(),
+                stringify: () => None(),
             });
 
-            expect(() => vfile.append("bad")).toThrow(TypeError);
+            expect(() => vfile.append("bad")).toThrow();
         });
     });
 
@@ -140,32 +152,40 @@ describe("UnsafeVFile", () => {
     });
 
     describe("read / readSync", () => {
-        test("should read file content and return the string value", async () => {
+        test("should read file content into raw and return Some", async () => {
             fs.writeFileSync(file, "content");
             const vfile = new VFile(file);
 
-            const value = await vfile.read();
+            const result = await vfile.read();
 
-            expect(value).toBe("content");
+            expect(result.isSome()).toBe(true);
+            expect(result.unwrap()).toBe("content");
         });
 
         test("should read file content synchronously", () => {
             fs.writeFileSync(file, "sync-content");
             const vfile = new VFile(file);
 
-            expect(vfile.readSync()).toBe("sync-content");
+            const result = vfile.readSync();
+
+            expect(result.isSome()).toBe(true);
+            expect(result.unwrap()).toBe("sync-content");
         });
 
-        test("should return nil when file does not exist", async () => {
+        test("should return None when file does not exist", async () => {
             const vfile = new VFile(file);
 
-            expect(isNil(await vfile.read())).toBe(true);
+            const result = await vfile.read();
+
+            expect(result.isNone()).toBe(true);
         });
 
-        test("should return nil from readSync when file does not exist", () => {
+        test("should return None from readSync when file does not exist", () => {
             const vfile = new VFile(file);
 
-            expect(isNil(vfile.readSync())).toBe(true);
+            const result = vfile.readSync();
+
+            expect(result.isNone()).toBe(true);
         });
     });
 

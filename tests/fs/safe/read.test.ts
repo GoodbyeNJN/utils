@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { readFile, readFileByLine, readFileSync, readJson, readJsonSync } from "@/fs/safe/read";
 
-import { fs, vol } from "../../helpers/memfs";
+import { fs, vol } from "../memfs";
 
 vi.mock("node:fs");
 vi.mock("node:fs/promises");

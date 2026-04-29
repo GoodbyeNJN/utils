@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { BaseVFile } from "@/fs/vfile";
+import { BaseVFile } from "@/fs/shared/vfile";
 
 describe("BaseVFile", () => {
     describe("constructor", () => {

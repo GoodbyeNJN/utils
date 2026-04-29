@@ -1,13 +1,8 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import {
-    writeFileSync as safeWriteFileSync,
-    writeFile,
-    writeJson,
-    writeJsonSync,
-} from "@/fs/safe/write";
+import { writeFile, writeFileSync, writeJson, writeJsonSync } from "@/fs/safe/write";
 
-import { fs, vol } from "../../helpers/memfs";
+import { fs, vol } from "../memfs";
 
 vi.mock("node:fs");
 vi.mock("node:fs/promises");
@@ -45,21 +40,21 @@ describe("writeFile", () => {
 
 describe("writeFileSync", () => {
     test("should write content and return Ok", () => {
-        const result = safeWriteFileSync(file, "hello world");
+        const result = writeFileSync(file, "hello world");
 
         expect(result.isOk()).toBe(true);
         expect(fs.readFileSync(file, "utf-8")).toBe("hello world");
     });
 
     test("should create parent directories automatically", () => {
-        const result = safeWriteFileSync(subFile, "nested");
+        const result = writeFileSync(subFile, "nested");
 
         expect(result.isOk()).toBe(true);
     });
 
     test("should overwrite existing file content", () => {
         fs.writeFileSync(file, "old");
-        const result = safeWriteFileSync(file, "new");
+        const result = writeFileSync(file, "new");
 
         expect(result.isOk()).toBe(true);
         expect(fs.readFileSync(file, "utf-8")).toBe("new");

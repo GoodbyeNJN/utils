@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { VFile } from "@/fs/safe/vfile";
-import { err } from "@/result";
+import { Err } from "@/result";
 
-import { fs, vol } from "../../helpers/memfs";
+import { fs, vol } from "../memfs";
 
 vi.mock("node:fs");
 vi.mock("node:fs/promises");
@@ -127,8 +127,8 @@ describe("SafeVFile", () => {
 
         test("should return Err when the transformer fails to stringify the value", () => {
             const vfile = new VFile(json).transformer({
-                parse: () => err(new Error("parse error")),
-                stringify: () => err(new Error("stringify error")),
+                parse: () => Err(new Error("parse error")),
+                stringify: () => Err(new Error("stringify error")),
             });
 
             expect(vfile.append("bad").isErr()).toBe(true);
@@ -153,7 +153,7 @@ describe("SafeVFile", () => {
     });
 
     describe("read / readSync", () => {
-        test("should read file content into raw and return value as Ok", async () => {
+        test("should read file content into raw and return Ok", async () => {
             fs.writeFileSync(file, "content");
             const vfile = new VFile(file);
 

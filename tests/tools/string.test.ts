@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { indent, unindent } from "@/common/string";
+import { indent, unindent } from "@/tools/string";
 
 describe("unindent", () => {
     test("basic unindent, no trim", () => {

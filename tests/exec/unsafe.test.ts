@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { NonZeroExitError } from "@/exec/error";
+import { NonZeroExitError } from "@/exec/shared/error";
 import { exec } from "@/exec/unsafe";
 
 import type { SpawnOptions } from "child_process";
