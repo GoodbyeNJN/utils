@@ -3,11 +3,11 @@ import { dirname } from "node:path";
 
 import { Result } from "@/result";
 
-import { parseEncodingOptions, pathLikeToPath } from "../utils";
+import { parseEncodingOptions, pathLikeToPath } from "../shared/utils";
 
 import { mkdir, mkdirSync } from "./mkdir";
 
-import type { AppendFileOptions, PathLike } from "../types";
+import type { AppendFileOptions, PathLike } from "../shared/types";
 
 const safeAppendFile = /* #__PURE__ */ Result.wrap(fsp.appendFile, Error);
 export const appendFile = async (

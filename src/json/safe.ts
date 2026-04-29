@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/unified-signatures */
 
-import { err, Result } from "@/result";
+import { Err, Result } from "@/result";
 
 const safeStringify = /* #__PURE__ */ Result.wrap(JSON.stringify);
+/* #__NO_SIDE_EFFECTS__ */
 export const stringify: {
     (
         value: any,
@@ -20,13 +21,14 @@ export const stringify: {
             safeStringify(value, replacer, space) as Result<string | undefined, TypeError>
         ).context(`Failed to stringify value: ${String(value)}`);
         if (text === undefined) {
-            return err(new TypeError(`Value cannot be stringified: ${String(value)}`));
+            return Err(new TypeError(`Value cannot be stringified: ${String(value)}`));
         }
 
         return text;
     });
 
 const safeParse = /* #__PURE__ */ Result.wrap(JSON.parse);
+/* #__NO_SIDE_EFFECTS__ */
 export const parse = <T = any>(
     text: string,
     reviver?: (this: any, key: string, value: any) => any,

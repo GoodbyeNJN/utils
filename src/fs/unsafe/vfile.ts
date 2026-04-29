@@ -1,7 +1,7 @@
-import { isNil, nil } from "@/common";
 import { parse, stringify } from "@/json/unsafe";
+import { None, Some } from "@/option";
 
-import { ExtendVFile } from "../vfile";
+import { ExtendVFile } from "../shared/vfile";
 
 import { cp, cpSync } from "./cp";
 import { exists, existsSync } from "./exists";
@@ -9,16 +9,32 @@ import { readFile, readFileByLine, readFileSync } from "./read";
 import { rm, rmSync } from "./rm";
 import { writeFile, writeFileSync } from "./write";
 
-import type { CpOptions, PathLike, RmOptions } from "../types";
-import type { Nil } from "@/common";
+import type { CpOptions, PathLike, RmOptions } from "../shared/types";
+import type { Option } from "@/option";
 
 export class VFile<T = string> extends ExtendVFile<T> {
     declare protected _transformer?: {
-        parse: (raw: string) => T | Nil;
-        stringify: (value: T) => string | Nil;
+        parse: (raw: string) => Option<T>;
+        stringify: (value: T) => Option<string>;
     };
-    declare protected _raw: string | Nil;
-    declare protected _value: T | Nil;
+    declare protected _raw: Option<string>;
+    declare protected _value: Option<T>;
+
+    /**
+     * @example
+     * ```js
+     * const vfile = new VFile(
+     *   "/home/user/project/src/page/index.js",
+     *   "/home/user/project",
+     * );
+     * ```
+     */
+    constructor(filepath: PathLike, cwd?: string) {
+        super(filepath, cwd);
+
+        this._raw = None();
+        this._value = None();
+    }
 
     /**
      * @example
@@ -62,7 +78,7 @@ export class VFile<T = string> extends ExtendVFile<T> {
      * vfile.raw(); // '["hello", "world"]'
      * ```
      */
-    raw(): string | Nil;
+    raw(): Option<string>;
     /**
      * @example
      * ```js
@@ -72,16 +88,16 @@ export class VFile<T = string> extends ExtendVFile<T> {
     raw(raw: string): this;
     raw(raw?: string): any {
         if (raw !== undefined) {
-            this._raw = raw;
-            this._value = nil;
+            this._raw = Some(raw);
+            this._value = None();
 
             return this;
         }
 
-        if (!isNil(this._raw)) return this._raw;
-        if (isNil(this._value)) return nil;
+        if (this._raw.isSome()) return this._raw;
+        if (this._value.isNone()) return this._value;
 
-        this._raw = this.stringifyValue(this._value);
+        this._raw = this.stringifyValue(this._value.unwrap());
 
         return this._raw;
     }
@@ -92,7 +108,7 @@ export class VFile<T = string> extends ExtendVFile<T> {
      * vfile.value(); // ["hello", "world"]
      * ```
      */
-    value(): T | Nil;
+    value(): Option<T>;
     /**
      * @example
      * ```js
@@ -102,16 +118,16 @@ export class VFile<T = string> extends ExtendVFile<T> {
     value(value: T): this;
     value(value?: T): any {
         if (value !== undefined) {
-            this._value = value;
-            this._raw = nil;
+            this._value = Some(value);
+            this._raw = None();
 
             return this;
         }
 
-        if (!isNil(this._value)) return this._value;
-        if (isNil(this._raw)) return nil;
+        if (this._value.isSome()) return this._value;
+        if (this._raw.isNone()) return this._raw;
 
-        this._value = this.parseRaw(this._raw);
+        this._value = this.parseRaw(this._raw.unwrap());
 
         return this._value;
     }
@@ -122,11 +138,8 @@ export class VFile<T = string> extends ExtendVFile<T> {
      * vfile.lines(); // ['["hello", "world"]']
      * ```
      */
-    lines(): string[] {
-        const raw = this.raw();
-        if (isNil(raw)) return [];
-
-        return raw.split(this._linebreak);
+    lines(): Option<string[]> {
+        return this.raw().map(raw => raw.split(this._linebreak));
     }
 
     /**
@@ -142,12 +155,12 @@ export class VFile<T = string> extends ExtendVFile<T> {
     append(value: T, newline = true): void {
         const linebreak = newline ? this._linebreak : "";
         const append = this.stringifyValue(value);
-        if (isNil(append)) throw new TypeError(`Value cannot be stringified: ${String(value)}`);
+        if (append.isNone()) throw new TypeError(`Value cannot be stringified: ${String(value)}`);
 
-        if (isNil(this._raw) || isNil(this._value)) {
-            this.raw(append);
+        if (this._raw.isNone() || this._value.isNone()) {
+            this.raw(append.unwrap());
         } else {
-            this.raw(this._raw + linebreak + append);
+            this.raw(this._raw.unwrap() + linebreak + append.unwrap());
         }
     }
 
@@ -175,22 +188,20 @@ export class VFile<T = string> extends ExtendVFile<T> {
         return rmSync(this.pathname(), options);
     }
 
-    async read(): Promise<T | Nil> {
-        const raw = await readFile(this.pathname(), this.encodingOptions);
-        if (isNil(raw)) return nil;
+    async read(): Promise<Option<T>> {
+        return (await readFile(this.pathname(), this.encodingOptions)).andThen(raw => {
+            this.raw(raw);
 
-        this.raw(raw);
-
-        return this.value();
+            return this.value();
+        });
     }
 
-    readSync(): T | Nil {
-        const raw = readFileSync(this.pathname(), this.encodingOptions);
-        if (isNil(raw)) return nil;
+    readSync(): Option<T> {
+        return readFileSync(this.pathname(), this.encodingOptions).andThen(raw => {
+            this.raw(raw);
 
-        this.raw(raw);
-
-        return this.value();
+            return this.value();
+        });
     }
 
     readByLine(): ReturnType<typeof readFileByLine> {
@@ -199,30 +210,30 @@ export class VFile<T = string> extends ExtendVFile<T> {
 
     async write(): ReturnType<typeof writeFile> {
         const raw = this.raw();
-        if (isNil(raw)) throw new TypeError("VFile has no content to write");
+        if (raw.isNone()) throw new TypeError("VFile has no content to write");
 
-        return writeFile(this.pathname(), raw, this.encodingOptions);
+        return writeFile(this.pathname(), raw.unwrap(), this.encodingOptions);
     }
 
     writeSync(): ReturnType<typeof writeFileSync> {
         const raw = this.raw();
-        if (isNil(raw)) throw new TypeError("VFile has no content to write");
+        if (raw.isNone()) throw new TypeError("VFile has no content to write");
 
-        return writeFileSync(this.pathname(), raw, this.encodingOptions);
+        return writeFileSync(this.pathname(), raw.unwrap(), this.encodingOptions);
     }
 
     private get encodingOptions() {
         return { encoding: this._encoding };
     }
 
-    protected parseRaw(raw: string): T | any {
-        if (!this._transformer?.parse) return raw as T;
+    protected parseRaw(raw: string) {
+        if (!this._transformer?.parse) return Some(raw as T);
 
         return this._transformer.parse(raw);
     }
 
-    protected stringifyValue(value: T): string | any {
-        if (!this._transformer?.stringify) return value as string;
+    protected stringifyValue(value: T) {
+        if (!this._transformer?.stringify) return Some(value as string);
 
         return this._transformer.stringify(value);
     }

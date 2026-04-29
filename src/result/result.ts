@@ -1,212 +1,51 @@
-/* eslint-disable @typescript-eslint/unified-signatures */
+import { isPromiseLike } from "@/fp";
 
-import { normalizeError } from "@/common";
-import { isFunction, isPromiseLike } from "@/remeda";
+import { all } from "./helpers/all";
+import { Err } from "./helpers/err";
+import { ResultError } from "./helpers/error";
+import { fromOption } from "./helpers/fromOption";
+import { gen } from "./helpers/gen";
+import { isResult } from "./helpers/isResult";
+import { Ok } from "./helpers/ok";
+import { _try } from "./helpers/try";
+import { wrap } from "./helpers/wrap";
 
-import { ResultError } from "./error";
-
-import type { InferErrType, InferOkType, ResultAll } from "./types";
-import type { AsyncFn, Fn, NonEmptyTuple, SyncFn } from "@/types";
-
-const never = undefined as never;
-
-const transformError = (error: unknown, onThrow: Fn | undefined) => {
-    if (!onThrow) return error;
-    if (onThrow === Error) return normalizeError(error, transformError);
-
-    return onThrow(error);
-};
-
-export type Ok<T = unknown> = Result<T, never>;
-export type Err<E = unknown> = Result<never, E>;
+import type { InferErrType, InferOkType } from "./types";
+import type { AsyncFn, SyncFn } from "@/types";
 
 export class Result<T = unknown, E = unknown> {
-    static is(value: unknown): value is Result {
-        return value instanceof Result;
-    }
-
-    static ok(): Ok<void>;
-    static ok<T>(value: T): Ok<T>;
-    static ok(value?: unknown): Ok {
-        return new Result(true, never, value);
-    }
-
-    static err(): Err<void>;
-    static err<E>(error: E): Err<E>;
-    static err(error?: unknown): Err {
-        return new Result(false, error, never);
-    }
+    static is = isResult;
+    static fromOption = fromOption;
 
     /**
      * Creates a `Result` from a function or a promise, catching any thrown errors or rejected promises.
      */
-    static try<T, E = unknown>(fn: SyncFn<T>): Result<T, E>;
-    static try<T>(fn: SyncFn<T>, onThrow: ErrorConstructor): Result<T, Error>;
-    static try<T, E>(fn: SyncFn<T>, onThrow: (error: unknown) => E): Result<T, E>;
-
-    static try<T, E = unknown>(fn: AsyncFn<T>): Promise<Result<Awaited<T>, E>>;
-    static try<T>(
-        fn: AsyncFn<T>,
-        onThrowOrReject: ErrorConstructor,
-    ): Promise<Result<Awaited<T>, Error>>;
-    static try<T, E>(
-        fn: AsyncFn<T>,
-        onThrowOrReject: (error: unknown) => E,
-    ): Promise<Result<Awaited<T>, E>>;
-
-    static try<T, E = unknown>(promise: PromiseLike<T>): Promise<Result<Awaited<T>, E>>;
-    static try<T>(
-        promise: PromiseLike<T>,
-        onReject: ErrorConstructor,
-    ): Promise<Result<Awaited<T>, Error>>;
-    static try<T, E>(
-        promise: PromiseLike<T>,
-        onReject: (error: unknown) => E,
-    ): Promise<Result<Awaited<T>, E>>;
-
-    static try(fnOrPromise: unknown, onThrow?: Fn): any {
-        if (!isFunction(fnOrPromise) && !isPromiseLike(fnOrPromise)) {
-            const error = new TypeError("Argument must be a function or a promise");
-
-            return this.err(transformError(error, onThrow));
-        }
-
-        if (isPromiseLike(fnOrPromise)) {
-            return fnOrPromise.then(
-                value => this.ok(value),
-                error => this.err(transformError(error, onThrow)),
-            );
-        }
-
-        try {
-            const data = fnOrPromise();
-            if (!isPromiseLike(data)) {
-                return this.ok(data);
-            }
-
-            return data.then(
-                value => this.ok(value),
-                error => this.err(transformError(error, onThrow)),
-            );
-        } catch (error) {
-            return this.err(transformError(error, onThrow));
-        }
-    }
+    static try = _try;
 
     /**
      * Wraps a function and returns a new function that always returns a `Result`, catching any thrown errors or rejected promises.
      */
-    static wrap<A extends any[], T, E = unknown>(fn: SyncFn<T, A>): SyncFn<Result<T, E>, A>;
-    static wrap<A extends any[], T>(
-        fn: SyncFn<T, A>,
-        onThrow: ErrorConstructor,
-    ): SyncFn<Result<T, Error>, A>;
-    static wrap<A extends any[], T, E>(
-        fn: SyncFn<T, A>,
-        onThrow: (error: unknown) => E,
-    ): SyncFn<Result<T, E>, A>;
-
-    static wrap<A extends any[], T, E = unknown>(
-        fn: AsyncFn<T, A>,
-    ): AsyncFn<Result<Awaited<T>, E>, A>;
-    static wrap<A extends any[], T>(
-        fn: AsyncFn<T, A>,
-        onThrowOrReject: ErrorConstructor,
-    ): AsyncFn<Result<Awaited<T>, Error>, A>;
-    static wrap<A extends any[], T, E>(
-        fn: AsyncFn<T, A>,
-        onThrowOrReject: (error: unknown) => E,
-    ): AsyncFn<Result<Awaited<T>, E>, A>;
-
-    static wrap(fn: unknown, onThrow?: Fn): Fn {
-        if (!isFunction(fn)) {
-            const error = new TypeError("Argument must be a function");
-
-            return () => {
-                return this.err(transformError(error, onThrow));
-            };
-        }
-
-        return (...args) => {
-            return this.try(() => (fn as Fn)(...args), onThrow as Fn);
-        };
-    }
+    static wrap = wrap;
 
     /**
      * Combines multiple `Result` instances into one `Result` containing an array of all `Ok` values,
      * or the first `Err` encountered
      */
-    static all<T extends NonEmptyTuple<Result>>(results: T): ResultAll<T>;
-    static all<T extends readonly Result[]>(results: T): ResultAll<T>;
-    static all(results: Result[]): ResultAll<Result[]> {
-        const values: unknown[] = [];
-
-        for (const result of results) {
-            if (result.isErr()) {
-                return this.err(result.error);
-            }
-
-            values.push(result.value);
-        }
-
-        return this.ok(values);
-    }
+    static all = all;
 
     /**
      * Wraps a generator function where `yield` can return `Err` values early.
      * If the generator completes, the returned value is wrapped in `Ok`.
      */
-    static gen<T, E, This>(
-        body: (this: This) => Iterator<Err<E>, Result<T, E> | T>,
-        self?: This,
-    ): Result<T, E>;
-    static gen<YieldErr extends Err, ReturnResult extends Result | any, This>(
-        body: (this: This) => Iterator<YieldErr, ReturnResult>,
-        self?: This,
-    ): Result<
-        ReturnResult extends Result ? InferOkType<ReturnResult> : ReturnResult,
-        InferErrType<YieldErr> | (ReturnResult extends Result ? InferErrType<ReturnResult> : never)
-    >;
+    static gen = gen;
 
-    static gen<T, E, This>(
-        body: (this: This) => AsyncIterator<Err<E>, Result<T, E> | T>,
-        self?: This,
-    ): Promise<Result<T, E>>;
-    static gen<YieldErr extends Err, ReturnResult extends Result | any, This>(
-        body: (this: This) => AsyncIterator<YieldErr, ReturnResult>,
-        self?: This,
-    ): Promise<
-        Result<
-            ReturnResult extends Result ? InferOkType<ReturnResult> : ReturnResult,
-            | InferErrType<YieldErr>
-            | (ReturnResult extends Result ? InferErrType<ReturnResult> : never)
-        >
-    >;
+    private readonly ok: boolean;
 
-    static gen(body: Fn<Iterator<any> | AsyncIterator<any>>, self?: any): any {
-        const iter = body.call(self);
-        const next = iter.next();
+    private readonly value: T;
 
-        const handle = (result: IteratorResult<any, any>): any => {
-            if (!result.done) return result.value;
+    private readonly error: E;
 
-            return result.value instanceof Result ? result.value : this.ok(result.value);
-        };
-
-        if (isPromiseLike(next)) {
-            return next.then(handle);
-        }
-
-        return handle(next);
-    }
-
-    private ok: boolean;
-
-    private value: T;
-
-    private error: E;
-
-    #contexts: string[] = [];
+    readonly #contexts: string[] = [];
 
     private get contexts(): string[] {
         return this.#contexts;
@@ -219,30 +58,30 @@ export class Result<T = unknown, E = unknown> {
     }
 
     /**
-     * Check if `Result` is `OK`
+     * Check if `Result` is `Ok`
      */
-    isOk(): this is Ok<T> {
+    isOk(): this is Result<T, never> {
         return this.ok;
     }
 
     /**
-     * Check if `Result` is `OK` and the value matches the predicate
+     * Check if `Result` is `Ok` and the value matches the predicate
      */
-    isOkAnd(predicate: (value: T) => boolean): this is Ok<T> {
+    isOkAnd(predicate: (value: T) => boolean): this is Result<T, never> {
         return this.isOk() && predicate(this.value);
     }
 
     /**
      * Check if `Result` is `Err`
      */
-    isErr(): this is Err<E> {
+    isErr(): this is Result<never, E> {
         return !this.ok;
     }
 
     /**
      * Check if `Result` is `Err` and the error matches the predicate
      */
-    isErrAnd(predicate: (error: E) => boolean): this is Err<E> {
+    isErrAnd(predicate: (error: E) => boolean): this is Result<never, E> {
         return this.isErr() && predicate(this.error);
     }
 
@@ -256,7 +95,7 @@ export class Result<T = unknown, E = unknown> {
 
         const result = fn(this.value);
 
-        return isPromiseLike(result) ? result.then(Result.ok) : Result.ok(result);
+        return isPromiseLike(result) ? result.then(Ok) : Ok(result);
     }
 
     /**
@@ -269,7 +108,7 @@ export class Result<T = unknown, E = unknown> {
 
         const result = fn(this.error);
 
-        return isPromiseLike(result) ? result.then(Result.err) : Result.err(result);
+        return isPromiseLike(result) ? result.then(Err) : Err(result);
     }
 
     /**
@@ -396,20 +235,22 @@ export class Result<T = unknown, E = unknown> {
     /**
      * Returns an iterable object that yields the `Ok` value and `Err` value
      */
-    iter(): [ok: true, error: never, value: T] | [ok: false, error: E, value: never] {
+    iter():
+        | readonly [ok: true, error: never, value: T]
+        | readonly [ok: false, error: E, value: never] {
         if (this.isOk()) {
-            return [true, never, this.value];
+            return [true, undefined as never, this.value];
         } else {
-            return [false, this.error, never];
+            return [false, this.error, undefined as never];
         }
     }
 
-    *[Symbol.iterator](): Iterator<Err<E>, T> {
+    *[Symbol.iterator](): Iterator<Result<never, E>, T> {
         if (this.isOk()) {
             return this.value;
         }
 
-        yield this as unknown as Err<E>;
+        yield this as unknown as Result<never, E>;
 
         return this as unknown as T;
     }
@@ -420,8 +261,3 @@ export class Result<T = unknown, E = unknown> {
         return this;
     }
 }
-
-export const ok = Result.ok;
-export const err = Result.err;
-
-export const isResult = Result.is;

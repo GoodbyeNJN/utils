@@ -2,7 +2,7 @@ import fs, { promises as fsp } from "node:fs";
 
 import { exists, existsSync } from "./exists";
 
-import type { MkdirOptions, PathLike } from "../types";
+import type { MkdirOptions, PathLike } from "../shared/types";
 
 export const mkdir = async (path: PathLike, options?: MkdirOptions): Promise<void> => {
     const { recursive = true } = options || {};

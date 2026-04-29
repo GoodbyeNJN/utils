@@ -2,7 +2,7 @@ import fs, { promises as fsp } from "node:fs";
 
 import { Result } from "@/result";
 
-import type { CpOptions, PathLike } from "../types";
+import type { CpOptions, PathLike } from "../shared/types";
 
 const safeCp = /* #__PURE__ */ Result.wrap(fsp.cp, Error);
 export const cp = async (

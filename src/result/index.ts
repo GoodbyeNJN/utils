@@ -1,11 +1,7 @@
-export { ResultError } from "./error";
-export { err, ok, isResult, Result } from "./result";
+export { Result } from "./result";
+export { Ok } from "./helpers/ok";
+export { Err } from "./helpers/err";
+export { isResult } from "./helpers/isResult";
+export { ResultError } from "./helpers/error";
 
-export type { Err, Ok } from "./result";
-export type {
-    ExtractErrTypes,
-    ExtractOkTypes,
-    InferErrType,
-    InferOkType,
-    ResultAll,
-} from "./types";
+export type { ExtractErrTypes, ExtractOkTypes, InferErrType, InferOkType } from "./types";

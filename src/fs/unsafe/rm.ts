@@ -1,6 +1,6 @@
 import fs, { promises as fsp } from "node:fs";
 
-import type { PathLike, RmOptions } from "../types";
+import type { PathLike, RmOptions } from "../shared/types";
 
 export const rm = async (path: PathLike, options?: RmOptions): Promise<void> => {
     const { force = true, recursive = true } = options || {};

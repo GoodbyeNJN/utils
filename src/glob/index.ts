@@ -1,6 +1,6 @@
 import { glob as tinyGlob, globSync as tinyGlobSync } from "tinyglobby";
 
-import { isArray, isString, omit } from "@/remeda";
+import { isArray, isString, omit } from "@/fp";
 
 import type { GlobOptions as TinyGlobOptions } from "tinyglobby";
 
@@ -30,6 +30,7 @@ export function glob(
     options?: Omit<GlobOptions, "patterns">,
 ): Promise<string[]>;
 export function glob(options: GlobOptions): Promise<string[]>;
+/* #__NO_SIDE_EFFECTS__ */
 export function glob(...args: [any, any?]): Promise<string[]> {
     const { patterns, options } = normalizeArgs(...args);
 
@@ -44,6 +45,7 @@ export function globSync(
     options?: Omit<GlobOptions, "patterns">,
 ): string[];
 export function globSync(options: GlobOptions): string[];
+/* #__NO_SIDE_EFFECTS__ */
 export function globSync(...args: [any, any?]): string[] {
     const { patterns, options } = normalizeArgs(...args);
 

@@ -2,7 +2,7 @@ import fs, { promises as fsp } from "node:fs";
 
 import { Result } from "@/result";
 
-import type { PathLike, RmOptions } from "../types";
+import type { PathLike, RmOptions } from "../shared/types";
 
 const safeRm = /* #__PURE__ */ Result.wrap(fsp.rm, Error);
 export const rm = async (path: PathLike, options?: RmOptions): Promise<Result<void, Error>> => {

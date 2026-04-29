@@ -1,10 +1,10 @@
 import fs, { promises as fsp } from "node:fs";
 
-import { ok, Result } from "@/result";
+import { Ok, Result } from "@/result";
 
 import { exists, existsSync } from "./exists";
 
-import type { MkdirOptions, PathLike } from "../types";
+import type { MkdirOptions, PathLike } from "../shared/types";
 
 const safeMkdir = /* #__PURE__ */ Result.wrap(fsp.mkdir, Error);
 export const mkdir = async (
@@ -13,20 +13,20 @@ export const mkdir = async (
 ): Promise<Result<void, Error>> => {
     const { recursive = true } = options || {};
 
-    if (await exists(path)) return ok();
+    if (await exists(path)) return Ok();
 
     const result = await safeMkdir(path, { recursive });
 
-    return result.and(ok()).context(`Failed to create directory: ${path}`);
+    return result.and(Ok()).context(`Failed to create directory: ${path}`);
 };
 
 const safeMkdirSync = /* #__PURE__ */ Result.wrap(fs.mkdirSync, Error);
 export const mkdirSync = (path: PathLike, options?: MkdirOptions): Result<void, Error> => {
     const { recursive = true } = options || {};
 
-    if (existsSync(path)) return ok();
+    if (existsSync(path)) return Ok();
 
     const result = safeMkdirSync(path, { recursive });
 
-    return result.and(ok()).context(`Failed to create directory: ${path}`);
+    return result.and(Ok()).context(`Failed to create directory: ${path}`);
 };

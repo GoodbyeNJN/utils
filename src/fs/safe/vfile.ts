@@ -1,8 +1,7 @@
-import { nil as _nil, isNil } from "@/common";
 import { parse, stringify } from "@/json/safe";
-import { err, ok, Result } from "@/result";
+import { Err, Ok } from "@/result";
 
-import { ExtendVFile } from "../vfile";
+import { ExtendVFile } from "../shared/vfile";
 
 import { cp, cpSync } from "./cp";
 import { exists, existsSync } from "./exists";
@@ -10,18 +9,34 @@ import { readFile, readFileByLine, readFileSync } from "./read";
 import { rm, rmSync } from "./rm";
 import { writeFile, writeFileSync } from "./write";
 
-import type { CpOptions, PathLike, RmOptions } from "../types";
-import type { InferErrType } from "@/result";
+import type { CpOptions, PathLike, RmOptions } from "../shared/types";
+import type { InferErrType, Result } from "@/result";
 
-const nil = _nil as any;
+const ERR = Err() as any;
 
 export class VFile<T = string, PE = Error, SE = Error> extends ExtendVFile<T> {
     declare protected _transformer?: {
         parse: (raw: string) => Result<T, PE>;
         stringify: (value: T) => Result<string, SE>;
     };
-    declare protected _raw: string;
-    declare protected _value: T;
+    declare protected _raw: Result<string, SE>;
+    declare protected _value: Result<T, PE>;
+
+    /**
+     * @example
+     * ```js
+     * const vfile = new VFile(
+     *   "/home/user/project/src/page/index.js",
+     *   "/home/user/project",
+     * );
+     * ```
+     */
+    constructor(filepath: PathLike, cwd?: string) {
+        super(filepath, cwd);
+
+        this._raw = ERR;
+        this._value = ERR;
+    }
 
     /**
      * @example
@@ -58,7 +73,7 @@ export class VFile<T = string, PE = Error, SE = Error> extends ExtendVFile<T> {
                     InferErrType<ReturnType<typeof stringify>>
                 >
             )._transformer = {
-                parse: parse,
+                parse,
                 stringify: value => stringify(value, null, indent),
             };
         } else {
@@ -84,20 +99,22 @@ export class VFile<T = string, PE = Error, SE = Error> extends ExtendVFile<T> {
     raw(raw: string): this;
     raw(raw?: string): any {
         if (raw !== undefined) {
-            this._raw = raw;
-            this._value = nil;
+            this._raw = Ok(raw);
+            this._value = ERR;
 
             return this;
         }
 
-        if (!isNil(this._raw)) return ok(this._raw);
-        if (isNil(this._value)) {
-            return err(new Error("No content")).context("Failed to get raw content");
+        if (this._raw.isOk()) return this._raw;
+        if (this._value.isErr()) {
+            const err = this._value === ERR ? Err(new Error("No content")) : this._value;
+
+            return err.context("Failed to get raw content");
         }
 
-        return this.stringifyValue(this._value).inspect(raw => {
-            this._raw = raw;
-        });
+        this._raw = this.stringifyValue(this._value.unwrap());
+
+        return this._raw;
     }
 
     /**
@@ -116,20 +133,22 @@ export class VFile<T = string, PE = Error, SE = Error> extends ExtendVFile<T> {
     value(value: T): this;
     value(value?: T): any {
         if (value !== undefined) {
-            this._value = value;
-            this._raw = nil;
+            this._value = Ok(value);
+            this._raw = ERR;
 
             return this;
         }
 
-        if (this._value !== nil) return ok(this._value);
-        if (this._raw === nil) {
-            return err(new Error("No content")).context("Failed to get value");
+        if (this._value.isOk()) return this._value;
+        if (this._raw.isErr()) {
+            const err = this._raw === ERR ? Err(new Error("No content")) : this._raw;
+
+            return err.context("Failed to get value");
         }
 
-        return this.parseRaw(this._raw).inspect(value => {
-            this._value = value;
-        });
+        this._value = this.parseRaw(this._raw.unwrap());
+
+        return this._value;
     }
 
     /**
@@ -153,16 +172,17 @@ export class VFile<T = string, PE = Error, SE = Error> extends ExtendVFile<T> {
      * ```
      */
     append(value: T, newline = true): Result<void, SE> {
-        return Result.gen(function* () {
-            const linebreak = newline ? this._linebreak : "";
-            const append = yield* this.stringifyValue(value);
+        const linebreak = newline ? this._linebreak : "";
+        const append = this.stringifyValue(value);
+        if (append.isErr()) return append;
 
-            if (isNil(this._raw) || isNil(this._value)) {
-                this.raw(append);
-            } else {
-                this.raw(this._raw + linebreak + append);
-            }
-        }, this);
+        if (this._raw.isErr() || this._value.isErr()) {
+            this.raw(append.unwrap());
+        } else {
+            this.raw(this._raw.unwrap() + linebreak + append.unwrap());
+        }
+
+        return Ok();
     }
 
     async exists(): ReturnType<typeof exists> {
@@ -228,13 +248,13 @@ export class VFile<T = string, PE = Error, SE = Error> extends ExtendVFile<T> {
     }
 
     protected parseRaw(raw: string): Result<T, PE> {
-        if (!this._transformer?.parse) return ok(raw as T);
+        if (!this._transformer?.parse) return Ok(raw as T);
 
         return this._transformer.parse(raw).context("Failed to parse raw content");
     }
 
     protected stringifyValue(value: T): Result<string, SE> {
-        if (!this._transformer?.stringify) return ok(value as string);
+        if (!this._transformer?.stringify) return Ok(value as string);
 
         return this._transformer.stringify(value).context("Failed to stringify value");
     }

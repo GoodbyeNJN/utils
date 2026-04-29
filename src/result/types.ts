@@ -1,17 +1,17 @@
-import type { Err, Ok, Result } from "./result";
-
-export type ExtractOkTypes<T extends readonly Result[]> = {
-    [K in keyof T]: T[K] extends Result<infer U, unknown> ? U : never;
-};
-export type ExtractErrTypes<T extends readonly Result[]> = {
-    [K in keyof T]: T[K] extends Result<unknown, infer E> ? E : never;
-};
+import type { Result } from "./result";
 
 export type InferOkType<R> = R extends Result<infer T, unknown> ? T : never;
 export type InferErrType<R> = R extends Result<unknown, infer E> ? E : never;
 
+export type ExtractOkTypes<T extends readonly Result[]> = {
+    [K in keyof T]: InferOkType<T[K]>;
+};
+export type ExtractErrTypes<T extends readonly Result[]> = {
+    [K in keyof T]: InferErrType<T[K]>;
+};
+
 export type ResultAll<T extends readonly Result[]> =
-    IsLiteralArray<T> extends 1
+    IsLiteralArray<T> extends true
         ? Traverse<T>
         : Result<ExtractOkTypes<T>, ExtractErrTypes<T>[number]>;
 
@@ -27,14 +27,14 @@ type Prev = [
 
 // Collects the results array into separate tuple array.
 //
-// T         - The array of the results
+// A         - The array of the results
 // Collected - The collected tuples.
 // Depth     - The maximum depth.
-type CollectResults<T, Collected extends unknown[] = [], Depth extends number = 50> = [
+type CollectResults<A, Collected extends unknown[] = [], Depth extends number = 50> = [
     Depth,
 ] extends [never]
     ? []
-    : T extends [infer H, ...infer Rest]
+    : A extends [infer H, ...infer Rest]
       ? // And test whether the head of the list is a result
         H extends Result<infer L, infer R>
           ? // Continue collecting...
@@ -58,8 +58,8 @@ export type Transpose<
     A,
     Transposed extends unknown[][] = [],
     Depth extends number = 10,
-> = A extends [infer T, ...infer Rest]
-    ? T extends [infer L, infer R]
+> = A extends [infer H, ...infer Rest]
+    ? H extends [infer L, infer R]
         ? Transposed extends [infer PL, infer PR]
             ? PL extends unknown[]
                 ? PR extends unknown[]
@@ -84,7 +84,11 @@ export type Combine<T, Depth extends number = 5> =
 
 // Deduplicates the result, as the result type is a union of Err and Ok types.
 export type Dedup<T> =
-    T extends Result<infer RL, infer RR> ? ([unknown] extends [RL] ? Err<RR> : Ok<RL>) : T;
+    T extends Result<infer RL, infer RR>
+        ? [unknown] extends [RL]
+            ? Result<never, RR>
+            : Result<RL, never>
+        : T;
 
 // Given a union, this gives the array of the union members.
 export type MemberListOf<T> = (
@@ -126,10 +130,10 @@ export type MembersToUnion<T> = T extends unknown[] ? T[number] : never;
 export type IsLiteralArray<T> = T extends { length: infer L }
     ? L extends number
         ? number extends L
-            ? 0
-            : 1
-        : 0
-    : 0;
+            ? false
+            : true
+        : false
+    : false;
 
 // Traverses an array of results and returns a single result containing
 // the oks and errs union-ed/combined.

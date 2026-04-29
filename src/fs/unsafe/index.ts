@@ -1,3 +1,5 @@
+export { BaseVFile } from "../shared/vfile";
+
 export { appendFile, appendFileSync } from "./append";
 export { cp, cpSync } from "./cp";
 export { exists, existsSync } from "./exists";
@@ -6,3 +8,15 @@ export { readFile, readFileByLine, readFileSync, readJson, readJsonSync } from "
 export { rm, rmSync } from "./rm";
 export { VFile } from "./vfile";
 export { writeFile, writeFileSync, writeJson, writeJsonSync } from "./write";
+
+export type {
+    AppendFileOptions,
+    BufferEncodingOptions,
+    CpOptions,
+    EncodingOptions,
+    MkdirOptions,
+    PathLike,
+    RmOptions,
+    StringEncodingOptions,
+    WriteJsonOptions,
+} from "../shared/types";

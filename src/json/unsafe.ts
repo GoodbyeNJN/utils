@@ -1,32 +1,34 @@
 /* eslint-disable @typescript-eslint/unified-signatures */
 
-import { nil } from "@/common";
+import { None, Some } from "@/option";
 
-import type { Nil } from "@/common";
+import type { Option } from "@/option";
 
 export function stringify(
     value: any,
     replacer?: (this: any, key: string, value: any) => any,
     space?: string | number,
-): string | Nil;
+): Option<string>;
 export function stringify(
     value: any,
     replacer?: (number | string)[] | null,
     space?: string | number,
-): string | Nil;
-export function stringify(value: any, replacer?: any, space?: any): string | Nil {
+): Option<string>;
+/* #__NO_SIDE_EFFECTS__ */
+export function stringify(value: any, replacer?: any, space?: any): Option<string> {
     const text = JSON.stringify(value, replacer, space);
 
-    return text === undefined ? nil : text;
+    return text === undefined ? None() : Some(text);
 }
 
+/* #__NO_SIDE_EFFECTS__ */
 export const parse = <T = any>(
     text: string,
     reviver?: (this: any, key: string, value: any) => any,
-): T | Nil => {
+): Option<T> => {
     try {
-        return JSON.parse(text, reviver);
+        return Some(JSON.parse(text, reviver));
     } catch {
-        return nil;
+        return None();
     }
 };

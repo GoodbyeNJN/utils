@@ -1,7 +1,8 @@
 import fs, { promises as fsp } from "node:fs";
 
-import type { PathLike } from "../types";
+import type { PathLike } from "../shared/types";
 
+/* #__NO_SIDE_EFFECTS__ */
 export const exists = async (path: PathLike): Promise<boolean> => {
     try {
         await fsp.access(path);
@@ -12,6 +13,7 @@ export const exists = async (path: PathLike): Promise<boolean> => {
     }
 };
 
+/* #__NO_SIDE_EFFECTS__ */
 export const existsSync = (path: PathLike): boolean => {
     try {
         fs.accessSync(path);

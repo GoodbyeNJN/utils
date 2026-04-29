@@ -1,19 +1,22 @@
-export { appendFile as safeAppendFile, appendFileSync as safeAppendFileSync } from "./append";
-export { cp as safeCp, cpSync as safeCpSync } from "./cp";
-export { exists as safeExists, existsSync as safeExistsSync } from "./exists";
-export { mkdir as safeMkdir, mkdirSync as safeMkdirSync } from "./mkdir";
-export {
-    readFile as safeReadFile,
-    readFileByLine as safeReadFileByLine,
-    readFileSync as safeReadFileSync,
-    readJson as safeReadJson,
-    readJsonSync as safeReadJsonSync,
-} from "./read";
-export { rm as safeRm, rmSync as safeRmSync } from "./rm";
-export { VFile as SafeVFile } from "./vfile";
-export {
-    writeFile as safeWriteFile,
-    writeFileSync as safeWriteFileSync,
-    writeJson as safeWriteJson,
-    writeJsonSync as safeWriteJsonSync,
-} from "./write";
+export { BaseVFile } from "../shared/vfile";
+
+export { appendFile, appendFileSync } from "./append";
+export { cp, cpSync } from "./cp";
+export { exists, existsSync } from "./exists";
+export { mkdir, mkdirSync } from "./mkdir";
+export { readFile, readFileByLine, readFileSync, readJson, readJsonSync } from "./read";
+export { rm, rmSync } from "./rm";
+export { VFile } from "./vfile";
+export { writeFile, writeFileSync, writeJson, writeJsonSync } from "./write";
+
+export type {
+    AppendFileOptions,
+    BufferEncodingOptions,
+    CpOptions,
+    EncodingOptions,
+    MkdirOptions,
+    PathLike,
+    RmOptions,
+    StringEncodingOptions,
+    WriteJsonOptions,
+} from "../shared/types";

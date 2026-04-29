@@ -1,6 +1,6 @@
 import fs, { promises as fsp } from "node:fs";
 
-import type { CpOptions, PathLike } from "../types";
+import type { CpOptions, PathLike } from "../shared/types";
 
 export const cp = async (
     source: PathLike,

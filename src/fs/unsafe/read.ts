@@ -1,62 +1,68 @@
 import fs, { promises as fsp } from "node:fs";
 
-import { isNil, nil } from "@/common";
 import { parse } from "@/json/unsafe";
+import { None, Option, Some } from "@/option";
 
-import { parseEncodingOptions } from "../utils";
+import { parseEncodingOptions } from "../shared/utils";
 
 import { exists, existsSync } from "./exists";
 
-import type { BufferEncodingOptions, PathLike, StringEncodingOptions } from "../types";
-import type { Nil } from "@/common";
+import type { BufferEncodingOptions, PathLike, StringEncodingOptions } from "../shared/types";
 
 export async function readFile(
     path: PathLike,
     options: BufferEncodingOptions,
-): Promise<Buffer | Nil>;
+): Promise<Option<Buffer>>;
 export async function readFile(
     path: PathLike,
     options?: StringEncodingOptions,
-): Promise<string | Nil>;
+): Promise<Option<string>>;
+/* #__NO_SIDE_EFFECTS__ */
 export async function readFile(path: any, options?: any): Promise<any> {
-    if (!(await exists(path))) return nil;
+    if (!(await exists(path))) return None();
 
     try {
-        return await fsp.readFile(path, parseEncodingOptions(options));
+        return Some(await fsp.readFile(path, parseEncodingOptions(options)));
     } catch {
-        return nil;
+        return None();
     }
 }
 
-export function readFileSync(path: PathLike, options: BufferEncodingOptions): Buffer | Nil;
-export function readFileSync(path: PathLike, options?: StringEncodingOptions): string | Nil;
+export function readFileSync(path: PathLike, options: BufferEncodingOptions): Option<Buffer>;
+export function readFileSync(path: PathLike, options?: StringEncodingOptions): Option<string>;
+/* #__NO_SIDE_EFFECTS__ */
 export function readFileSync(path: any, options?: any): any {
-    if (!existsSync(path)) return nil;
+    if (!existsSync(path)) return None();
 
     try {
-        return fs.readFileSync(path, parseEncodingOptions(options));
+        return Some(fs.readFileSync(path, parseEncodingOptions(options)));
     } catch {
-        return nil;
+        return None();
     }
 }
 
+/* #__NO_SIDE_EFFECTS__ */
 export const readJson = async <T = any>(
     path: PathLike,
     options?: StringEncodingOptions,
-): Promise<T | Nil> => {
-    const content = await readFile(path, options);
-    if (isNil(content)) return nil;
+): Promise<Option<T>> =>
+    Option.gen(async function* () {
+        const content = yield* await readFile(path, options);
+        if (!content) return None();
 
-    return parse<T>(content);
-};
+        return parse<T>(content);
+    });
 
-export const readJsonSync = <T = any>(path: PathLike, options?: StringEncodingOptions): T | Nil => {
-    const content = readFileSync(path, options);
-    if (isNil(content)) return nil;
+/* #__NO_SIDE_EFFECTS__ */
+export const readJsonSync = <T = any>(path: PathLike, options?: StringEncodingOptions): Option<T> =>
+    Option.gen(function* () {
+        const content = yield* readFileSync(path, options);
+        if (!content) return None();
 
-    return parse<T>(content);
-};
+        return parse<T>(content);
+    });
 
+/* #__NO_SIDE_EFFECTS__ */
 export const readFileByLine = async (
     path: PathLike,
     options?: StringEncodingOptions,

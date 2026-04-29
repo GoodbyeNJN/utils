@@ -4,11 +4,11 @@ import { dirname } from "node:path";
 import { stringify } from "@/json/safe";
 import { Result } from "@/result";
 
-import { parseEncodingOptions, parseWriteJsonOptions, pathLikeToPath } from "../utils";
+import { parseEncodingOptions, parseWriteJsonOptions, pathLikeToPath } from "../shared/utils";
 
 import { mkdir, mkdirSync } from "./mkdir";
 
-import type { PathLike, StringEncodingOptions, WriteJsonOptions } from "../types";
+import type { PathLike, StringEncodingOptions, WriteJsonOptions } from "../shared/types";
 
 const safeWriteFile = /* #__PURE__ */ Result.wrap(fsp.writeFile, Error);
 export const writeFile = async (

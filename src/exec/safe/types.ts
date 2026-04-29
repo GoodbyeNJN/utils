@@ -6,7 +6,7 @@ import type {
     BaseProcessInstance,
     BaseProcessOptions,
     Output,
-} from "../types";
+} from "../shared/types";
 import type { Result } from "@/result";
 
 export type ProcessOptions = BaseProcessOptions<ProcessInstance>;

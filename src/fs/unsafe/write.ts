@@ -1,14 +1,13 @@
 import fs, { promises as fsp } from "node:fs";
 import { dirname } from "node:path";
 
-import { isNil } from "@/common";
 import { stringify } from "@/json/unsafe";
 
-import { parseEncodingOptions, parseWriteJsonOptions, pathLikeToPath } from "../utils";
+import { parseEncodingOptions, parseWriteJsonOptions, pathLikeToPath } from "../shared/utils";
 
 import { mkdir, mkdirSync } from "./mkdir";
 
-import type { PathLike, StringEncodingOptions, WriteJsonOptions } from "../types";
+import type { PathLike, StringEncodingOptions, WriteJsonOptions } from "../shared/types";
 
 export const writeFile = async (
     path: PathLike,
@@ -38,9 +37,9 @@ export const writeJson = async (
     const { indent, encoding } = parseWriteJsonOptions(indentOrOptions);
 
     const content = stringify(data, null, indent);
-    if (isNil(content)) throw new TypeError(`Value cannot be stringified: ${String(data)}`);
+    if (content.isNone()) throw new TypeError(`Value cannot be stringified: ${String(data)}`);
 
-    return writeFile(path, content, encoding);
+    return writeFile(path, content.unwrap(), encoding);
 };
 
 export const writeJsonSync = (
@@ -51,7 +50,7 @@ export const writeJsonSync = (
     const { indent, encoding } = parseWriteJsonOptions(indentOrOptions);
 
     const content = stringify(data, null, indent);
-    if (isNil(content)) throw new TypeError(`Value cannot be stringified: ${String(data)}`);
+    if (content.isNone()) throw new TypeError(`Value cannot be stringified: ${String(data)}`);
 
-    return writeFileSync(path, content, encoding);
+    return writeFileSync(path, content.unwrap(), encoding);
 };
