@@ -58,6 +58,7 @@ export type { ReadonlyDeep } from "type-fest";
 export type { LiteralUnion } from "type-fest";
 export type { Promisable } from "type-fest";
 export type { Arrayable } from "type-fest";
+export type { Optional } from "type-fest";
 export type { Opaque, UnwrapOpaque, Tagged, GetTagMetadata, UnwrapTagged } from "type-fest";
 export type { InvariantOf } from "type-fest";
 export type { SetOptional } from "type-fest";
@@ -66,6 +67,7 @@ export type { SetRequired } from "type-fest";
 export type { SetRequiredDeep } from "type-fest";
 export type { SetNonNullable } from "type-fest";
 export type { SetNonNullableDeep } from "type-fest";
+export type { NonNullableDeep } from "type-fest";
 export type { ValueOf } from "type-fest";
 export type { AsyncReturnType } from "type-fest";
 export type { ConditionalExcept } from "type-fest";
@@ -187,6 +189,8 @@ export type { TupleOf } from "type-fest";
 export type { ExclusifyUnion } from "type-fest";
 export type { ArrayReverse } from "type-fest";
 export type { UnionMember } from "type-fest";
+export type { Absolute } from "type-fest";
+export type { UnionLength } from "type-fest";
 
 // Template literal types
 export type { CamelCase, CamelCaseOptions } from "type-fest";
