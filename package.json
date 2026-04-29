@@ -19,33 +19,49 @@
     },
     "type": "module",
     "exports": {
-        ".": {
-            "types": "./dist/common.d.ts",
-            "import": "./dist/common.js"
-        },
         "./exec": {
-            "types": "./dist/exec.d.ts",
-            "import": "./dist/exec.js"
+            "types": "./dist/exec/index.d.ts",
+            "import": "./dist/exec/index.js"
+        },
+        "./exec/safe": {
+            "types": "./dist/exec/safe.d.ts",
+            "import": "./dist/exec/safe.js"
+        },
+        "./fp": {
+            "types": "./dist/fp/index.d.ts",
+            "import": "./dist/fp/index.js"
         },
         "./fs": {
-            "types": "./dist/fs.d.ts",
-            "import": "./dist/fs.js"
+            "types": "./dist/fs/index.d.ts",
+            "import": "./dist/fs/index.js"
+        },
+        "./fs/safe": {
+            "types": "./dist/fs/safe.d.ts",
+            "import": "./dist/fs/safe.js"
         },
         "./glob": {
-            "types": "./dist/glob.d.ts",
-            "import": "./dist/glob.js"
+            "types": "./dist/glob/index.d.ts",
+            "import": "./dist/glob/index.js"
         },
         "./json": {
-            "types": "./dist/json.d.ts",
-            "import": "./dist/json.js"
+            "types": "./dist/json/index.d.ts",
+            "import": "./dist/json/index.js"
         },
-        "./remeda": {
-            "types": "./dist/remeda.d.ts",
-            "import": "./dist/remeda.js"
+        "./json/safe": {
+            "types": "./dist/json/safe.d.ts",
+            "import": "./dist/json/safe.js"
+        },
+        "./option": {
+            "types": "./dist/option/index.d.ts",
+            "import": "./dist/option/index.js"
         },
         "./result": {
-            "types": "./dist/result.d.ts",
-            "import": "./dist/result.js"
+            "types": "./dist/result/index.d.ts",
+            "import": "./dist/result/index.js"
+        },
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
         },
         "./types": {
             "types": "./dist/types.d.ts"
