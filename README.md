@@ -3,18 +3,18 @@
 [![npm version](https://badge.fury.io/js/@goodbyenjn%2Futils.svg)](https://badge.fury.io/js/@goodbyenjn%2Futils)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A modern TypeScript/JavaScript utility library providing a comprehensive collection of type-safe utility functions, functional error handling with the Result pattern, filesystem operations, and shell command execution.
+A modern TypeScript/JavaScript utility library providing a comprehensive collection of type-safe utility functions, functional error handling with the Result and Option patterns, filesystem operations, and shell command execution.
 
 ## Features
 
 - 🚀 **Modern**: Built with TypeScript, targeting ES modules and modern JavaScript
 - 🔒 **Type-safe**: Full TypeScript support with comprehensive type definitions and type inference
 - 📦 **Modular**: Import only what you need with tree-shakable exports and multiple entry points
-- 🛡️ **Result Pattern**: Functional error handling without exceptions, based on Rust-style Result types
+- 🛡️ **Result & Option Pattern**: Functional error handling and optional values without exceptions, based on Rust-style Result and Option types
 - 📁 **VFile & FS**: Type-safe file system operations and a powerful virtual file object
 - 🐚 **Exec**: Powerful and flexible command execution with safe and unsafe variants
 - 🧰 **Common Utilities**: String manipulation, math operations, promise utilities, and JSON handling
-- 📊 **Remeda Extensions**: Extended utilities built on top of [Remeda](https://remedajs.com/)
+- 📊 **FP Utilities**: Functional programming utilities built on top of [Remeda](https://remedajs.com/) and [Rotery](https://github.com/nicolo-ribaudo/rotery), including async iteration helpers
 
 ## Installation
 
@@ -33,10 +33,18 @@ yarn add @goodbyenjn/utils
 ```typescript
 // Import what you need from the main module
 import { sleep, template } from "@goodbyenjn/utils";
-import { exec, safeExec } from "@goodbyenjn/utils/exec";
+import { exec } from "@goodbyenjn/utils/exec";
+import { exec as safeExec } from "@goodbyenjn/utils/exec/safe";
 import { BaseVFile } from "@goodbyenjn/utils/fs";
-import { ok, Result } from "@goodbyenjn/utils/result";
-import { parse, safeParse } from "@goodbyenjn/utils/json";
+import { readFile as safeReadFile } from "@goodbyenjn/utils/fs/safe";
+import { Ok, Result } from "@goodbyenjn/utils/result";
+import { parse } from "@goodbyenjn/utils/json";
+import { parse as safeParse } from "@goodbyenjn/utils/json/safe";
+import { Some, None } from "@goodbyenjn/utils/option";
+import type { Nullable, SetOptional } from "@goodbyenjn/utils/types";
+
+// Enable global type augmentations (better Object.keys, Map.has, Array.filter, etc.)
+import "@goodbyenjn/utils/global-types";
 ```
 
 ### Common Utilities
@@ -44,7 +52,7 @@ import { parse, safeParse } from "@goodbyenjn/utils/json";
 #### String Operations
 
 ```typescript
-import { template, unindent, addPrefix, removeSuffix, join, split } from "@goodbyenjn/utils";
+import { template, unindent, addPrefix, removeSuffix, joinWith, splitBy } from "@goodbyenjn/utils";
 
 // String templating
 const greeting = template("Hello, {name}! You are {age} years old.", {
@@ -111,8 +119,8 @@ const withPrefix = addPrefix("@", "myfile"); // "@myfile"
 const cleaned = removeSuffix(".js", "script.js"); // "script"
 
 // String joining and splitting
-const path = join("/", "home", "user", "docs"); // "/home/user/docs"
-const parts = split("-", "hello-world-js"); // ["hello", "world", "js"]
+const path = joinWith("/", "home", "user", "docs"); // "/home/user/docs"
+const parts = splitBy("-", "hello-world-js"); // ["hello", "world", "js"]
 
 // Split string by line breaks (handles both \n and \r\n)
 const lines = splitByLineBreak("line1\nline2\r\nline3");
@@ -158,7 +166,8 @@ const result = await promise;
 ### Command Execution
 
 ```typescript
-import { exec, safeExec } from "@goodbyenjn/utils/exec";
+import { exec } from "@goodbyenjn/utils/exec";
+import { exec as safeExec } from "@goodbyenjn/utils/exec/safe";
 
 // 1. Unsafe Execution (throws on failure)
 const output = await exec`npm install`;
@@ -222,7 +231,7 @@ const message3 = getErrorMessage(null); // "Unknown error"
 #### Throttling and Debouncing
 
 ```typescript
-import { debounce, throttle } from "@goodbyenjn/utils";
+import { debounce, throttle } from "@goodbyenjn/utils/fp";
 
 // Debounce - wait for inactivity before executing
 const debouncedSearch = debounce((query: string) => {
@@ -245,11 +254,13 @@ window.addEventListener("scroll", throttledScroll);
 #### JSON Handling
 
 ```typescript
-import { parse, stringify, safeParse, safeStringify } from "@goodbyenjn/utils/json";
+import { parse, stringify } from "@goodbyenjn/utils/json";
+// Or use the safe-only entry point:
+import { parse as safeParse, stringify as safeStringify } from "@goodbyenjn/utils/json/safe";
 
 // Standard JSON parsing (returns value or nil)
-const data = parse('{"a": 1}'); // { a: 1 }
-const invalid = parse("bad"); // nil
+const data = parse('{"a": 1}'); // Some({ a: 1 })
+const invalid = parse("bad"); // None
 
 // Safe JSON parsing (returns Result)
 const result = safeParse('{"a": 1}');
@@ -265,18 +276,16 @@ const json = safeStringify({ a: 1 }); // Result<string, Error>
 
 ```typescript
 import {
-    safeReadFile,
-    safeWriteFile,
-    safeExists,
-    safeReadJson,
-    safeWriteJson,
-    safeMkdir,
-    safeRm,
-    safeReadFileByLine,
     BaseVFile,
-} from "@goodbyenjn/utils/fs";
-
-// ... (safe operations)
+    exists as safeExists,
+    mkdir as safeMkdir,
+    readFile as safeReadFile,
+    readFileByLine as safeReadFileByLine,
+    readJson as safeReadJson,
+    rm as safeRm,
+    writeFile as safeWriteFile,
+    writeJson as safeWriteJson,
+} from "@goodbyenjn/utils/fs/safe";
 
 // BaseVFile - Unified file handling
 const vfile = new BaseVFile("example.json");
@@ -292,31 +301,31 @@ const absolute = vfile.pathname(); // "/full/path/to/data.ts"
 // Built-in operations (available in extended VFile implementations)
 // await vfile.read(); // Get content
 // await vfile.write(); // Write content
-```
 
+const textResult = await safeReadFile("example.txt");
 if (textResult.isOk()) {
-console.log("File content:", textResult.unwrap());
+    console.log("File content:", textResult.unwrap());
 } else {
-console.error("Failed to read file:", textResult.unwrapErr().message);
+    console.error("Failed to read file:", textResult.unwrapErr().message);
 }
 
 // Read and parse JSON safely
 const jsonResult = await safeReadJson("package.json");
 if (jsonResult.isOk()) {
-const pkg = jsonResult.unwrap();
-console.log("Package name:", pkg.name);
+    const pkg = jsonResult.unwrap();
+    console.log("Package name:", pkg.name);
 }
 
 // Write JSON file
-const writeResult = await safeWriteJson("data.json", { users: [] }, { pretty: true });
+const writeResult = await safeWriteJson("data.json", { users: [] }, 2);
 if (writeResult.isErr()) {
-console.error("Write failed:", writeResult.unwrapErr());
+    console.error("Write failed:", writeResult.unwrapErr());
 }
 
 // Check if file exists
-const existsResult = await safeExists("path/to/file.txt");
-if (existsResult.isOk() && existsResult.unwrap()) {
-console.log("File exists!");
+const exists = await safeExists("path/to/file.txt");
+if (exists) {
+    console.log("File exists!");
 }
 
 // Create directories (recursive)
@@ -328,17 +337,16 @@ const rmResult = await safeRm("build", { recursive: true, force: true });
 // Read file line by line
 const lineResult = await safeReadFileByLine("large-file.log");
 if (lineResult.isOk()) {
-for await (const line of lineResult.unwrap()) {
-console.log(line);
+    for await (const line of lineResult.unwrap()) {
+        console.log(line);
+    }
 }
-}
-
-````
+```
 
 ### Glob Patterns
 
 ```typescript
-import { glob, globSync, convertPathToPattern } from "@goodbyenjn/utils/fs";
+import { glob, globSync, convertPathToPattern } from "@goodbyenjn/utils/glob";
 
 // Async glob pattern matching
 const files = await glob("src/**/*.{ts,tsx}", { cwd: "." });
@@ -349,16 +357,16 @@ const syncFiles = globSync("**/*.test.ts", { cwd: "tests" });
 
 // Convert file path to glob pattern
 const pattern = convertPathToPattern("/home/user/project");
-````
+```
 
 ### Result Pattern - Functional Error Handling
 
 ```typescript
-import { err, ok, Result } from "@goodbyenjn/utils/result";
+import { Err, Ok, Result } from "@goodbyenjn/utils/result";
 
 // Create results explicitly
-const success = ok(42);
-const failure = err("Something went wrong");
+const success = Ok(42);
+const failure = Err("Something went wrong");
 
 // Handle results with chainable methods
 const doubled = success
@@ -367,7 +375,7 @@ const doubled = success
     .unwrapOr(0); // 84
 
 // Transform error type
-const result: Result<string, Error> = ok("value");
+const result: Result<string, Error> = Ok("value");
 const transformed = result.mapErr(() => new Error("Custom error"));
 
 // Convert throwing functions or promises to Result
@@ -385,15 +393,15 @@ const safeParse = Result.wrap(JSON.parse, Error);
 const data = safeParse('{"valid": true}'); // Result<any, Error>
 
 // Combine multiple Results
-const results = [ok(1), ok(2), err("oops"), ok(4)];
-const combined = Result.all(...results); // Err("oops")
+const results = [Ok(1), Ok(2), Err("oops"), Ok(4)];
+const combined = Result.all(results); // Err("oops")
 
 // Generator-based "do" notation for flattening Results
 const finalResult = Result.gen(function* () {
-    const a = yield* ok(10);
-    const b = yield* ok(20);
+    const a = yield* Ok(10);
+    const b = yield* Ok(20);
     return a + b;
-}); // ok(30)
+}); // Ok(30)
 
 // Supports async generators
 const asyncFinal = await Result.gen(async function* () {
@@ -412,6 +420,17 @@ import type {
     OmitByKey,
     SetNullable,
     TemplateFn,
+    // New function types with `this` binding
+    FnWithThis,
+    AsyncFnWithThis,
+    SyncFnWithThis,
+    // Re-exported from type-fest
+    SetOptional,
+    SetRequired,
+    PartialDeep,
+    Simplify,
+    LiteralUnion,
+    PackageJson,
 } from "@goodbyenjn/utils/types";
 
 // ... (other types)
@@ -420,7 +439,6 @@ import type {
 const myTag: TemplateFn<string> = (strings, ...values) => {
     return strings[0] + values[0];
 };
-```
 
 // Nullable type for values that can be null or undefined
 type User = {
@@ -459,25 +477,27 @@ name: string;
 email: string;
 };
 type PartialResponse = SetNullable<APIResponse, "email" | "name">; // email and name become nullable
+```
 
-````
+### FP Utilities
 
-### Extended Remeda Utilities
-
-The library includes 100+ utilities from [Remeda](https://remedajs.com/), a functional utility library optimized for TypeScript:
+The library provides 100+ functional utilities via `@goodbyenjn/utils/fp`, built on top of [Remeda](https://remedajs.com/) and [Rotery](https://github.com/nicolo-ribaudo/rotery):
 
 ```typescript
 import {
-    // Property checking
+    // Custom type-checking helpers
     hasOwnProperty,
     isFunction,
     isPromiseLike,
+    isOption, // check if a value is an Option
+    isResult, // check if a value is a Result
 
-    // Array operations
+    // Throttle / debounce (moved from main module)
+    debounce,
+    throttle,
+
+    // Array operations (from Remeda)
     chunk,
-    compact,
-    drop,
-    dropLast,
     filter,
     find,
     flatMap,
@@ -485,11 +505,11 @@ import {
     map,
     partition,
     reverse,
-    slice,
     take,
-    uniq,
+    drop,
+    unique,
 
-    // Object operations
+    // Object operations (from Remeda)
     pick,
     omit,
     merge,
@@ -497,18 +517,32 @@ import {
     values,
     entries,
 
-    // Functional composition
+    // Functional composition (from Remeda)
     pipe,
     compose,
 
-    // Utility functions
-    clamp,
+    // Aggregations (from Remeda)
     groupBy,
     countBy,
     sumBy,
-    minBy,
-    maxBy,
-} from "@goodbyenjn/utils/remeda";
+
+    // Async iteration (from Rotery, aliased with P suffix)
+    filterP, // async filter
+    mapP, // async map
+    flatMapP, // async flatMap
+    forEachP, // async forEach
+    every, // sync every
+    everyP, // async every
+    some, // sync some
+    someP, // async some
+    toArray, // collect iterator to array
+    toArrayP, // async collect
+    flatten as flattenSync,
+    flattenP, // async flatten
+    reduceP, // async reduce
+    concurrency, // limit concurrency
+    buffer, // buffer items
+} from "@goodbyenjn/utils/fp";
 
 // Type-safe property checking
 const obj = { name: "John", age: 30, active: true };
@@ -557,254 +591,21 @@ const totalAge = sumBy(
 // Chunk array into groups
 const chunked = chunk(users, 2);
 // [[user1, user2], [user3]]
-````
 
-## API Reference
-
-### Module Exports
-
-#### Main Module (`@goodbyenjn/utils`)
-
-Common utilities for everyday programming tasks:
-
-```typescript
-// String utilities
-export {
-    template,
-    unindent,
-    indent,
-    addPrefix,
-    addSuffix,
-    removePrefix,
-    removeSuffix,
-    split,
-    join,
-    splitWithSlash,
-    joinWithSlash,
-    toForwardSlash,
-    splitByLineBreak,
-    concatTemplateStrings,
-};
-
-// Promise utilities
-export { sleep, createLock, createSingleton, createPromiseWithResolvers };
-
-// Shell command execution
-export { $, quoteShellArg };
-
-// Math utilities
-export { linear, scale };
-
-// Error handling
-export { normalizeError, getErrorMessage };
-
-// Throttling/Debouncing
-export { debounce, throttle };
-
-// JSON utilities
-export { stringify, parse, safeParse };
-
-// Parsing utilities
-export { parseKeyValuePairs, parseValueToBoolean };
-```
-
-#### File System Module (`@goodbyenjn/utils/fs`)
-
-Type-safe file system operations with Result pattern error handling:
-
-```typescript
-// Safe operations (return Result types)
-export {
-    safeReadFile,
-    safeReadFileSync,
-    safeReadJson,
-    safeReadJsonSync,
-    safeReadFileByLine,
-    safeWriteFile,
-    safeWriteFileSync,
-    safeWriteJson,
-    safeWriteJsonSync,
-    safeAppendFile,
-    safeAppendFileSync,
-    safeMkdir,
-    safeMkdirSync,
-    safeRm,
-    safeRmSync,
-    safeCp,
-    safeCpSync,
-    safeExists,
-    safeExistsSync,
-};
-
-// Glob operations
-export { glob, globSync, convertPathToPattern, escapePath, isDynamicPattern };
-
-// Unsafe operations (throw on error)
-export {
-    readFile,
-    readFileSync,
-    readJson,
-    readJsonSync,
-    writeFile,
-    writeFileSync,
-    writeJson,
-    writeJsonSync,
-    mkdir,
-    mkdirSync,
-    // ... and more
-};
-```
-
-#### Result Module (`@goodbyenjn/utils/result`)
-
-Functional error handling without exceptions:
-
-```typescript
-// Main types and constructors
-export { Result, ok as Ok, err as Err };
-
-// Helper function
-export { safeTry };
-
-// Error class
-export { ResultError };
-
-// Type utilities
-export type { Ok, Err, InferOkType, InferErrType, ExtractOkTypes, ExtractErrTypes, ResultAll };
-```
-
-**Result Methods:**
-
-- `isOk()` / `isErr()` - Type guard checks
-- `map(fn)` - Transform the Ok value
-- `mapErr(fn)` - Transform the Err value
-- `flatMap(fn)` / `andThen(fn)` - Chain operations
-- `unwrap()` - Get value or throw
-- `unwrapOr(default)` - Get value with fallback
-- `expect(msg)` - Unwrap with custom error message
-- `inspect(fn)` - Execute side effect on Ok
-- `inspectErr(fn)` - Execute side effect on Err
-- `static fromCallable(fn, onThrow?)` - Convert throwing function
-
-#### Remeda Module (`@goodbyenjn/utils/remeda`)
-
-Extended functional utilities from Remeda:
-
-```typescript
-// Custom implementations
-export { hasOwnProperty, isFunction, isPromiseLike };
-
-// Re-exported from Remeda (100+ functions)
-export {
-    // Predicates
-    compact,
-    filter,
-    // Transformations
-    map,
-    flatMap,
-    flatten,
-    // Array operations
-    chunk,
-    slice,
-    take,
-    drop,
-    uniq,
-    reverse,
-    // Object operations
-    keys,
-    values,
-    entries,
-    pick,
-    omit,
-    merge,
-    // Aggregations
-    groupBy,
-    countBy,
-    sumBy,
-    maxBy,
-    minBy,
-    // Composition
-    pipe,
-    compose,
-    // And 50+ more...
-};
-```
-
-#### Types Module (`@goodbyenjn/utils/types`)
-
-Utility types for TypeScript:
-
-```typescript
-// Type utilities
-export type {
-    Nullable, // T | null | undefined
-    Optional, // T | undefined
-    YieldType, // Extract yield type from generator
-    OmitByKey, // Omit properties by their value type
-    SetNullable, // Make specific properties nullable
-    Fn, // (args: any[]) => any
-    AsyncFn, // (...args: any[]) => Promise<any>
-    SyncFn, // (...args: any[]) => any
-    Promisable, // T | Promise<T>
-    NonEmptyTuple, // Tuple with at least one element
-};
-```
-
-### Common Patterns
-
-#### Error Handling with Result
-
-```typescript
-// Instead of try-catch
-async function loadConfig() {
-    const result = await safeReadJson("config.json");
-
-    // Pattern 1: Check and unwrap
-    if (result.isErr()) {
-        console.error("Failed to load config:", result.error);
-        return null;
-    }
-    return result.value;
-
-    // Pattern 2: Chain operations
-    // return result
-    //     .map(cfg => validateConfig(cfg))
-    //     .unwrapOr(defaultConfig);
-}
-```
-
-#### File Operations
-
-```typescript
-// Safe read with fallback
-const result = await safeReadFile("path.txt", "utf8");
-const content = result.unwrapOr("default content");
-
-// Or handle error explicitly
-const jsonResult = await safeReadJson("data.json");
-if (jsonResult.isOk()) {
-    processData(jsonResult.value);
-} else {
-    logger.error(jsonResult.error);
-}
-```
-
-#### Functional Composition
-
-```typescript
-import { pipe, filter, map } from "@goodbyenjn/utils/remeda";
-
-const result = pipe(
-    data,
-    filter(x => x.active),
-    map(x => x.name),
+// Async iteration with Rotery helpers
+const results = await pipe(
+    [1, 2, 3],
+    toIterator,
+    mapP(async n => fetchUser(n)),
+    filterP(async u => u.active),
+    toArrayP,
 );
 ```
 
 ## Requirements
 
-- **Node.js**: >= 18.0.0
-- **TypeScript**: >= 4.5 (for development/type checking)
+- **Node.js**: >= 20.0.0
+- **TypeScript**: >= 6.0 (for development/type checking)
 
 Modern browsers are supported through ES module imports.
 
@@ -820,9 +621,9 @@ Modern browsers are supported through ES module imports.
 
 **Example versions:**
 
-- `v2026.01.0` - First release in January 2026
-- `v2026.01.1` - Second release in January 2026
-- `v2026.02.0` - First release in February 2026
+- `v26.1.0` - First release in January 2026
+- `v26.1.1` - Second release in January 2026
+- `v26.2.0` - First release in February 2026
 
 This scheme provides clarity on when features were released while allowing multiple updates within the same month.
 
