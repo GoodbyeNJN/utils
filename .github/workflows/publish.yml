@@ -22,7 +22,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: latest
+          version: latest-11
 
       - name: Setup Nodejs
         uses: actions/setup-node@v6
@@ -32,7 +32,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Changelog
-        run: npx changelogithub
+        run: pnpx changelogithub
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
