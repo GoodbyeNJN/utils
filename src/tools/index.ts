@@ -1,5 +1,7 @@
 export { getErrorMessage, normalizeError } from "./error";
 
+export { convertGitignorePatternToMinimatch } from "./gitignore";
+
 export { linear, scale } from "./math";
 
 export { parseKeyValuePairs, parseValueToBoolean } from "./parse";
