@@ -1,11 +1,22 @@
 /* #__NO_SIDE_EFFECTS__ */
 export const convertGitignorePatternToMinimatch = (pattern: string): string | null => {
-    // Trim trailing unescaped whitespace (git spec: trailing spaces can be marked by backslash).
-    // Count consecutive backslashes before the whitespace: odd = escaped (preserve), even = strip.
-    let p = pattern.replace(/[ \t]+$/, (match, offset: number) => {
-        const trailingBackslashes = pattern.slice(0, offset).match(/\\+$/)?.[0].length ?? 0;
-        return trailingBackslashes % 2 === 1 ? match : "";
-    });
+    // Trim trailing unescaped whitespace char by char (git spec: trailing spaces can be marked by
+    // backslash). Each trailing space/tab preceded by an odd number of backslashes is "escaped"
+    // (preserved); all others are stripped. Processing right-to-left stops at the first escaped
+    // whitespace character so that double-backslash (\\) correctly un-escapes itself.
+    let p = pattern;
+    while (p.length > 0) {
+        const lastChar = p[p.length - 1];
+        if (lastChar !== " " && lastChar !== "\t") break;
+        let numBackslashes = 0;
+        let j = p.length - 2;
+        while (j >= 0 && p[j] === "\\") {
+            numBackslashes++;
+            j--;
+        }
+        if (numBackslashes % 2 === 1) break;
+        p = p.slice(0, -1);
+    }
 
     // A blank line matches no files
     if (!p) return null;
