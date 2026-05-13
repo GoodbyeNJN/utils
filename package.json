@@ -81,11 +81,12 @@
     "scripts": {
         "dev": "rolldown -w -c",
         "build": "rolldown -c",
-        "check": "tsc && oxlint && oxfmt --check",
-        "typecheck": "tsc",
+        "check": "tsgo && oxlint && oxfmt --check",
+        "check:type": "tsgo",
         "lint": "oxlint",
         "lint:fix": "oxlint --fix",
-        "format": "oxfmt",
+        "format": "oxfmt --check",
+        "format:write": "oxfmt",
         "test": "vitest",
         "test:ci": "vitest --run"
     },
