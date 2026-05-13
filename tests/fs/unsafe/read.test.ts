@@ -125,7 +125,7 @@ describe("readFileByLine", () => {
         expect(reader).not.toBe(null);
 
         const lines: string[] = [];
-        for await (const line of reader as AsyncIterable<string>) {
+        for await (const line of reader!) {
             lines.push(line);
         }
 
@@ -140,7 +140,7 @@ describe("readFileByLine", () => {
         expect(reader).not.toBe(null);
 
         const lines: string[] = [];
-        for await (const line of reader as AsyncIterable<string>) {
+        for await (const line of reader!) {
             lines.push(line);
         }
 

@@ -44,7 +44,7 @@ describe("cp", () => {
 });
 
 describe("cpSync", () => {
-    test("should copy a file and return Ok", async () => {
+    test("should copy a file and return Ok", () => {
         fs.writeFileSync(srcFile, "hello");
 
         const result = cpSync(srcFile, destFile);
@@ -53,7 +53,7 @@ describe("cpSync", () => {
         expect(fs.readFileSync(destFile, "utf-8")).toBe("hello");
     });
 
-    test("should copy a directory recursively and return Ok", async () => {
+    test("should copy a directory recursively and return Ok", () => {
         fs.mkdirSync(srcDir);
         fs.writeFileSync(`${srcDir}${srcFile}`, "content");
 
@@ -63,7 +63,7 @@ describe("cpSync", () => {
         expect(fs.readFileSync(`${destDir}${srcFile}`, "utf-8")).toBe("content");
     });
 
-    test("should return Err when source does not exist", async () => {
+    test("should return Err when source does not exist", () => {
         const result = cpSync(srcFile, destFile);
 
         expect(result.isErr()).toBe(true);

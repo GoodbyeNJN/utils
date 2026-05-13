@@ -1,6 +1,7 @@
 import { isBigInt, isBoolean, isError, isNumber, isObjectType, isString, isSymbol } from "@/fp";
 
 /* #__NO_SIDE_EFFECTS__ */
+// oxlint-disable-next-line typescript/no-unsafe-function-type
 export const normalizeError = (error: unknown, caller?: Function): Error => {
     if (isError(error)) return error;
 

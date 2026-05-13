@@ -9,7 +9,7 @@ import type { Fn } from "@/types";
 
 export interface Gen {
     <T, This>(body: (this: This) => Iterator<Option<never>, Option<T> | T>, self?: This): Option<T>;
-    <YieldNone extends Option<never>, ReturnOption extends Option | any, This>(
+    <YieldNone extends Option<never>, ReturnOption extends Option, This>(
         body: (this: This) => Iterator<YieldNone, ReturnOption>,
         self?: This,
     ): Option<ReturnOption extends Option ? InferSomeType<ReturnOption> : ReturnOption>;
@@ -18,7 +18,7 @@ export interface Gen {
         body: (this: This) => AsyncIterator<Option<never>, Option<T> | T>,
         self?: This,
     ): Promise<Option<T>>;
-    <YieldNone extends Option<never>, ReturnOption extends Option | any, This>(
+    <YieldNone extends Option<never>, ReturnOption extends Option, This>(
         body: (this: This) => AsyncIterator<YieldNone, ReturnOption>,
         self?: This,
     ): Promise<Option<ReturnOption extends Option ? InferSomeType<ReturnOption> : ReturnOption>>;

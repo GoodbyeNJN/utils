@@ -21,7 +21,7 @@ export const writeFile = async (
 
         const result = await safeWriteFile(path, data, parseEncodingOptions(options));
 
-        return result.context(`Failed to write file: ${path}`);
+        return result.context(`Failed to write file: ${path.toString()}`);
     });
 
 const safeWriteFileSync = /* #__PURE__ */ Result.wrap(fs.writeFileSync, Error);
@@ -35,7 +35,7 @@ export const writeFileSync = (
 
         const result = safeWriteFileSync(path, data, parseEncodingOptions(options));
 
-        return result.context(`Failed to write file: ${path}`);
+        return result.context(`Failed to write file: ${path.toString()}`);
     });
 
 export const writeJson = async (

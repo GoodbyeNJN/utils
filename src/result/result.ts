@@ -189,6 +189,7 @@ export class Result<T = unknown, E = unknown> {
             throw new ResultError(
                 this,
                 message !== null ? (message ?? "Called `unwrap` on an `Err` value") : undefined,
+                // oxlint-disable-next-line typescript/unbound-method
                 this.unwrap,
             );
         }
@@ -204,6 +205,7 @@ export class Result<T = unknown, E = unknown> {
             throw new ResultError(
                 this,
                 message !== null ? (message ?? "Called `unwrapErr` on an `Ok` value") : undefined,
+                // oxlint-disable-next-line typescript/unbound-method
                 this.unwrapErr,
             );
         }

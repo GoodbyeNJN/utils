@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/unified-signatures */
-
 import { None, Some } from "@/option";
 
 import type { Option } from "@/option";

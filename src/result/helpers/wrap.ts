@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/unified-signatures */
-
 import { isFunction } from "@/fp";
 
 import { _try } from "./try";
@@ -34,11 +32,11 @@ export const wrap: Wrap = (fn: unknown, onThrow?: Fn): Fn => {
         return () => {
             return _try(() => {
                 throw error;
-            }, onThrow as Fn);
+            }, onThrow!);
         };
     }
 
     return (...args) => {
-        return _try(() => (fn as Fn)(...args), onThrow as Fn);
+        return _try(() => (fn as Fn)(...args), onThrow!);
     };
 };

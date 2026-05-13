@@ -26,7 +26,7 @@ export const appendFile = async (
             parseEncodingOptions(options),
         );
 
-        return result.context(`Failed to append file: ${path}`);
+        return result.context(`Failed to append file: ${path.toString()}`);
     });
 
 const safeAppendFileSync = /* #__PURE__ */ Result.wrap(fs.appendFileSync, Error);
@@ -46,5 +46,5 @@ export const appendFileSync = (
             parseEncodingOptions(options),
         );
 
-        return result.context(`Failed to append file: ${path}`);
+        return result.context(`Failed to append file: ${path.toString()}`);
     });

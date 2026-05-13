@@ -17,7 +17,7 @@ export const mkdir = async (
 
     const result = await safeMkdir(path, { recursive });
 
-    return result.and(Ok()).context(`Failed to create directory: ${path}`);
+    return result.and(Ok()).context(`Failed to create directory: ${path.toString()}`);
 };
 
 const safeMkdirSync = /* #__PURE__ */ Result.wrap(fs.mkdirSync, Error);
@@ -28,5 +28,5 @@ export const mkdirSync = (path: PathLike, options?: MkdirOptions): Result<void, 
 
     const result = safeMkdirSync(path, { recursive });
 
-    return result.and(Ok()).context(`Failed to create directory: ${path}`);
+    return result.and(Ok()).context(`Failed to create directory: ${path.toString()}`);
 };

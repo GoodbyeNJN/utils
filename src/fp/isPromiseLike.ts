@@ -24,7 +24,7 @@ export function isPromiseLike<T>(
 ): data is NarrowedTo<T, PromiseLike<unknown>> {
     return (
         isObjectType(data) &&
-        isFunction((data as PromiseLike<unknown>).then) &&
+        isFunction((data as any).then) &&
         // Ensure that the `then` method is not a getter or something else
         Object.getOwnPropertyDescriptor(data, "then")?.get === undefined
     );

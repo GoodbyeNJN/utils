@@ -25,13 +25,13 @@ const normalizeArgs = (
     return { patterns, options };
 };
 
-export function glob(
+export async function glob(
     patterns: string | string[],
     options?: Omit<GlobOptions, "patterns">,
 ): Promise<string[]>;
-export function glob(options: GlobOptions): Promise<string[]>;
+export async function glob(options: GlobOptions): Promise<string[]>;
 /* #__NO_SIDE_EFFECTS__ */
-export function glob(...args: [any, any?]): Promise<string[]> {
+export async function glob(...args: [any, any?]): Promise<string[]> {
     const { patterns, options } = normalizeArgs(...args);
 
     return tinyGlob(patterns, {

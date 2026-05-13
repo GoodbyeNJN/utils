@@ -36,7 +36,7 @@ export function hasOwnProperty<P extends readonly PropertyKey[]>(
     data: Record<PropertyKey, unknown> | T,
 ) => data is NarrowedTo<T, { [K in P[number]]: unknown }>;
 
-export function hasOwnProperty(...args: ReadonlyArray<unknown>): unknown {
+export function hasOwnProperty(...args: readonly unknown[]): unknown {
     return purry(hasOwnPropertyImplementation, args);
 }
 

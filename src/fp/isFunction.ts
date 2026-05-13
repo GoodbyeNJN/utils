@@ -1,3 +1,5 @@
+// oxlint-disable typescript/no-unsafe-function-type
+
 type DefinitelyFunction<T> = Extract<T, Function> extends never ? Function : Extract<T, Function>;
 
 /**

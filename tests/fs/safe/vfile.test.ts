@@ -70,7 +70,7 @@ describe("SafeVFile", () => {
             const result = vfile.raw();
 
             expect(result.isOk()).toBe(true);
-            expect(JSON.parse(result.unwrap() as string)).toEqual({ key: "val" });
+            expect(JSON.parse(result.unwrap())).toEqual({ key: "val" });
         });
 
         test("should return the current transformer when called without arguments", () => {

@@ -20,7 +20,7 @@ export interface PromiseWithResolvers<T> {
     reject: (reason?: any) => void;
 }
 
-export const sleep = (ms: number, callback?: Fn): Promise<void> =>
+export const sleep = async (ms: number, callback?: Fn): Promise<void> =>
     new Promise<void>(resolve => {
         setTimeout(async () => {
             await callback?.();
@@ -33,10 +33,8 @@ export const sleep = (ms: number, callback?: Fn): Promise<void> =>
 export const createSingleton = <T>(fn: AsyncFn<T>): Singleton<T> => {
     let p: Promise<T> | undefined;
 
-    const wrapper: Singleton<T> = () => {
-        if (!p) {
-            p = Promise.resolve(fn());
-        }
+    const wrapper: Singleton<T> = async () => {
+        p ||= Promise.resolve(fn());
 
         return p;
     };
@@ -80,7 +78,7 @@ export const createLock = (): Lock => {
             } finally {
                 const index = locks.indexOf(p);
                 if (index >= 0) {
-                    locks.splice(index, 1);
+                    void locks.splice(index, 1);
                 }
             }
         },
@@ -101,6 +99,7 @@ export const createLock = (): Lock => {
 
 /* #__NO_SIDE_EFFECTS__ */
 export const createPromiseWithResolvers = <T>(): PromiseWithResolvers<T> => {
+    // oxlint-disable-next-line typescript/unbound-method
     if (isFunction(Promise.withResolvers)) {
         return Promise.withResolvers<T>();
     }

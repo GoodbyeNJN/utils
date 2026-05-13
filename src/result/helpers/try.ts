@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/unified-signatures */
-
 import { isFunction, isPromiseLike } from "@/fp";
 import { normalizeError } from "@/tools";
 
@@ -44,7 +42,7 @@ export const _try: Try = (fnOrPromise: unknown, onThrow?: Fn): any => {
     if (isPromiseLike(fnOrPromise)) {
         return fnOrPromise.then(
             value => Ok(value),
-            error => Err(transformError(error, onThrow)),
+            (error: unknown) => Err(transformError(error, onThrow)),
         );
     }
 
@@ -56,7 +54,7 @@ export const _try: Try = (fnOrPromise: unknown, onThrow?: Fn): any => {
 
         return data.then(
             value => Ok(value),
-            error => Err(transformError(error, onThrow)),
+            (error: unknown) => Err(transformError(error, onThrow)),
         );
     } catch (error) {
         return Err(transformError(error, onThrow));

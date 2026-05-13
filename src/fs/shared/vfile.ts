@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/method-signature-style */
-
 import path from "node:path";
 import url from "node:url";
 

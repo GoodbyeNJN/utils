@@ -211,7 +211,6 @@ export function indent(
     trimEnd?: boolean,
 ): TemplateFn<string> & ((str: string) => string);
 export function indent(
-    // eslint-disable-next-line @typescript-eslint/unified-signatures
     indentString: string,
     trimStart?: boolean,
     trimEnd?: boolean,

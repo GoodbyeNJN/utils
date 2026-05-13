@@ -11,7 +11,6 @@ export class Process extends BaseProcess<Output, string> implements ProcessInsta
 
     declare protected options: Partial<ProcessOptions>;
 
-    // eslint-disable-next-line @typescript-eslint/no-useless-constructor
     constructor(options?: Partial<ProcessOptions>) {
         super(options);
     }

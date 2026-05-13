@@ -10,7 +10,7 @@ export const rm = async (path: PathLike, options?: RmOptions): Promise<Result<vo
 
     const result = await safeRm(path, { force, recursive });
 
-    return result.context(`Failed to remove path: ${path}`);
+    return result.context(`Failed to remove path: ${path.toString()}`);
 };
 
 const safeRmSync = /* #__PURE__ */ Result.wrap(fs.rmSync, Error);
@@ -19,5 +19,5 @@ export const rmSync = (path: PathLike, options?: RmOptions): Result<void, Error>
 
     const result = safeRmSync(path, { force, recursive });
 
-    return result.context(`Failed to remove path: ${path}`);
+    return result.context(`Failed to remove path: ${path.toString()}`);
 };

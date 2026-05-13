@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/method-signature-style */
-
 import type * as Types from "@goodbyenjn/utils/types";
 
 declare global {

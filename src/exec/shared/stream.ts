@@ -4,7 +4,7 @@ import { PassThrough } from "node:stream";
 import type { Nullable } from "@/types";
 import type { Readable } from "node:stream";
 
-export const readStreams = <const T extends readonly Nullable<Readable>[]>(
+export const readStreams = async <const T extends readonly Nullable<Readable>[]>(
     streams: T,
 ): Promise<{ [K in keyof T]: string }> => {
     const promises: Promise<string>[] = [];

@@ -1,4 +1,4 @@
-/* eslint-disable require-yield */
+// oxlint-disable require-yield
 
 import { describe, expect, test } from "vitest";
 
@@ -22,8 +22,8 @@ describe("Option.gen", () => {
         expect(value).toBe(some);
     });
 
-    test("should handle async generators returning non-Option value", async () => {
-        const value = await Option.gen(async function* () {
+    test("should handle async generators returning non-Option value", () => {
+        const value = Option.gen(function* () {
             return 1;
         });
 
@@ -32,9 +32,9 @@ describe("Option.gen", () => {
         expect(value.unwrap()).toBe(1);
     });
 
-    test("should handle async generators returning Option value", async () => {
+    test("should handle async generators returning Option value", () => {
         const some = Some(2);
-        const value = await Option.gen(async function* () {
+        const value = Option.gen(function* () {
             return some;
         });
         expect(value).toBe(some);

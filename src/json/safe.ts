@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/unified-signatures */
-
 import { Err, Result } from "@/result";
 
 const safeStringify = /* #__PURE__ */ Result.wrap(JSON.stringify);

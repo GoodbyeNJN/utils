@@ -53,11 +53,11 @@ export const readJson = async <T = any>(
 ): Promise<Result<T, Error>> =>
     Result.gen(async function* () {
         const content = yield* await readFile(path, options);
-        if (!content) return Err(new Error(`JSON file is empty: ${path}`));
+        if (!content) return Err(new Error(`JSON file is empty: ${path.toString()}`));
 
         const result = parse<T>(content);
 
-        return result.context(`Failed to parse JSON file: ${path}`);
+        return result.context(`Failed to parse JSON file: ${path.toString()}`);
     });
 
 /* #__NO_SIDE_EFFECTS__ */
@@ -67,11 +67,11 @@ export const readJsonSync = <T = any>(
 ): Result<T, Error> =>
     Result.gen(function* () {
         const content = yield* readFileSync(path, options);
-        if (!content) return Err(new Error(`JSON file is empty: ${path}`));
+        if (!content) return Err(new Error(`JSON file is empty: ${path.toString()}`));
 
         const result = parse<T>(content);
 
-        return result.context(`Failed to parse JSON file: ${path}`);
+        return result.context(`Failed to parse JSON file: ${path.toString()}`);
     });
 
 /* #__NO_SIDE_EFFECTS__ */
@@ -80,7 +80,7 @@ export const readFileByLine = async (
     options?: StringEncodingOptions,
 ): Promise<Result<AsyncIterable<string>, Error>> => {
     if (!(await exists(path))) {
-        return Err(new Error(`File does not exist: ${path}`));
+        return Err(new Error(`File does not exist: ${path.toString()}`));
     }
 
     const { createInterface } = await import("node:readline");
@@ -103,5 +103,5 @@ export const readFileByLine = async (
     };
     const result = Result.try(fn, Error);
 
-    return result.context(`Failed to read file: ${path}`);
+    return result.context(`Failed to read file: ${path.toString()}`);
 };

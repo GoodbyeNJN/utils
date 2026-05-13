@@ -5,8 +5,6 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 import { NonZeroExitError } from "@/exec/shared/error";
 import { exec } from "@/exec/unsafe";
 
-import type { SpawnOptions } from "child_process";
-
 vi.mock("node:child_process", { spy: true });
 
 beforeEach(() => {
@@ -15,11 +13,7 @@ beforeEach(() => {
 
 const getSpawnParams = () => {
     const [command, args, options] = vi.mocked(spawn).mock.calls[0] || [];
-    const params = {
-        command: command as string | undefined,
-        args: args as readonly string[] | undefined,
-        options: options as SpawnOptions | undefined,
-    };
+    const params = { command, args, options };
 
     return params;
 };

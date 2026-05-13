@@ -39,19 +39,19 @@ describe("exists", () => {
 });
 
 describe("existsSync", () => {
-    test("should return true for an existing file", async () => {
+    test("should return true for an existing file", () => {
         fs.writeFileSync(file, "hello");
 
         expect(existsSync(file)).toBe(true);
     });
 
-    test("should return true for an existing directory", async () => {
+    test("should return true for an existing directory", () => {
         fs.mkdirSync(dir);
 
         expect(existsSync(dir)).toBe(true);
     });
 
-    test("should return false for a non-existing path", async () => {
+    test("should return false for a non-existing path", () => {
         expect(existsSync(file)).toBe(false);
     });
 });

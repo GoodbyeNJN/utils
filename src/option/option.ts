@@ -170,7 +170,7 @@ export class Option<T = unknown> {
         if (this.isSome()) {
             return [true, this.value];
         } else {
-            return [false, NONE as never];
+            return [false, NONE];
         }
     }
 

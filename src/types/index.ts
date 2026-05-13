@@ -58,7 +58,7 @@ export type { ReadonlyDeep } from "type-fest";
 export type { LiteralUnion } from "type-fest";
 export type { Promisable } from "type-fest";
 export type { Arrayable } from "type-fest";
-export type { Optional } from "type-fest";
+// export type { Optional } from "type-fest";
 export type { Opaque, UnwrapOpaque, Tagged, GetTagMetadata, UnwrapTagged } from "type-fest";
 export type { InvariantOf } from "type-fest";
 export type { SetOptional } from "type-fest";

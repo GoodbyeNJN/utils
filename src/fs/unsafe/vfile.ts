@@ -204,7 +204,7 @@ export class VFile<T = string> extends ExtendVFile<T> {
         });
     }
 
-    readByLine(): ReturnType<typeof readFileByLine> {
+    async readByLine(): ReturnType<typeof readFileByLine> {
         return readFileByLine(this.pathname(), this.encodingOptions);
     }
 

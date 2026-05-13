@@ -117,7 +117,7 @@ export abstract class BaseProcess<P, I> implements BaseProcessInstance<P, I> {
         return this.process?.kill(signal) === true;
     }
 
-    then<TResult1 = P, TResult2 = never>(
+    async then<TResult1 = P, TResult2 = never>(
         onfulfilled?: ((value: P) => TResult1 | PromiseLike<TResult1>) | null,
         onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
     ): Promise<TResult1 | TResult2> {

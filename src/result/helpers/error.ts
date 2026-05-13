@@ -53,6 +53,7 @@ export class ResultError extends Error {
     #ctx: string[];
     #formatted: string;
 
+    // oxlint-disable-next-line typescript/no-unsafe-function-type
     constructor(result: Result, message?: string, caller: Function = ResultError) {
         const prepared = prepare(result, message);
 

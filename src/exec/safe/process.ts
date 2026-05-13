@@ -17,7 +17,6 @@ export class Process
 
     declare protected options: Partial<ProcessOptions>;
 
-    // eslint-disable-next-line @typescript-eslint/no-useless-constructor
     constructor(options?: Partial<ProcessOptions>) {
         super(options);
     }

@@ -1,7 +1,6 @@
 import { tokenizeArgs } from "args-tokenizer";
 
 import { isArray, isPlainObject, isString } from "@/fp";
-import { getErrorMessage } from "@/tools";
 
 import type {
     BaseProcessOptions,
@@ -28,7 +27,9 @@ export const parseCommandString = (input: string): SpawnCommand => {
     try {
         tokens = tokenizeArgs(input);
     } catch (error) {
-        throw new Error(`Failed to parse command string: "${input}". ${getErrorMessage(error)}`);
+        throw new Error(`Failed to parse command string: "${input}".`, {
+            cause: error,
+        });
     }
 
     if (!tokens[0]) {

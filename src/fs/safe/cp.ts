@@ -14,7 +14,7 @@ export const cp = async (
 
     const result = await safeCp(source, destination, { recursive });
 
-    return result.context(`Failed to copy path: ${source} to ${destination}`);
+    return result.context(`Failed to copy path: ${source.toString()} to ${destination.toString()}`);
 };
 
 const safeCpSync = /* #__PURE__ */ Result.wrap(fs.cpSync, Error);
@@ -27,5 +27,5 @@ export const cpSync = (
 
     const result = safeCpSync(source, destination, { recursive });
 
-    return result.context(`Failed to copy path: ${source} to ${destination}`);
+    return result.context(`Failed to copy path: ${source.toString()} to ${destination.toString()}`);
 };
