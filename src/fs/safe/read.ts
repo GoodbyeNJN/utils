@@ -4,7 +4,6 @@ import { parse } from "@/json/safe";
 import { Err, Result } from "@/result";
 
 import { parseEncodingOptions } from "../shared/utils";
-
 import { exists, existsSync } from "./exists";
 
 import type { BufferEncodingOptions, PathLike, StringEncodingOptions } from "../shared/types";

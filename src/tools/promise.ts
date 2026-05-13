@@ -53,16 +53,14 @@ export const createSingleton = <T>(fn: AsyncFn<T>): Singleton<T> => {
 
 /**
  * @example
- * ```
- * const lock = createLock()
+ *     const lock = createLock();
  *
- * lock.run(async () => {
- *   await doSomething()
- * })
+ *     lock.run(async () => {
+ *         await doSomething();
+ *     });
  *
- * // in anther context:
- * await lock.wait() // it will wait all tasking finished
- * ```
+ *     // in another context:
+ *     await lock.wait(); // it will wait all tasking finished
  */
 /* #__NO_SIDE_EFFECTS__ */
 export const createLock = (): Lock => {

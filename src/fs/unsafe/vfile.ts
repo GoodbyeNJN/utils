@@ -2,7 +2,6 @@ import { parse, stringify } from "@/json/unsafe";
 import { None, Some } from "@/option";
 
 import { ExtendVFile } from "../shared/vfile";
-
 import { cp, cpSync } from "./cp";
 import { exists, existsSync } from "./exists";
 import { readFile, readFileByLine, readFileSync } from "./read";
@@ -22,12 +21,7 @@ export class VFile<T = string> extends ExtendVFile<T> {
 
     /**
      * @example
-     * ```js
-     * const vfile = new VFile(
-     *   "/home/user/project/src/page/index.js",
-     *   "/home/user/project",
-     * );
-     * ```
+     *     const vfile = new VFile("/home/user/project/src/page/index.js", "/home/user/project");
      */
     constructor(filepath: PathLike, cwd?: string) {
         super(filepath, cwd);
@@ -38,23 +32,17 @@ export class VFile<T = string> extends ExtendVFile<T> {
 
     /**
      * @example
-     * ```js
-     * vfile.transformer(); // { parse: [Function], stringify: [Function] }
-     * ```
+     *     vfile.transformer(); // { parse: [Function], stringify: [Function] }
      */
     transformer(): typeof this._transformer;
     /**
      * @example
-     * ```js
-     * vfile.transformer({ parse: [Function], stringify: [Function] });
-     * ```
+     *     vfile.transformer({ parse: [Function], stringify: [Function] });
      */
     transformer(transformer: typeof this._transformer): this;
     /**
      * @example
-     * ```js
-     * vfile.transformer("json");
-     * ```
+     *     vfile.transformer("json");
      */
     transformer(transformer: "json", indent?: number): this;
     transformer(transformer?: typeof this._transformer | "json", indent = 2): any {
@@ -74,16 +62,12 @@ export class VFile<T = string> extends ExtendVFile<T> {
 
     /**
      * @example
-     * ```js
-     * vfile.raw(); // '["hello", "world"]'
-     * ```
+     *     vfile.raw(); // '["hello", "world"]'
      */
     raw(): Option<string>;
     /**
      * @example
-     * ```js
-     * vfile.raw('["hello", "world"]');
-     * ```
+     *     vfile.raw('["hello", "world"]');
      */
     raw(raw: string): this;
     raw(raw?: string): any {
@@ -104,16 +88,12 @@ export class VFile<T = string> extends ExtendVFile<T> {
 
     /**
      * @example
-     * ```js
-     * vfile.value(); // ["hello", "world"]
-     * ```
+     *     vfile.value(); // ["hello", "world"]
      */
     value(): Option<T>;
     /**
      * @example
-     * ```js
-     * vfile.value(["hello", "world"]);
-     * ```
+     *     vfile.value(["hello", "world"]);
      */
     value(value: T): this;
     value(value?: T): any {
@@ -134,9 +114,7 @@ export class VFile<T = string> extends ExtendVFile<T> {
 
     /**
      * @example
-     * ```js
-     * vfile.lines(); // ['["hello", "world"]']
-     * ```
+     *     vfile.lines(); // ['["hello", "world"]']
      */
     lines(): Option<string[]> {
         return this.raw().map(raw => raw.split(this._linebreak));
@@ -144,13 +122,10 @@ export class VFile<T = string> extends ExtendVFile<T> {
 
     /**
      * @example
-     * ```js
-     * vfile.append({ hello: "world" });
-     * ```
+     *     vfile.append({ hello: "world" });
+     *
      * @example
-     * ```js
-     * vfile.append({ hello: "world" }, false);
-     * ```
+     *     vfile.append({ hello: "world" }, false);
      */
     append(value: T, newline = true): void {
         const linebreak = newline ? this._linebreak : "";

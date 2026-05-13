@@ -2,7 +2,6 @@ import { parse, stringify } from "@/json/safe";
 import { Err, Ok } from "@/result";
 
 import { ExtendVFile } from "../shared/vfile";
-
 import { cp, cpSync } from "./cp";
 import { exists, existsSync } from "./exists";
 import { readFile, readFileByLine, readFileSync } from "./read";
@@ -24,12 +23,7 @@ export class VFile<T = string, PE = Error, SE = Error> extends ExtendVFile<T> {
 
     /**
      * @example
-     * ```js
-     * const vfile = new VFile(
-     *   "/home/user/project/src/page/index.js",
-     *   "/home/user/project",
-     * );
-     * ```
+     *     const vfile = new VFile("/home/user/project/src/page/index.js", "/home/user/project");
      */
     constructor(filepath: PathLike, cwd?: string) {
         super(filepath, cwd);
@@ -40,23 +34,17 @@ export class VFile<T = string, PE = Error, SE = Error> extends ExtendVFile<T> {
 
     /**
      * @example
-     * ```js
-     * vfile.transformer(); // { parse: [Function], stringify: [Function] }
-     * ```
+     *     vfile.transformer(); // { parse: [Function], stringify: [Function] }
      */
     transformer(): typeof this._transformer;
     /**
      * @example
-     * ```js
-     * vfile.transformer({ parse: [Function], stringify: [Function] });
-     * ```
+     *     vfile.transformer({ parse: [Function], stringify: [Function] });
      */
     transformer(transformer: typeof this._transformer): this;
     /**
      * @example
-     * ```js
-     * vfile.transformer("json");
-     * ```
+     *     vfile.transformer("json");
      */
     transformer(
         transformer: "json",
@@ -85,16 +73,12 @@ export class VFile<T = string, PE = Error, SE = Error> extends ExtendVFile<T> {
 
     /**
      * @example
-     * ```js
-     * vfile.raw(); // '["hello", "world"]'
-     * ```
+     *     vfile.raw(); // '["hello", "world"]'
      */
     raw(): Result<string, SE>;
     /**
      * @example
-     * ```js
-     * vfile.raw('["hello", "world"]');
-     * ```
+     *     vfile.raw('["hello", "world"]');
      */
     raw(raw: string): this;
     raw(raw?: string): any {
@@ -119,16 +103,12 @@ export class VFile<T = string, PE = Error, SE = Error> extends ExtendVFile<T> {
 
     /**
      * @example
-     * ```js
-     * vfile.value(); // ["hello", "world"]
-     * ```
+     *     vfile.value(); // ["hello", "world"]
      */
     value(): Result<T, PE>;
     /**
      * @example
-     * ```js
-     * vfile.value(["hello", "world"]);
-     * ```
+     *     vfile.value(["hello", "world"]);
      */
     value(value: T): this;
     value(value?: T): any {
@@ -153,9 +133,7 @@ export class VFile<T = string, PE = Error, SE = Error> extends ExtendVFile<T> {
 
     /**
      * @example
-     * ```js
-     * vfile.lines(); // ['["hello", "world"]']
-     * ```
+     *     vfile.lines(); // ['["hello", "world"]']
      */
     lines(): Result<string[], SE> {
         return this.raw().map(raw => raw.split(this._linebreak));
@@ -163,13 +141,10 @@ export class VFile<T = string, PE = Error, SE = Error> extends ExtendVFile<T> {
 
     /**
      * @example
-     * ```js
-     * vfile.append({ hello: "world" });
-     * ```
+     *     vfile.append({ hello: "world" });
+     *
      * @example
-     * ```js
-     * vfile.append({ hello: "world" }, false);
-     * ```
+     *     vfile.append({ hello: "world" }, false);
      */
     append(value: T, newline = true): Result<void, SE> {
         const linebreak = newline ? this._linebreak : "";

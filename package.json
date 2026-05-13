@@ -3,9 +3,9 @@
     "version": "26.4.7",
     "description": "GoodbyeNJN's utils for typescript and javascript",
     "keywords": [
-        "utils",
+        "javascript",
         "typescript",
-        "javascript"
+        "utils"
     ],
     "homepage": "https://github.com/GoodbyeNJN/utils",
     "bugs": {
@@ -17,7 +17,11 @@
         "type": "git",
         "url": "git+https://github.com/GoodbyeNJN/utils.git"
     },
+    "files": [
+        "dist"
+    ],
     "type": "module",
+    "sideEffects": false,
     "exports": {
         "./exec": {
             "types": "./dist/exec/index.d.ts",
@@ -70,10 +74,10 @@
             "types": "./dist/global-types.d.ts"
         }
     },
-    "sideEffects": false,
-    "files": [
-        "dist"
-    ],
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org"
+    },
     "scripts": {
         "dev": "rolldown -w -c",
         "build": "rolldown -c",
@@ -106,10 +110,6 @@
         "typescript": "^6.0.3",
         "vite-tsconfig-paths": "^6.1.1",
         "vitest": "^4.1.5"
-    },
-    "publishConfig": {
-        "registry": "https://registry.npmjs.org",
-        "access": "public"
     },
     "engines": {
         "node": ">=20"

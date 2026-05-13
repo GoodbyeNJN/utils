@@ -4,7 +4,6 @@ import { dirname } from "node:path";
 import { stringify } from "@/json/unsafe";
 
 import { parseEncodingOptions, parseWriteJsonOptions, pathLikeToPath } from "../shared/utils";
-
 import { mkdir, mkdirSync } from "./mkdir";
 
 import type { PathLike, StringEncodingOptions, WriteJsonOptions } from "../shared/types";

@@ -4,7 +4,6 @@ import { dirname } from "node:path";
 import { Result } from "@/result";
 
 import { parseEncodingOptions, pathLikeToPath } from "../shared/utils";
-
 import { mkdir, mkdirSync } from "./mkdir";
 
 import type { AppendFileOptions, PathLike } from "../shared/types";

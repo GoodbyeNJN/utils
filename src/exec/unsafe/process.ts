@@ -2,8 +2,8 @@ import { NonZeroExitError } from "../shared/error";
 import { BaseProcess } from "../shared/process";
 import { readStreamLines, readStreams } from "../shared/stream";
 
-import type { Exec, ProcessInstance, ProcessOptions } from "./types";
 import type { ExecParams, Output } from "../shared/types";
+import type { Exec, ProcessInstance, ProcessOptions } from "./types";
 
 export class Process extends BaseProcess<Output, string> implements ProcessInstance {
     declare exec: Exec;

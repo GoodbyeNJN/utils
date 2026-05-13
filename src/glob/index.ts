@@ -5,9 +5,7 @@ import { isArray, isString, omit } from "@/fp";
 import type { GlobOptions as TinyGlobOptions } from "tinyglobby";
 
 export interface GlobOptions extends Omit<TinyGlobOptions, "patterns"> {
-    /**
-     * Provide patterns as the first argument instead.
-     */
+    /** Provide patterns as the first argument instead. */
     patterns: string | string[];
 }
 

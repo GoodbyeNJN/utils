@@ -16,8 +16,8 @@ export class Option<T = unknown> {
     static fromResult = fromResult;
 
     /**
-     * Combines multiple `Option` instances into one `Option` containing an array of all `Some` values,
-     * or `None` if any `Option` is `None`
+     * Combines multiple `Option` instances into one `Option` containing an array of all `Some`
+     * values, or `None` if any `Option` is `None`
      */
     static all = all;
 
@@ -33,37 +33,27 @@ export class Option<T = unknown> {
         this.value = value;
     }
 
-    /**
-     * Check if `Option` is `Some`
-     */
+    /** Check if `Option` is `Some` */
     isSome(): this is Option<T> {
         return this.value !== NONE;
     }
 
-    /**
-     * Check if `Option` is `Some` and the value matches the predicate
-     */
+    /** Check if `Option` is `Some` and the value matches the predicate */
     isSomeAnd(predicate: (value: T) => boolean): this is Option<T> {
         return this.isSome() && predicate(this.value);
     }
 
-    /**
-     * Check if `Option` is `None`
-     */
+    /** Check if `Option` is `None` */
     isNone(): this is Option<never> {
         return this.value === NONE;
     }
 
-    /**
-     * Check if `Option` is `None` and the value matches the predicate
-     */
+    /** Check if `Option` is `None` and the value matches the predicate */
     isNoneAnd(predicate: (value: never) => boolean): this is Option<never> {
         return this.isNone() && predicate(NONE);
     }
 
-    /**
-     * Map an `Option<T>` to `Option<U>` or `Promise<Option<U>>`
-     */
+    /** Map an `Option<T>` to `Option<U>` or `Promise<Option<U>>` */
     map<U>(fn: (value: T) => U): Option<U>;
     map<U>(fn: (value: T) => Promise<U>): Promise<Option<U>>;
     map<U>(fn: SyncFn<U> | AsyncFn<U>): any {
@@ -74,9 +64,7 @@ export class Option<T = unknown> {
         return isPromiseLike(result) ? result.then(Some) : Some(result);
     }
 
-    /**
-     * Returns given `option` if `Option` is `Some`, otherwise returns `Option` directly
-     */
+    /** Returns given `option` if `Option` is `Some`, otherwise returns `Option` directly */
     and<O extends Option>(option: O): Option<InferSomeType<O>>;
     and<U>(option: Option<U>): Option<U>;
     and<O extends Promise<Option>>(option: O): Promise<Option<InferSomeType<O>>>;
@@ -85,9 +73,7 @@ export class Option<T = unknown> {
         return this.isNone() ? this : option;
     }
 
-    /**
-     * Maps an `Option<T>` to `Option<U>` or `Promise<Option<U>>` with a function
-     */
+    /** Maps an `Option<T>` to `Option<U>` or `Promise<Option<U>>` with a function */
     andThen<O extends Option>(fn: (value: T) => O): Option<InferSomeType<O>>;
     andThen<U>(fn: (value: T) => Option<U>): Option<U>;
     andThen<O extends Promise<Option>>(fn: (value: T) => O): Promise<Option<InferSomeType<O>>>;
@@ -96,9 +82,7 @@ export class Option<T = unknown> {
         return this.isNone() ? this : fn(this.value);
     }
 
-    /**
-     * Returns given `option` if `Option` is `None`, otherwise returns `Option` directly
-     */
+    /** Returns given `option` if `Option` is `None`, otherwise returns `Option` directly */
     or<O extends Option<T>>(option: O): Option<T>;
     or<U>(option: Option<U>): Option<U>;
     or<O extends Promise<Option<T>>>(option: O): Promise<Option<T>>;
@@ -107,9 +91,7 @@ export class Option<T = unknown> {
         return this.isSome() ? this : option;
     }
 
-    /**
-     * Maps an `Option<T>` to `Option<U>` or `Promise<Option<U>>` with a function
-     */
+    /** Maps an `Option<T>` to `Option<U>` or `Promise<Option<U>>` with a function */
     orElse<O extends Option>(fn: (value: never) => O): Option<InferSomeType<O>>;
     orElse<U>(fn: (value: never) => Option<U>): Option<U>;
     orElse<O extends Promise<Option>>(fn: (value: never) => O): Promise<Option<InferSomeType<O>>>;
@@ -118,9 +100,7 @@ export class Option<T = unknown> {
         return this.isSome() ? this : fn(NONE);
     }
 
-    /**
-     * Calls the function with the value if `Option` is `Some` and returns the result unchanged
-     */
+    /** Calls the function with the value if `Option` is `Some` and returns the result unchanged */
     inspect(fn: (value: T) => unknown): Option<T> {
         try {
             this.isSome() && fn(this.value);
@@ -129,9 +109,7 @@ export class Option<T = unknown> {
         return this;
     }
 
-    /**
-     * Unwrap the `Some` value, or throw an error if `Option` is `None`
-     */
+    /** Unwrap the `Some` value, or throw an error if `Option` is `None` */
     unwrap(message?: string | null): T {
         if (this.isNone()) {
             throw new Error(
@@ -142,30 +120,22 @@ export class Option<T = unknown> {
         return this.value;
     }
 
-    /**
-     * Unwrap the `Some` value, or return a default value if `Option` is `None`
-     */
+    /** Unwrap the `Some` value, or return a default value if `Option` is `None` */
     unwrapOr(defaultValue: T): T {
         return this.isSome() ? this.value : defaultValue;
     }
 
-    /**
-     * Unwrap the `Some` value, or compute it from a function if `Option` is `None`
-     */
+    /** Unwrap the `Some` value, or compute it from a function if `Option` is `None` */
     unwrapOrElse(defaultValueGetter: (value: never) => T): T {
         return this.isSome() ? this.value : defaultValueGetter(NONE);
     }
 
-    /**
-     * Matches the `Option` variant and executes the corresponding function
-     */
+    /** Matches the `Option` variant and executes the corresponding function */
     match<U, F = U>(some: (value: T) => U, none: (value: never) => F): U | F {
         return this.isSome() ? some(this.value) : none(NONE);
     }
 
-    /**
-     * Returns an iterable object that yields the `Some` value
-     */
+    /** Returns an iterable object that yields the `Some` value */
     iter(): readonly [some: true, value: T] | readonly [some: false, value: never] {
         if (this.isSome()) {
             return [true, this.value];

@@ -2,7 +2,6 @@ import fs, { promises as fsp } from "node:fs";
 import { dirname } from "node:path";
 
 import { parseEncodingOptions, pathLikeToPath } from "../shared/utils";
-
 import { mkdir, mkdirSync } from "./mkdir";
 
 import type { AppendFileOptions, PathLike } from "../shared/types";

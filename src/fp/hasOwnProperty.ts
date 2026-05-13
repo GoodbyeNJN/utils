@@ -3,16 +3,15 @@ import { isObjectType, purry } from "remeda";
 import type { NarrowedTo } from "./types";
 
 /**
+ * @category Guard
+ * @example
+ *     R.hasOwnProperty({ a: 1, b: 2, c: 3 }, ["a", "b"]); //=> true
+ *     R.hasOwnProperty({ a: 1, b: 2, c: 3 }, ["d"]); //=> false
  *
  * @param data - The object to test.
  * @param properties - The properties to test against.
- * @signature
- *    R.hasOwnProperty(data, properties)
- * @example
- *    R.hasOwnProperty({ a: 1, b: 2, c: 3 }, ["a", "b"]) //=> true
- *    R.hasOwnProperty({ a: 1, b: 2, c: 3 }, ["d"]) //=> false
+ * @signature R.hasOwnProperty(data, properties)
  * @dataFirst
- * @category Guard
  */
 export function hasOwnProperty<T extends object, P extends readonly PropertyKey[]>(
     data: Record<PropertyKey, unknown> | T,
@@ -20,15 +19,14 @@ export function hasOwnProperty<T extends object, P extends readonly PropertyKey[
 ): data is NarrowedTo<T, { [K in P[number]]: unknown }>;
 
 /**
+ * @category Guard
+ * @example
+ *     R.hasOwnProperty(["a", "b"])({ a: 1, b: 2, c: 3 }); //=> true
+ *     R.hasOwnProperty(["d"])({ a: 1, b: 2, c: 3 }); //=> false
  *
  * @param properties - The properties to test against.
- * @signature
- *    R.hasOwnProperty(properties)(data)
- * @example
- *    R.hasOwnProperty(["a", "b"])({ a: 1, b: 2, c: 3 }) //=> true
- *    R.hasOwnProperty(["d"])({ a: 1, b: 2, c: 3 }) //=> false
+ * @signature R.hasOwnProperty(properties)(data)
  * @dataLast
- * @category Guard
  */
 export function hasOwnProperty<P extends readonly PropertyKey[]>(
     properties: P,

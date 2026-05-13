@@ -2,9 +2,7 @@ import { clamp } from "@/fp";
 
 /**
  * @example
- * ```
- * const value = linear(0.5, [0, 2]) // value: 1
- * ```
+ *     const value = linear(0.5, [0, 2]); // value: 1
  */
 /* #__NO_SIDE_EFFECTS__ */
 export const linear = (value: number, range: [min: number, max: number]): number => {
@@ -16,9 +14,7 @@ export const linear = (value: number, range: [min: number, max: number]): number
 
 /**
  * @example
- * ```
- * const value = scale(0.5, [0, 1], [200, 400]) // value: 300
- * ```
+ *     const value = scale(0.5, [0, 1], [200, 400]); // value: 300
  */
 /* #__NO_SIDE_EFFECTS__ */
 export const scale = (

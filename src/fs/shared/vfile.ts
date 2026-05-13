@@ -9,30 +9,22 @@ import type { PathLike, StringEncodingOptions } from "./types";
 interface PathnameGetter<T> {
     /**
      * @example
-     * ```js
-     * vfile.pathname(); // "/home/user/project/src/page/index.js"
-     * ```
+     *     vfile.pathname(); // "/home/user/project/src/page/index.js"
      */
     (): string;
     /**
      * @example
-     * ```js
-     * vfile.pathname("/home/user/project/src/page/index.js");
-     * ```
+     *     vfile.pathname("/home/user/project/src/page/index.js");
      */
     (pathname: string): T;
     /**
      * @example
-     * ```js
-     * vfile.pathname.relative(); // "src/page/index.js"
-     * ```
+     *     vfile.pathname.relative(); // "src/page/index.js"
      */
     relative(): string;
     /**
      * @example
-     * ```js
-     * vfile.pathname.relative("src/page/index.js");
-     * ```
+     *     vfile.pathname.relative("src/page/index.js");
      */
     relative(pathname: string): T;
 }
@@ -40,30 +32,22 @@ interface PathnameGetter<T> {
 interface DirnameGetter<T> {
     /**
      * @example
-     * ```js
-     * vfile.dirname(); // "src/page"
-     * ```
+     *     vfile.dirname(); // "src/page"
      */
     (): string;
     /**
      * @example
-     * ```js
-     * vfile.dirname("src/page");
-     * ```
+     *     vfile.dirname("src/page");
      */
     (dirname: string): T;
     /**
      * @example
-     * ```js
-     * vfile.dirname.absolute(); // "/home/user/project/src/page"
-     * ```
+     *     vfile.dirname.absolute(); // "/home/user/project/src/page"
      */
     absolute(): string;
     /**
      * @example
-     * ```js
-     * vfile.dirname.absolute("/home/user/project/src/page");
-     * ```
+     *     vfile.dirname.absolute("/home/user/project/src/page");
      */
     absolute(dirname: string): T;
 }
@@ -76,12 +60,7 @@ export class BaseVFile {
 
     /**
      * @example
-     * ```js
-     * const vfile = new VFile(
-     *   "/home/user/project/src/page/index.js",
-     *   "/home/user/project",
-     * );
-     * ```
+     *     const vfile = new VFile("/home/user/project/src/page/index.js", "/home/user/project");
      */
     constructor(filepath: PathLike, cwd?: string) {
         if (cwd) {
@@ -98,16 +77,12 @@ export class BaseVFile {
 
     /**
      * @example
-     * ```js
-     * vfile.cwd(); // "/home/user/project"
-     * ```
+     *     vfile.cwd(); // "/home/user/project"
      */
     cwd(): string;
     /**
      * @example
-     * ```js
-     * vfile.cwd("/home/user/project");
-     * ```
+     *     vfile.cwd("/home/user/project");
      */
     cwd(cwd: string): this;
     cwd(cwd?: string) {
@@ -134,16 +109,12 @@ export class BaseVFile {
 
     /**
      * @example
-     * ```js
-     * vfile.filename(); // "index"
-     * ```
+     *     vfile.filename(); // "index"
      */
     filename(): string;
     /**
      * @example
-     * ```js
-     * vfile.filename("index");
-     * ```
+     *     vfile.filename("index");
      */
     filename(filename: string): this;
     filename(filename?: string) {
@@ -156,16 +127,12 @@ export class BaseVFile {
 
     /**
      * @example
-     * ```js
-     * vfile.extname(); // "js"
-     * ```
+     *     vfile.extname(); // "js"
      */
     extname(): string;
     /**
      * @example
-     * ```js
-     * vfile.extname("js");
-     * ```
+     *     vfile.extname("js");
      */
     extname(extname: string): this;
     extname(extname?: string) {
@@ -178,16 +145,12 @@ export class BaseVFile {
 
     /**
      * @example
-     * ```js
-     * vfile.basename(); // "index.js"
-     * ```
+     *     vfile.basename(); // "index.js"
      */
     basename(): string;
     /**
      * @example
-     * ```js
-     * vfile.basename("index.js");
-     * ```
+     *     vfile.basename("index.js");
      */
     basename(basename: string): this;
     basename(basename?: string) {
@@ -276,16 +239,12 @@ export class ExtendVFile<T> extends BaseVFile {
 
     /**
      * @example
-     * ```js
-     * vfile.encoding(); // "utf-8"
-     * ```
+     *     vfile.encoding(); // "utf-8"
      */
     encoding(): typeof this._encoding;
     /**
      * @example
-     * ```js
-     * vfile.encoding("utf-8");
-     * ```
+     *     vfile.encoding("utf-8");
      */
     encoding(encoding: StringEncodingOptions["encoding"]): this;
     encoding(encoding?: typeof this._encoding): any {
@@ -298,16 +257,12 @@ export class ExtendVFile<T> extends BaseVFile {
 
     /**
      * @example
-     * ```js
-     * vfile.linebreak(); // "\n"
-     * ```
+     *     vfile.linebreak(); // "\n"
      */
     linebreak(): typeof this._linebreak;
     /**
      * @example
-     * ```js
-     * vfile.linebreak("\r\n");
-     * ```
+     *     vfile.linebreak("\r\n");
      */
     linebreak(linebreak: string): this;
     linebreak(linebreak?: string): any {

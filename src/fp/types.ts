@@ -5,7 +5,7 @@ import type { IsAny } from "@/types";
  * in order to narrow the `unknown` case.
  *
  * @example
- *   function isMyType<T>(data: T | MyType): data is NarrowedTo<T, MyType> { ... }
+ *     function isMyType<T>(data: T | MyType): data is NarrowedTo<T, MyType> { ... }
  */
 export type NarrowedTo<T, Base> =
     Extract<T, Base> extends never ? Base : IsAny<T> extends true ? Base : Extract<T, Base>;

@@ -5,7 +5,6 @@ import { stringify } from "@/json/safe";
 import { Result } from "@/result";
 
 import { parseEncodingOptions, parseWriteJsonOptions, pathLikeToPath } from "../shared/utils";
-
 import { mkdir, mkdirSync } from "./mkdir";
 
 import type { PathLike, StringEncodingOptions, WriteJsonOptions } from "../shared/types";

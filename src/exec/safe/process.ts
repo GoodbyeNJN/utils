@@ -4,8 +4,8 @@ import { NonZeroExitError } from "../shared/error";
 import { BaseProcess } from "../shared/process";
 import { readStreamLines, readStreams } from "../shared/stream";
 
-import type { Exec, ProcessInstance, ProcessOptions } from "./types";
 import type { ExecParams, Output } from "../shared/types";
+import type { Exec, ProcessInstance, ProcessOptions } from "./types";
 import type { Result } from "@/result";
 
 export class Process

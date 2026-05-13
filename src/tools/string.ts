@@ -79,24 +79,22 @@ export const concatTemplateStrings = (template: TemplateStringsArray, values: an
 
 /**
  * @example
- * ```ts
- * // Default behavior: trim both start and end
- * const str1 = unindent`
+ *     // Default behavior: trim both start and end
+ *     const str1 = unindent`
  *   if (a) {
  *     b()
  *   }
  * `;
  *
- * // Factory function: custom trim behavior
- * const str2 = unindent(false, false)`
+ *     // Factory function: custom trim behavior
+ *     const str2 = unindent(false, false)`
  *   if (a) {
  *     b()
  *   }
  * `;
  *
- * // Only trim start, keep end
- * const str3 = unindent(true, false)("  hello\n  world\n");
- * ```
+ *     // Only trim start, keep end
+ *     const str3 = unindent(true, false)("  hello\n  world\n");
  */
 export function unindent(str: string): string;
 export function unindent(template: TemplateStringsArray, ...values: any[]): string;
@@ -186,24 +184,22 @@ export function unindent(...params: any[]) {
 
 /**
  * @example
- * ```ts
- * // Using indent count with default space character
- * const str1 = indent(2)`
+ *     // Using indent count with default space character
+ *     const str1 = indent(2)`
  *   if (a) {
  *     b()
  *   }
  * `;
  *
- * // Using custom indent string directly
- * const str2 = indent(">>")`
+ *     // Using custom indent string directly
+ *     const str2 = indent(">>")`
  *   if (a) {
  *     b()
  *   }
  * `;
  *
- * // Only trim start, keep end
- * const str3 = indent(2, true, false)("hello\nworld\n");
- * ```
+ *     // Only trim start, keep end
+ *     const str3 = indent(2, true, false)("hello\nworld\n");
  */
 export function indent(
     indentNumber: number,
@@ -282,27 +278,15 @@ export function indent(...params: any[]) {
 
 /**
  * @example
- * ```
- * const result = template(
- *   'Hello {0}! My name is {1}.',
- *   'World',
- *   'Alice'
- * ) // Hello World! My name is Alice.
- * ```
+ *     const result = template("Hello {0}! My name is {1}.", "World", "Alice"); // Hello World! My name is Alice.
  *
- * ```
- * const result = template(
- *   '{greet}! My name is {name}.',
- *   { greet: 'Hello', name: 'Alice' }
- * ) // Hello! My name is Alice.
- * ```
+ *     const result = template("{greet}! My name is {name}.", { greet: "Hello", name: "Alice" }); // Hello! My name is Alice.
  *
- * const result = template(
- *   '{greet}! My name is {name}.',
- *   { greet: 'Hello' }, // name isn't passed hence fallback will be used for name
- *   'placeholder'
- * ) // Hello! My name is placeholder.
- * ```
+ *     const result = template(
+ *         "{greet}! My name is {name}.",
+ *         { greet: "Hello" }, // name isn't passed hence fallback will be used for name
+ *         "placeholder",
+ *     ); // Hello! My name is placeholder.
  */
 export function template(
     str: string,

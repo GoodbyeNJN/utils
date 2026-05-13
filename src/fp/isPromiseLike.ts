@@ -5,18 +5,19 @@ import { isFunction } from "./isFunction";
 import type { NarrowedTo } from "./types";
 
 /**
- * A function that checks if the passed parameter is a isPromiseLike and narrows its type accordingly.
+ * A function that checks if the passed parameter is a isPromiseLike and narrows its type
+ * accordingly.
+ *
+ * @category Guard
+ * @example
+ *     R.isPromiseLike(Promise.resolve(5)); //=> true
+ *     R.isPromiseLike(Promise.reject(5)); //=> true
+ *     R.isPromiseLike({ then: () => {} }); //=> true
+ *     R.isPromiseLike("somethingElse"); //=> false
  *
  * @param data - The variable to check.
  * @returns True if the passed input is a isPromiseLike, false otherwise.
- * @signature
- *    R.isPromiseLike(data)
- * @example
- *    R.isPromiseLike(Promise.resolve(5)) //=> true
- *    R.isPromiseLike(Promise.reject(5)) //=> true
- *    R.isPromiseLike({ then: () => {} }) //=> true
- *    R.isPromiseLike('somethingElse') //=> false
- * @category Guard
+ * @signature R.isPromiseLike(data)
  */
 /* #__NO_SIDE_EFFECTS__ */
 export function isPromiseLike<T>(

@@ -4,7 +4,6 @@ import { parse } from "@/json/unsafe";
 import { None, Option, Some } from "@/option";
 
 import { parseEncodingOptions } from "../shared/utils";
-
 import { exists, existsSync } from "./exists";
 
 import type { BufferEncodingOptions, PathLike, StringEncodingOptions } from "../shared/types";
