@@ -38,7 +38,10 @@ export default defineConfig({
     platform: "node",
 
     plugins: [
-        dts(),
+        dts({
+            tsgo: true,
+            tsconfig: "tsconfig.build.json",
+        }),
         {
             name: "emit-globals-types",
             async buildEnd() {

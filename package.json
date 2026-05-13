@@ -98,6 +98,7 @@
         "@goodbyenjn/configs": "^26.5.2",
         "@types/cross-spawn": "^6.0.6",
         "@types/node": "^25.7.0",
+        "@typescript/native-preview": "7.0.0-dev.20260513.1",
         "args-tokenizer": "^0.3.0",
         "cross-spawn": "^7.0.6",
         "memfs": "^4.57.2",
@@ -107,7 +108,6 @@
         "rolldown": "1.0.1",
         "rolldown-plugin-dts": "^0.25.0",
         "tinyglobby": "^0.2.16",
-        "typescript": "^6.0.3",
         "vite-tsconfig-paths": "^6.1.1",
         "vitest": "^4.1.6"
     },
