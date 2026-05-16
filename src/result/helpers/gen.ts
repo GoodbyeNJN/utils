@@ -9,10 +9,10 @@ import type { Fn } from "@/types";
 
 export interface Gen {
     <T, E, This>(
-        body: (this: This) => Iterator<Result<never, E>, Result<T, E> | T>,
+        body: (this: This) => Iterator<Result<unknown, E>, Result<T, E> | T>,
         self?: This,
     ): Result<T, E>;
-    <YieldErr extends Result<never>, ReturnResult extends Result, This>(
+    <YieldErr extends Result, ReturnResult extends Result, This>(
         body: (this: This) => Iterator<YieldErr, ReturnResult>,
         self?: This,
     ): Result<
@@ -21,10 +21,10 @@ export interface Gen {
     >;
 
     <T, E, This>(
-        body: (this: This) => AsyncIterator<Result<never, E>, Result<T, E> | T>,
+        body: (this: This) => AsyncIterator<Result<unknown, E>, Result<T, E> | T>,
         self?: This,
     ): Promise<Result<T, E>>;
-    <YieldErr extends Result<never>, ReturnResult extends Result, This>(
+    <YieldErr extends Result, ReturnResult extends Result, This>(
         body: (this: This) => AsyncIterator<YieldErr, ReturnResult>,
         self?: This,
     ): Promise<
