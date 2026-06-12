@@ -49,6 +49,7 @@ export type { OmitIndexSignature } from "type-fest";
 export type { PickIndexSignature } from "type-fest";
 export type { PartialDeep, PartialDeepOptions } from "type-fest";
 export type { UnwrapPartial } from "type-fest";
+export type { UnwrapRequired } from "type-fest";
 export type { RequiredDeep } from "type-fest";
 export type { PickDeep } from "type-fest";
 export type { OmitDeep } from "type-fest";
@@ -221,6 +222,7 @@ export type { LastArrayElement } from "type-fest";
 export type { ConditionalSimplify } from "type-fest";
 export type { ConditionalSimplifyDeep } from "type-fest";
 export type { RemovePrefix, RemovePrefixOptions } from "type-fest";
+export type { RemoveSuffix, RemoveSuffixOptions } from "type-fest";
 
 // Miscellaneous
 export type { GlobalThis } from "type-fest";
