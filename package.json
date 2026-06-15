@@ -43,10 +43,6 @@
             "types": "./dist/fs/safe.d.ts",
             "import": "./dist/fs/safe.js"
         },
-        "./glob": {
-            "types": "./dist/glob/index.d.ts",
-            "import": "./dist/glob/index.js"
-        },
         "./json": {
             "types": "./dist/json/index.d.ts",
             "import": "./dist/json/index.js"
@@ -108,7 +104,6 @@
         "oxlint-tsgolint": "^0.23.0",
         "rolldown": "1.1.1",
         "rolldown-plugin-dts": "^0.25.2",
-        "tinyglobby": "^0.2.17",
         "vite-tsconfig-paths": "^6.1.1",
         "vitest": "^4.1.8"
     },

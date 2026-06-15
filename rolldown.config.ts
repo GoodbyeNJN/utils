@@ -12,7 +12,6 @@ export default defineConfig({
         "fp/index": "src/fp/index.ts",
         "fs/index": "src/fs/unsafe/index.ts",
         "fs/safe": "src/fs/safe/index.ts",
-        "glob/index": "src/glob/index.ts",
         "json/index": "src/json/unsafe.ts",
         "json/safe": "src/json/safe.ts",
         "option/index": "src/option/index.ts",
