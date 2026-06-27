@@ -85,7 +85,7 @@ declare global {
          * @param thisArg An object to which the this keyword can refer in the predicate function.
          *   If thisArg is omitted, undefined is used as the this value.
          */
-        filter<S extends T>(predicate: BooleanConstructor, thisArg?: any): NonFalsy<NoInfer<S>>[];
+        filter<S extends T>(predicate: BooleanConstructor, thisArg?: any): NoInfer<NonFalsy<S>>[];
         /**
          * Determines whether an array includes a certain element, returning true or false as
          * appropriate.
@@ -125,7 +125,7 @@ declare global {
          * @param thisArg An object to which the this keyword can refer in the predicate function.
          *   If thisArg is omitted, undefined is used as the this value.
          */
-        filter<S extends T>(predicate: BooleanConstructor, thisArg?: any): NonFalsy<NoInfer<S>>[];
+        filter<S extends T>(predicate: BooleanConstructor, thisArg?: any): NoInfer<NonFalsy<S>>[];
         /**
          * Determines whether an array includes a certain element, returning true or false as
          * appropriate.
