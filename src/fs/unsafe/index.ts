@@ -3,11 +3,20 @@ export { BaseVFile } from "../shared/vfile";
 export { appendFile, appendFileSync } from "./append";
 export { cp, cpSync } from "./cp";
 export { exists, existsSync } from "./exists";
+export { glob, globSync } from "./glob";
 export { mkdir, mkdirSync } from "./mkdir";
 export { readFile, readFileByLine, readFileSync, readJson, readJsonSync } from "./read";
 export { rm, rmSync } from "./rm";
 export { VFile } from "./vfile";
 export { writeFile, writeFileSync, writeJson, writeJsonSync } from "./write";
+
+export type {
+    Glob,
+    GlobOptions,
+    GlobOptionsWithFileTypes,
+    GlobOptionsWithoutFileTypes,
+    GlobSync,
+} from "./glob";
 
 export type {
     AppendFileOptions,
