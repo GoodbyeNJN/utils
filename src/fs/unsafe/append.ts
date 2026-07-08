@@ -5,14 +5,26 @@ import { parseEncodingOptions, pathLikeToPath } from "../shared/utils";
 import { mkdir, mkdirSync } from "./mkdir";
 
 import type { AppendFileOptions, BufferEncodingOptions, PathLike } from "../shared/types";
-import type { SetReturnType } from "@/types";
 
 type AppendFile = {
-    (path: PathLike, data: Buffer, options?: BufferEncodingOptions): Promise<void>;
     (path: PathLike, data: string, options?: AppendFileOptions): Promise<void>;
+    (path: PathLike, data: Buffer, options?: BufferEncodingOptions): Promise<void>;
+    (
+        path: PathLike,
+        data: string | Buffer,
+        options?: AppendFileOptions | BufferEncodingOptions,
+    ): Promise<void>;
 };
 
-type AppendFileSync = SetReturnType<AppendFile, void>;
+type AppendFileSync = {
+    (path: PathLike, data: string, options?: AppendFileOptions): void;
+    (path: PathLike, data: Buffer, options?: BufferEncodingOptions): void;
+    (
+        path: PathLike,
+        data: string | Buffer,
+        options?: AppendFileOptions | BufferEncodingOptions,
+    ): void;
+};
 
 export const appendFile: AppendFile = async (
     path: any,

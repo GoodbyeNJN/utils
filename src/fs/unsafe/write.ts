@@ -12,14 +12,26 @@ import type {
     StringEncodingOptions,
     WriteJsonOptions,
 } from "../shared/types";
-import type { SetReturnType } from "@/types";
 
 type WriteFile = {
-    (path: PathLike, data: Buffer, options?: BufferEncodingOptions): Promise<void>;
     (path: PathLike, data: string, options?: StringEncodingOptions): Promise<void>;
+    (path: PathLike, data: Buffer, options?: BufferEncodingOptions): Promise<void>;
+    (
+        path: PathLike,
+        data: string | Buffer,
+        options?: StringEncodingOptions | BufferEncodingOptions,
+    ): Promise<void>;
 };
 
-type WriteFileSync = SetReturnType<WriteFile, void>;
+type WriteFileSync = {
+    (path: PathLike, data: string, options?: StringEncodingOptions): void;
+    (path: PathLike, data: Buffer, options?: BufferEncodingOptions): void;
+    (
+        path: PathLike,
+        data: string | Buffer,
+        options?: StringEncodingOptions | BufferEncodingOptions,
+    ): void;
+};
 
 export const writeFile: WriteFile = async (path: any, data: any, options?: any): Promise<void> => {
     await mkdir(dirname(pathLikeToPath(path).toString()));

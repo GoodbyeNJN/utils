@@ -8,16 +8,18 @@ import { exists, existsSync } from "./exists";
 
 import type { BufferEncodingOptions, PathLike, StringEncodingOptions } from "../shared/types";
 
-export async function readFile(
-    path: PathLike,
-    options: BufferEncodingOptions,
-): Promise<Option<Buffer>>;
-export async function readFile(
-    path: PathLike,
-    options?: StringEncodingOptions,
-): Promise<Option<string>>;
+type ReadFile = {
+    (path: PathLike, options?: StringEncodingOptions): Promise<Option<string>>;
+    (path: PathLike, options: BufferEncodingOptions): Promise<Option<Buffer>>;
+};
+
+type ReadFileSync = {
+    (path: PathLike, options?: StringEncodingOptions): Option<string>;
+    (path: PathLike, options: BufferEncodingOptions): Option<Buffer>;
+};
+
 /* #__NO_SIDE_EFFECTS__ */
-export async function readFile(path: any, options?: any): Promise<any> {
+export const readFile: ReadFile = async (path: any, options?: any): Promise<any> => {
     if (!(await exists(path))) return None();
 
     try {
@@ -25,12 +27,10 @@ export async function readFile(path: any, options?: any): Promise<any> {
     } catch {
         return None();
     }
-}
+};
 
-export function readFileSync(path: PathLike, options: BufferEncodingOptions): Option<Buffer>;
-export function readFileSync(path: PathLike, options?: StringEncodingOptions): Option<string>;
 /* #__NO_SIDE_EFFECTS__ */
-export function readFileSync(path: any, options?: any): any {
+export const readFileSync: ReadFileSync = (path: any, options?: any): any => {
     if (!existsSync(path)) return None();
 
     try {
@@ -38,7 +38,7 @@ export function readFileSync(path: any, options?: any): any {
     } catch {
         return None();
     }
-}
+};
 
 /* #__NO_SIDE_EFFECTS__ */
 export const readJson = async <T = any>(

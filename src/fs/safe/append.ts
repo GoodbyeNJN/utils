@@ -7,14 +7,26 @@ import { parseEncodingOptions, pathLikeToPath } from "../shared/utils";
 import { mkdir, mkdirSync } from "./mkdir";
 
 import type { AppendFileOptions, BufferEncodingOptions, PathLike } from "../shared/types";
-import type { SetReturnType } from "@/types";
 
 type AppendFile = {
     (path: PathLike, data: Buffer, options?: BufferEncodingOptions): Promise<Result<void, Error>>;
     (path: PathLike, data: string, options?: AppendFileOptions): Promise<Result<void, Error>>;
+    (
+        path: PathLike,
+        data: string | Buffer,
+        options?: AppendFileOptions | BufferEncodingOptions,
+    ): Promise<Result<void, Error>>;
 };
 
-type AppendFileSync = SetReturnType<AppendFile, Result<void, Error>>;
+type AppendFileSync = {
+    (path: PathLike, data: Buffer, options?: BufferEncodingOptions): Result<void, Error>;
+    (path: PathLike, data: string, options?: AppendFileOptions): Result<void, Error>;
+    (
+        path: PathLike,
+        data: string | Buffer,
+        options?: AppendFileOptions | BufferEncodingOptions,
+    ): Result<void, Error>;
+};
 
 const safeAppendFile = /* #__PURE__ */ Result.wrap(fsp.appendFile, Error);
 export const appendFile: AppendFile = async (

@@ -11,7 +11,7 @@ import type {
 } from "../shared/types";
 import type { Dirent } from "node:fs";
 
-export type Glob = {
+type Glob = {
     (patterns: GlobOptions["patterns"]): Promise<string[]>;
     (
         patterns: GlobOptionsWithFileTypes["patterns"],
@@ -31,7 +31,7 @@ export type Glob = {
     (options: GlobOptions): Promise<(Dirent | string)[]>;
 };
 
-export type GlobSync = {
+type GlobSync = {
     (patterns: GlobOptions["patterns"]): string[];
     (
         patterns: GlobOptionsWithFileTypes["patterns"],

@@ -13,14 +13,26 @@ import type {
     StringEncodingOptions,
     WriteJsonOptions,
 } from "../shared/types";
-import type { SetReturnType } from "@/types";
 
 type WriteFile = {
-    (path: PathLike, data: Buffer, options?: BufferEncodingOptions): Promise<Result<void, Error>>;
     (path: PathLike, data: string, options?: StringEncodingOptions): Promise<Result<void, Error>>;
+    (path: PathLike, data: Buffer, options?: BufferEncodingOptions): Promise<Result<void, Error>>;
+    (
+        path: PathLike,
+        data: string | Buffer,
+        options?: StringEncodingOptions | BufferEncodingOptions,
+    ): Promise<Result<void, Error>>;
 };
 
-type WriteFileSync = SetReturnType<WriteFile, Result<void, Error>>;
+type WriteFileSync = {
+    (path: PathLike, data: string, options?: StringEncodingOptions): Result<void, Error>;
+    (path: PathLike, data: Buffer, options?: BufferEncodingOptions): Result<void, Error>;
+    (
+        path: PathLike,
+        data: string | Buffer,
+        options?: StringEncodingOptions | BufferEncodingOptions,
+    ): Result<void, Error>;
+};
 
 const safeWriteFile = /* #__PURE__ */ Result.wrap(fsp.writeFile, Error);
 export const writeFile: WriteFile = (
