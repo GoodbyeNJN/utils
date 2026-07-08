@@ -4,12 +4,20 @@ import { dirname } from "node:path";
 import { parseEncodingOptions, pathLikeToPath } from "../shared/utils";
 import { mkdir, mkdirSync } from "./mkdir";
 
-import type { AppendFileOptions, PathLike } from "../shared/types";
+import type { AppendFileOptions, BufferEncodingOptions, PathLike } from "../shared/types";
+import type { SetReturnType } from "@/types";
 
-export const appendFile = async (
-    path: PathLike,
-    data: string,
-    options?: AppendFileOptions,
+type AppendFile = {
+    (path: PathLike, data: Buffer, options?: BufferEncodingOptions): Promise<void>;
+    (path: PathLike, data: string, options?: AppendFileOptions): Promise<void>;
+};
+
+type AppendFileSync = SetReturnType<AppendFile, void>;
+
+export const appendFile: AppendFile = async (
+    path: any,
+    data: any,
+    options?: any,
 ): Promise<void> => {
     const newline = options?.newline ?? true;
 
@@ -18,7 +26,7 @@ export const appendFile = async (
     await fsp.appendFile(path, newline ? `\n${data}` : data, parseEncodingOptions(options));
 };
 
-export const appendFileSync = (path: PathLike, data: string, options?: AppendFileOptions): void => {
+export const appendFileSync: AppendFileSync = (path: any, data: any, options?: any): void => {
     const newline = options?.newline ?? true;
 
     mkdirSync(dirname(pathLikeToPath(path).toString()));

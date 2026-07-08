@@ -6,23 +6,28 @@ import { stringify } from "@/json/unsafe";
 import { parseEncodingOptions, parseWriteJsonOptions, pathLikeToPath } from "../shared/utils";
 import { mkdir, mkdirSync } from "./mkdir";
 
-import type { PathLike, StringEncodingOptions, WriteJsonOptions } from "../shared/types";
+import type {
+    BufferEncodingOptions,
+    PathLike,
+    StringEncodingOptions,
+    WriteJsonOptions,
+} from "../shared/types";
+import type { SetReturnType } from "@/types";
 
-export const writeFile = async (
-    path: PathLike,
-    data: string,
-    options?: StringEncodingOptions,
-): Promise<void> => {
+type WriteFile = {
+    (path: PathLike, data: Buffer, options?: BufferEncodingOptions): Promise<void>;
+    (path: PathLike, data: string, options?: StringEncodingOptions): Promise<void>;
+};
+
+type WriteFileSync = SetReturnType<WriteFile, void>;
+
+export const writeFile: WriteFile = async (path: any, data: any, options?: any): Promise<void> => {
     await mkdir(dirname(pathLikeToPath(path).toString()));
 
     await fsp.writeFile(path, data, parseEncodingOptions(options));
 };
 
-export const writeFileSync = (
-    path: PathLike,
-    data: string,
-    options?: StringEncodingOptions,
-): void => {
+export const writeFileSync: WriteFileSync = (path: any, data: any, options?: any): void => {
     mkdirSync(dirname(pathLikeToPath(path).toString()));
 
     fs.writeFileSync(path, data, parseEncodingOptions(options));

@@ -6,13 +6,21 @@ import { Result } from "@/result";
 import { parseEncodingOptions, pathLikeToPath } from "../shared/utils";
 import { mkdir, mkdirSync } from "./mkdir";
 
-import type { AppendFileOptions, PathLike } from "../shared/types";
+import type { AppendFileOptions, BufferEncodingOptions, PathLike } from "../shared/types";
+import type { SetReturnType } from "@/types";
+
+type AppendFile = {
+    (path: PathLike, data: Buffer, options?: BufferEncodingOptions): Promise<Result<void, Error>>;
+    (path: PathLike, data: string, options?: AppendFileOptions): Promise<Result<void, Error>>;
+};
+
+type AppendFileSync = SetReturnType<AppendFile, Result<void, Error>>;
 
 const safeAppendFile = /* #__PURE__ */ Result.wrap(fsp.appendFile, Error);
-export const appendFile = async (
-    path: PathLike,
-    data: string,
-    options?: AppendFileOptions,
+export const appendFile: AppendFile = async (
+    path: any,
+    data: any,
+    options?: any,
 ): Promise<Result<void, Error>> =>
     Result.gen(async function* () {
         const newline = options?.newline ?? true;
@@ -29,10 +37,10 @@ export const appendFile = async (
     });
 
 const safeAppendFileSync = /* #__PURE__ */ Result.wrap(fs.appendFileSync, Error);
-export const appendFileSync = (
-    path: PathLike,
-    data: string,
-    options?: AppendFileOptions,
+export const appendFileSync: AppendFileSync = (
+    path: any,
+    data: any,
+    options?: any,
 ): Result<void, Error> =>
     Result.gen(function* () {
         const newline = options?.newline ?? true;

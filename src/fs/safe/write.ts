@@ -7,13 +7,26 @@ import { Result } from "@/result";
 import { parseEncodingOptions, parseWriteJsonOptions, pathLikeToPath } from "../shared/utils";
 import { mkdir, mkdirSync } from "./mkdir";
 
-import type { PathLike, StringEncodingOptions, WriteJsonOptions } from "../shared/types";
+import type {
+    BufferEncodingOptions,
+    PathLike,
+    StringEncodingOptions,
+    WriteJsonOptions,
+} from "../shared/types";
+import type { SetReturnType } from "@/types";
+
+type WriteFile = {
+    (path: PathLike, data: Buffer, options?: BufferEncodingOptions): Promise<Result<void, Error>>;
+    (path: PathLike, data: string, options?: StringEncodingOptions): Promise<Result<void, Error>>;
+};
+
+type WriteFileSync = SetReturnType<WriteFile, Result<void, Error>>;
 
 const safeWriteFile = /* #__PURE__ */ Result.wrap(fsp.writeFile, Error);
-export const writeFile = async (
-    path: PathLike,
-    data: string,
-    options?: StringEncodingOptions,
+export const writeFile: WriteFile = (
+    path: any,
+    data: any,
+    options?: any,
 ): Promise<Result<void, Error>> =>
     Result.gen(async function* () {
         yield* await mkdir(dirname(pathLikeToPath(path).toString()));
@@ -24,10 +37,10 @@ export const writeFile = async (
     });
 
 const safeWriteFileSync = /* #__PURE__ */ Result.wrap(fs.writeFileSync, Error);
-export const writeFileSync = (
-    path: PathLike,
-    data: string,
-    options?: StringEncodingOptions,
+export const writeFileSync: WriteFileSync = (
+    path: any,
+    data: any,
+    options?: any,
 ): Result<void, Error> =>
     Result.gen(function* () {
         yield* mkdirSync(dirname(pathLikeToPath(path).toString()));

@@ -11,14 +11,6 @@ export { VFile } from "./vfile";
 export { writeFile, writeFileSync, writeJson, writeJsonSync } from "./write";
 
 export type {
-    Glob,
-    GlobOptions,
-    GlobOptionsWithFileTypes,
-    GlobOptionsWithoutFileTypes,
-    GlobSync,
-} from "./glob";
-
-export type {
     AppendFileOptions,
     BufferEncodingOptions,
     CpOptions,
@@ -28,4 +20,7 @@ export type {
     RmOptions,
     StringEncodingOptions,
     WriteJsonOptions,
+    GlobOptions,
+    GlobOptionsWithFileTypes,
+    GlobOptionsWithoutFileTypes,
 } from "../shared/types";
