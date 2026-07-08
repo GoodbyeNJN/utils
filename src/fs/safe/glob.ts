@@ -5,12 +5,6 @@ import { glob as unsafeGlob, globSync as unsafeGlobSync } from "../unsafe/glob";
 import type { Glob as UnsafeGlob, GlobSync as UnsafeGlobSync } from "../unsafe/glob";
 import type { SetReturnType } from "@/types";
 
-export type {
-    GlobOptions,
-    GlobOptionsWithFileTypes,
-    GlobOptionsWithoutFileTypes,
-} from "../unsafe/glob";
-
 export type Glob = SetReturnType<UnsafeGlob, Promise<Result<Awaited<ReturnType<UnsafeGlob>>>>>;
 export type GlobSync = SetReturnType<UnsafeGlobSync, Result<ReturnType<UnsafeGlobSync>>>;
 

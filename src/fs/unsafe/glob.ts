@@ -5,43 +5,14 @@ import url from "node:url";
 import { isArray, isString, omit } from "@/fp";
 
 import type {
-    Dirent,
-    GlobOptions as NodeGlobOptions,
-    GlobOptionsWithFileTypes as NodeGlobOptionsWithFileTypes,
-    GlobOptionsWithoutFileTypes as NodeGlobOptionsWithoutFileTypes,
-} from "node:fs";
-
-interface BaseGlobOptions {
-    patterns: string | string[];
-
-    /**
-     * Return absolute paths in the results.
-     *
-     * @default false
-     */
-    absolute?: boolean;
-    /**
-     * Include files in the results.
-     *
-     * @default true
-     */
-    includeFiles?: boolean;
-    /**
-     * Include directories in the results.
-     *
-     * @default false
-     */
-    includeDirectories?: boolean;
-}
-
-export interface GlobOptions extends BaseGlobOptions, NodeGlobOptions {}
-
-export interface GlobOptionsWithFileTypes extends BaseGlobOptions, NodeGlobOptionsWithFileTypes {}
-
-export interface GlobOptionsWithoutFileTypes
-    extends BaseGlobOptions, NodeGlobOptionsWithoutFileTypes {}
+    GlobOptions,
+    GlobOptionsWithFileTypes,
+    GlobOptionsWithoutFileTypes,
+} from "../shared/types";
+import type { Dirent } from "node:fs";
 
 export type Glob = {
+    (patterns: GlobOptions["patterns"]): Promise<string[]>;
     (
         patterns: GlobOptionsWithFileTypes["patterns"],
         options?: Omit<GlobOptionsWithFileTypes, "patterns">,
@@ -54,12 +25,14 @@ export type Glob = {
         patterns: GlobOptions["patterns"],
         options?: Omit<GlobOptions, "patterns">,
     ): Promise<(Dirent | string)[]>;
+    (): Promise<string[]>;
     (options: GlobOptionsWithFileTypes): Promise<Dirent[]>;
     (options: GlobOptionsWithoutFileTypes): Promise<string[]>;
     (options: GlobOptions): Promise<(Dirent | string)[]>;
 };
 
 export type GlobSync = {
+    (patterns: GlobOptions["patterns"]): string[];
     (
         patterns: GlobOptionsWithFileTypes["patterns"],
         options?: Omit<GlobOptionsWithFileTypes, "patterns">,
@@ -72,6 +45,7 @@ export type GlobSync = {
         patterns: GlobOptions["patterns"],
         options?: Omit<GlobOptions, "patterns">,
     ): (Dirent | string)[];
+    (): string[];
     (options: GlobOptionsWithFileTypes): Dirent[];
     (options: GlobOptionsWithoutFileTypes): string[];
     (options: GlobOptions): (Dirent | string)[];
@@ -130,7 +104,7 @@ const processEntries = (entries: Dirent[], options: Omit<GlobOptions, "patterns"
 };
 
 /* #__NO_SIDE_EFFECTS__ */
-export const glob: Glob = async (...args: [any, any?]): Promise<any[]> => {
+export const glob: Glob = async (...args: [any?, any?]): Promise<any[]> => {
     const { patterns, options } = normalizeArgs(...args);
 
     const entries = await Array.fromAsync(
@@ -144,7 +118,7 @@ export const glob: Glob = async (...args: [any, any?]): Promise<any[]> => {
 };
 
 /* #__NO_SIDE_EFFECTS__ */
-export const globSync: GlobSync = (...args: [any, any?]): any[] => {
+export const globSync: GlobSync = (...args: [any?, any?]): any[] => {
     const { patterns, options } = normalizeArgs(...args);
 
     const entries = fs.globSync(patterns, {

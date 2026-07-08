@@ -1,3 +1,9 @@
+import type {
+    GlobOptions as NodeGlobOptions,
+    GlobOptionsWithFileTypes as NodeGlobOptionsWithFileTypes,
+    GlobOptionsWithoutFileTypes as NodeGlobOptionsWithoutFileTypes,
+} from "node:fs";
+
 export type PathLike = string | URL;
 
 export interface BufferEncodingOptions {
@@ -26,3 +32,33 @@ export interface RmOptions {
 export interface CpOptions {
     recursive?: boolean;
 }
+
+interface BaseGlobOptions {
+    patterns: string | string[];
+
+    /**
+     * Return absolute paths in the results.
+     *
+     * @default false
+     */
+    absolute?: boolean;
+    /**
+     * Include files in the results.
+     *
+     * @default true
+     */
+    includeFiles?: boolean;
+    /**
+     * Include directories in the results.
+     *
+     * @default false
+     */
+    includeDirectories?: boolean;
+}
+
+export interface GlobOptions extends BaseGlobOptions, NodeGlobOptions {}
+
+export interface GlobOptionsWithFileTypes extends BaseGlobOptions, NodeGlobOptionsWithFileTypes {}
+
+export interface GlobOptionsWithoutFileTypes
+    extends BaseGlobOptions, NodeGlobOptionsWithoutFileTypes {}
