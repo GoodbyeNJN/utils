@@ -1,8 +1,7 @@
+import { fs, vol } from "memfs";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { appendFile, appendFileSync } from "@/fs/unsafe/append";
-
-import { fs, vol } from "../memfs";
 
 vi.mock("node:fs");
 vi.mock("node:fs/promises");

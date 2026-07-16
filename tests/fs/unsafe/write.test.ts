@@ -1,8 +1,7 @@
+import { fs, vol } from "memfs";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { writeFile, writeFileSync, writeJson, writeJsonSync } from "@/fs/unsafe/write";
-
-import { fs, vol } from "../memfs";
 
 vi.mock("node:fs");
 vi.mock("node:fs/promises");

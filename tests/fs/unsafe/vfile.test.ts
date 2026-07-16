@@ -1,9 +1,8 @@
+import { fs, vol } from "memfs";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { VFile } from "@/fs/unsafe/vfile";
 import { None } from "@/option";
-
-import { fs, vol } from "../memfs";
 
 vi.mock("node:fs");
 vi.mock("node:fs/promises");
