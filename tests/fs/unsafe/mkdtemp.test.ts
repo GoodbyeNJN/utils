@@ -28,7 +28,7 @@ describe("mkdtemp", () => {
             expect((await fsp.stat(dir)).isDirectory()).toBe(true);
         }
 
-        expect(fsp.stat(dir)).rejects.toThrow();
+        await expect(fsp.stat(dir)).rejects.toThrow();
     });
 
     test("should create a temporary directory in a custom directory", async () => {
@@ -57,7 +57,7 @@ describe("mkdtemp", () => {
             expect((await fsp.stat(dir)).isDirectory()).toBe(true);
         }
 
-        expect(fsp.stat(dir)).rejects.toThrow();
+        await expect(fsp.stat(dir)).rejects.toThrow();
         await fsp.rm(cwd, { recursive: true, force: true });
     });
 });
