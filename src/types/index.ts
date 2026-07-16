@@ -192,6 +192,7 @@ export type { ArrayReverse } from "type-fest";
 export type { UnionMember } from "type-fest";
 export type { Absolute } from "type-fest";
 export type { UnionLength } from "type-fest";
+export type { StringToNumber } from "type-fest";
 
 // Template literal types
 export type { CamelCase, CamelCaseOptions } from "type-fest";
@@ -223,6 +224,8 @@ export type { ConditionalSimplify } from "type-fest";
 export type { ConditionalSimplifyDeep } from "type-fest";
 export type { RemovePrefix, RemovePrefixOptions } from "type-fest";
 export type { RemoveSuffix, RemoveSuffixOptions } from "type-fest";
+export type { StringToArray, StringToArrayOptions } from "type-fest";
+export type { StringLength } from "type-fest";
 
 // Miscellaneous
 export type { GlobalThis } from "type-fest";
@@ -234,3 +237,4 @@ export type { ExtendsStrict } from "type-fest";
 export type { ExtractStrict } from "type-fest";
 export type { ExcludeStrict } from "type-fest";
 export type { ExcludeExactly } from "type-fest";
+export type { ExtractExactly } from "type-fest";
