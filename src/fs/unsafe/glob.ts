@@ -1,8 +1,9 @@
 import fs, { promises as fsp } from "node:fs";
 import path from "node:path";
-import url from "node:url";
 
 import { isArray, isString, omit } from "@/fp";
+
+import { pathLikeToPath } from "../shared/utils";
 
 import type {
     GlobOptions,
@@ -51,14 +52,20 @@ type GlobSync = {
     (options: GlobOptions): (Dirent | string)[];
 };
 
+interface NormalizedOptions extends Omit<GlobOptions, "patterns"> {
+    cwd: string;
+}
+
 const normalizeArgs = (
     patternsOrOptions: string | string[] | GlobOptions,
     maybeOptions?: Omit<GlobOptions, "patterns">,
 ) => {
-    const patternsAsArgument = isString(patternsOrOptions) || isArray(patternsOrOptions);
+    const isFirstArgumentPattern = isString(patternsOrOptions) || isArray(patternsOrOptions);
 
-    const patterns = patternsAsArgument ? patternsOrOptions : patternsOrOptions.patterns;
-    const options = patternsAsArgument ? maybeOptions || {} : omit(patternsOrOptions, ["patterns"]);
+    const patterns = isFirstArgumentPattern ? patternsOrOptions : patternsOrOptions.patterns;
+    const options = isFirstArgumentPattern
+        ? maybeOptions || {}
+        : omit(patternsOrOptions, ["patterns"]);
 
     if (options.includeFiles === undefined && options.includeDirectories === undefined) {
         options.includeFiles = true;
@@ -69,38 +76,65 @@ const normalizeArgs = (
         options.includeDirectories = !options.includeFiles;
     }
 
-    return { patterns, options };
+    const cwd = options.cwd === undefined ? process.cwd() : pathLikeToPath(options.cwd);
+    options.cwd = path.isAbsolute(cwd) ? cwd : path.join(process.cwd(), cwd);
+
+    return { patterns, options: options as NormalizedOptions };
 };
 
-const processEntries = (entries: Dirent[], options: Omit<GlobOptions, "patterns">) => {
-    const result = entries.filter(
-        entry =>
-            (options.includeFiles && entry.isFile()) ||
-            (options.includeDirectories && entry.isDirectory()) ||
-            (!options.includeFiles && !options.includeDirectories),
-    );
+const processEntries = (entries: Dirent[], options: NormalizedOptions) => {
+    /*
+        // Node.js v26.5.0
 
-    if (options.absolute) {
-        const cwd =
-            (options.cwd instanceof URL ? url.fileURLToPath(options.cwd) : options.cwd) ??
-            process.cwd();
+        glob
+            No cwd:			Not absolute
+            Absolute cwd:	Not absolute
+            Relative cwd:	Not absolute
+            URL cwd:		Not absolute
 
-        if (!options.withFileTypes) {
-            return result.map(entry => path.resolve(cwd, entry.parentPath, entry.name));
-        } else {
-            for (const entry of entries) {
-                entry.parentPath = path.resolve(cwd, entry.parentPath);
+        globSync
+            No cwd:			Not absolute
+            Absolute cwd:	Not absolute
+            Relative cwd:	Not absolute
+            URL cwd:		Not absolute
+
+        glob (withFileTypes)
+            No cwd:			Absolute
+            Absolute cwd:	Absolute
+            Relative cwd:	Absolute
+            URL cwd:		Absolute
+
+        globSync (withFileTypes)
+            No cwd:			Not absolute
+            Absolute cwd:	Absolute
+            Relative cwd:	Not absolute
+            URL cwd:		Absolute
+    */
+
+    const { absolute, includeFiles, includeDirectories, cwd, withFileTypes } = options;
+
+    const dirent =
+        includeFiles || includeDirectories
+            ? entries.filter(
+                  entry =>
+                      (includeFiles && entry.isFile()) ||
+                      (includeDirectories && entry.isDirectory()),
+              )
+            : entries;
+
+    if (withFileTypes) {
+        for (const entry of dirent) {
+            if (!absolute) {
+                entry.parentPath = path.relative(cwd, entry.parentPath);
             }
-
-            return result;
         }
-    }
 
-    if (!options.withFileTypes) {
-        return result.map(entry => path.join(entry.parentPath, entry.name));
+        return dirent;
+    } else {
+        return dirent.map(({ name, parentPath }) =>
+            path.join(absolute ? parentPath : path.relative(cwd, parentPath), name),
+        );
     }
-
-    return result;
 };
 
 /* #__NO_SIDE_EFFECTS__ */
