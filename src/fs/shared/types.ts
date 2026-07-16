@@ -24,6 +24,19 @@ export interface MkdirOptions {
     recursive?: boolean;
 }
 
+export interface MkdtempOptions {
+    cwd?: PathLike;
+    disposable?: boolean;
+}
+
+export interface MkdtempDisposableOptions extends MkdtempOptions {
+    disposable: true;
+}
+
+export interface MkdtempNonDisposableOptions extends MkdtempOptions {
+    disposable?: false;
+}
+
 export interface RmOptions {
     force?: boolean;
     recursive?: boolean;

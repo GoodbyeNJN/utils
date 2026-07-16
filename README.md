@@ -279,6 +279,7 @@ import {
     BaseVFile,
     exists as safeExists,
     mkdir as safeMkdir,
+    mkdtemp as safeMkdtemp,
     readFile as safeReadFile,
     readFileByLine as safeReadFileByLine,
     readJson as safeReadJson,
@@ -330,6 +331,11 @@ if (exists) {
 
 // Create directories (recursive)
 const mkResult = await safeMkdir("src/components/ui", { recursive: true });
+
+// Create a temporary directory
+const tempResult = await safeMkdtemp("my-temp-dir-");
+// Or with disposable option
+const tempDisposableResult = await safeMkdtemp("my-temp-dir-", { disposable: true });
 
 // Delete files or directories
 const rmResult = await safeRm("build", { recursive: true, force: true });
