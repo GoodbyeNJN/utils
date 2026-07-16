@@ -1,7 +1,8 @@
+// oxlint-disable no-throw-literal
+// oxlint-disable require-yield
 // oxlint-disable typescript/restrict-template-expressions
 // oxlint-disable typescript/prefer-promise-reject-errors
 // oxlint-disable typescript/only-throw-error
-// oxlint-disable require-yield
 
 import { describe, expect, expectTypeOf, test } from "vitest";
 
