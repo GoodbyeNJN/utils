@@ -118,6 +118,7 @@ export type { KeyAsString } from "type-fest";
 export type { Exact } from "type-fest";
 export type { ReadonlyTuple } from "type-fest";
 export type { OverrideProperties } from "type-fest";
+export type { RenameKeys } from "type-fest";
 export type { OptionalKeysOf } from "type-fest";
 export type { IsOptionalKeyOf } from "type-fest";
 export type { HasOptionalKeys } from "type-fest";
