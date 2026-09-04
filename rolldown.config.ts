@@ -38,7 +38,6 @@ export default defineConfig({
 
     plugins: [
         dts({
-            tsgo: true,
             tsconfig: "tsconfig.build.json",
         }),
         {
