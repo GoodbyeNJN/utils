@@ -77,14 +77,14 @@
     "scripts": {
         "dev": "rolldown -w -c",
         "build": "rolldown -c",
-        "check": "tsgo && oxlint && oxfmt --check",
-        "check:type": "tsgo",
+        "check": "tsc && oxlint && oxfmt --check",
+        "check:type": "tsc",
         "lint": "oxlint",
         "lint:fix": "oxlint --fix",
         "format": "oxfmt --check",
         "format:write": "oxfmt",
         "test": "vitest",
-        "test:ci": "vitest --run"
+        "test:ci": "vitest run"
     },
     "dependencies": {
         "remeda": "^2.45.0",
