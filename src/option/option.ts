@@ -5,6 +5,8 @@ import { fromResult } from "./helpers/fromResult";
 import { gen } from "./helpers/gen";
 import { isOption } from "./helpers/isOption";
 import { Some } from "./helpers/some";
+import { _try } from "./helpers/try";
+import { wrap } from "./helpers/wrap";
 
 import type { InferSomeType } from "./types";
 import type { AsyncFn, SyncFn } from "@/types";
@@ -14,6 +16,18 @@ export const NONE = Symbol.for("[@goodbyenjn/option]: None") as never;
 export class Option<T = unknown> {
     static is = isOption;
     static fromResult = fromResult;
+
+    /**
+     * Creates an `Option` from a function or a promise, ignoring any thrown errors or rejected
+     * promises.
+     */
+    static try = _try;
+
+    /**
+     * Wraps a function and returns a new function that always returns an `Option`, ignoring any
+     * thrown errors or rejected promises.
+     */
+    static wrap = wrap;
 
     /**
      * Combines multiple `Option` instances into one `Option` containing an array of all `Some`
