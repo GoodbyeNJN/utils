@@ -304,7 +304,7 @@ export function template(str: string, ...args: any[]): string {
         const mapping = firstArg as Record<string, any>;
         return str.replace(
             /\{(\w+)\}/g,
-            (_, key) => mapping[key] || ((isFunction(fallback) ? fallback(key) : fallback) ?? key),
+            (_, key) => mapping[key] ?? (isFunction(fallback) ? fallback(key) : fallback) ?? key,
         );
     } else {
         return str.replace(/\{(\d+)\}/g, (_, key) => {
