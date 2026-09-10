@@ -7,8 +7,8 @@ import { dependencies } from "./package.json";
 
 export default defineConfig({
     input: {
-        "exec/index": "src/exec/unsafe/index.ts",
-        "exec/safe": "src/exec/safe/index.ts",
+        "process/index": "src/process/unsafe/index.ts",
+        "process/safe": "src/process/safe/index.ts",
         "fp/index": "src/fp/index.ts",
         "fs/index": "src/fs/unsafe/index.ts",
         "fs/safe": "src/fs/safe/index.ts",

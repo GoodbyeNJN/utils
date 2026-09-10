@@ -23,14 +23,6 @@
     "type": "module",
     "sideEffects": false,
     "exports": {
-        "./exec": {
-            "types": "./dist/exec/index.d.ts",
-            "import": "./dist/exec/index.js"
-        },
-        "./exec/safe": {
-            "types": "./dist/exec/safe.d.ts",
-            "import": "./dist/exec/safe.js"
-        },
         "./fp": {
             "types": "./dist/fp/index.d.ts",
             "import": "./dist/fp/index.js"
@@ -54,6 +46,14 @@
         "./option": {
             "types": "./dist/option/index.d.ts",
             "import": "./dist/option/index.js"
+        },
+        "./process": {
+            "types": "./dist/process/index.d.ts",
+            "import": "./dist/process/index.js"
+        },
+        "./process/safe": {
+            "types": "./dist/process/safe.d.ts",
+            "import": "./dist/process/safe.js"
         },
         "./result": {
             "types": "./dist/result/index.d.ts",

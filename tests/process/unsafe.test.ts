@@ -2,8 +2,8 @@ import { spawn } from "node:child_process";
 
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { NonZeroExitError } from "@/exec/shared/error";
-import { exec } from "@/exec/unsafe";
+import { NonZeroExitError } from "@/process/shared/error";
+import { exec } from "@/process/unsafe";
 
 vi.mock("node:child_process", { spy: true });
 

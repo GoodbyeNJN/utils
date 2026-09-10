@@ -2,7 +2,7 @@ import { Readable } from "node:stream";
 
 import { describe, expect, test } from "vitest";
 
-import { readStreamLines, readStreams } from "@/exec/shared/stream";
+import { readStreamLines, readStreams } from "@/process/shared/stream";
 
 describe("readStreams", () => {
     test("should return an empty string for a null stream", async () => {

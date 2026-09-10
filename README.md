@@ -33,8 +33,8 @@ yarn add @goodbyenjn/utils
 ```typescript
 // Import what you need from the main module
 import { sleep, template } from "@goodbyenjn/utils";
-import { exec } from "@goodbyenjn/utils/exec";
-import { exec as safeExec } from "@goodbyenjn/utils/exec/safe";
+import { exec } from "@goodbyenjn/utils/process";
+import { exec as safeExec } from "@goodbyenjn/utils/process/safe";
 import { BaseVFile } from "@goodbyenjn/utils/fs";
 import { readFile as safeReadFile } from "@goodbyenjn/utils/fs/safe";
 import { Ok, Result } from "@goodbyenjn/utils/result";
@@ -166,8 +166,8 @@ const result = await promise;
 ### Command Execution
 
 ```typescript
-import { exec } from "@goodbyenjn/utils/exec";
-import { exec as safeExec } from "@goodbyenjn/utils/exec/safe";
+import { exec } from "@goodbyenjn/utils/process";
+import { exec as safeExec } from "@goodbyenjn/utils/process/safe";
 
 // 1. Unsafe Execution (throws on failure)
 const output = await exec`npm install`;
