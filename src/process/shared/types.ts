@@ -15,11 +15,12 @@ export interface SpawnCommand {
 }
 export type { SpawnOptions } from "node:child_process";
 
-export interface BaseProcessOptions<T extends BaseProcessInstance = BaseProcessInstance> {
+export interface BaseProcessOptions<
+    T extends BaseProcessInstance = BaseProcessInstance,
+> extends SpawnOptions {
     stdin: T | string;
-    signal: AbortSignal;
-    spawnOptions: SpawnOptions;
-    timeout: number;
+    signal: AbortSignal; // Overrides
+    timeout: number; // Overrides
     persist: boolean;
     throwOnError: boolean;
 }

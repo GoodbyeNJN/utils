@@ -10,15 +10,11 @@ import type {
     ExecParams,
     ExecSpawnParams,
     SpawnCommand,
-    SpawnOptions,
 } from "./types";
 
 export const defaultOptions: Partial<BaseProcessOptions> = {
     timeout: undefined,
     persist: false,
-};
-
-export const defaultSpawnOptions: SpawnOptions = {
     windowsHide: true,
 };
 

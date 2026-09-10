@@ -3,8 +3,6 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-import { defaultSpawnOptions } from "./params";
-
 import type { BaseProcessOptions, SpawnOptions } from "./types";
 
 export interface NormalizedSpawnCommand {
@@ -222,10 +220,9 @@ export const spawnProcess = (
     args: string[],
     options: Partial<BaseProcessOptions>,
 ) => {
-    const { timeout, signal, persist } = options;
+    const { stdin, signal, timeout, persist, throwOnError, ...rest } = options;
     const spawnOptions: SpawnOptions = {
-        ...defaultSpawnOptions,
-        ...options.spawnOptions,
+        ...rest,
     };
 
     const signals: AbortSignal[] = [];
