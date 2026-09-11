@@ -45,7 +45,7 @@ describe("invocation styles", () => {
     });
 
     test("should accept a factory options object and return a runner", async () => {
-        const run = exec({ spawnOptions: { cwd: "/" } });
+        const run = exec({ cwd: "/" });
         await run("echo factory");
 
         const { command, args, options } = getSpawnParams();
