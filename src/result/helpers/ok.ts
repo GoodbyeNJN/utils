@@ -1,5 +1,6 @@
 import { Result } from "../result";
 
+// oxlint-disable-next-line no-redeclare
 export interface Ok {
     (): Result<void, never>;
     <T>(value: T): Result<T, never>;
