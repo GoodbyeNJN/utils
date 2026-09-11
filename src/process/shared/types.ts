@@ -23,6 +23,7 @@ export interface BaseProcessOptions<
     timeout: number; // Overrides
     persist: boolean;
     throwOnError: boolean;
+    useNodeModulesBin: boolean;
 }
 
 export interface BaseProcessInstance<P = any, I = any> extends PromiseLike<P>, AsyncIterable<I> {

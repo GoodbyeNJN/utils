@@ -15,6 +15,7 @@ import type {
 export const defaultOptions: Partial<BaseProcessOptions> = {
     timeout: undefined,
     persist: false,
+    useNodeModulesBin: true,
     windowsHide: true,
 };
 

@@ -31,11 +31,13 @@ const getEnvPaths = (env: NodeJS.ProcessEnv) => {
     return { key, paths };
 };
 
-const combineEnv = (cwd: string, env?: NodeJS.ProcessEnv) => {
+const combineEnv = (cwd: string, env?: NodeJS.ProcessEnv, useNodeModulesBin?: boolean) => {
     const combined: Record<string, string | undefined> = {
         ...process.env,
         ...env,
     };
+    if (!useNodeModulesBin) return combined;
+
     const { key, paths } = getEnvPaths(combined);
 
     let currentPath = cwd;
@@ -220,7 +222,7 @@ export const spawnProcess = (
     args: string[],
     options: Partial<BaseProcessOptions>,
 ) => {
-    const { stdin, signal, timeout, persist, throwOnError, ...rest } = options;
+    const { stdin, signal, timeout, persist, throwOnError, useNodeModulesBin, ...rest } = options;
     const spawnOptions: SpawnOptions = {
         ...rest,
     };
@@ -239,7 +241,7 @@ export const spawnProcess = (
     if (persist === true) {
         spawnOptions.detached = true;
     }
-    spawnOptions.env = combineEnv(process.cwd(), spawnOptions.env);
+    spawnOptions.env = combineEnv(process.cwd(), spawnOptions.env, useNodeModulesBin);
 
     const result = normalizeSpawnCommand(command, args, spawnOptions);
 
