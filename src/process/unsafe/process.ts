@@ -48,8 +48,9 @@ export class Process extends BaseProcess<Output, string> implements ProcessInsta
     protected maybeThrow(output?: Output) {
         if (this.thrownError) throw this.thrownError;
 
-        const shouldThrowOnError =
-            this.options.throwOnError && this.exitCode !== 0 && this.exitCode !== undefined;
+        const isNonZeroExit = this.exitCode !== undefined && this.exitCode !== 0;
+        const isSignalAbort = this.signalCode !== undefined;
+        const shouldThrowOnError = this.options.throwOnError && (isNonZeroExit || isSignalAbort);
         if (!shouldThrowOnError) return;
 
         throw new NonZeroExitError(this, output);

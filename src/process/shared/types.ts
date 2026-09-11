@@ -28,10 +28,13 @@ export interface BaseProcessOptions<
 
 export interface BaseProcessInstance<P = any, I = any> extends PromiseLike<P>, AsyncIterable<I> {
     get process(): ChildProcess | undefined;
+    get command(): string | undefined;
+    get args(): string[] | undefined;
     get aborted(): boolean;
     get killed(): boolean;
     get pid(): number | undefined;
     get exitCode(): number | undefined;
+    get signalCode(): string | undefined;
 
     exec: BaseExec<BaseProcessInstance<P, I>>;
     pipe: BaseExec<BaseProcessInstance<P, I>>;

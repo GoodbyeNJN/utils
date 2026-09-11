@@ -57,8 +57,9 @@ export class Process
     protected maybeThrow(output?: Output): Result<void, Error> {
         if (this.thrownError) return Err(this.thrownError);
 
-        const shouldThrowOnError =
-            this.options.throwOnError && this.exitCode !== 0 && this.exitCode !== undefined;
+        const isNonZeroExit = this.exitCode !== undefined && this.exitCode !== 0;
+        const isSignalAbort = this.signalCode !== undefined;
+        const shouldThrowOnError = this.options.throwOnError && (isNonZeroExit || isSignalAbort);
         if (!shouldThrowOnError) return Ok();
 
         return Err(new NonZeroExitError(this, output));

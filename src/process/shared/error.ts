@@ -16,18 +16,44 @@ export class NonZeroExitError extends Error {
     public readonly result: BaseProcessInstance;
     public readonly output?: Output;
 
-    public get exitCode(): number | undefined {
-        if (this.result.exitCode !== undefined) {
-            return this.result.exitCode;
-        }
+    public get exitCode(): number {
+        return this.result.exitCode ?? 1;
+    }
 
-        return undefined;
+    public get signalCode(): string | undefined {
+        return this.result.signalCode;
     }
 
     public constructor(result: BaseProcessInstance, output?: Output) {
-        super(`Process exited with non-zero status (${result.exitCode})`);
+        let target = "Process";
+        if (result.command) {
+            let full = result.command;
+            if (result.args?.length) {
+                const argsString = result.args
+                    .map(a => (/[ "'`()]/.test(a) ? JSON.stringify(a) : a))
+                    .join(" ");
+                full += ` ${argsString}`;
+            }
+
+            target = `Command \`${full}\``;
+        }
+
+        super(
+            result.signalCode !== undefined
+                ? `${target} was killed by the signal ${result.signalCode}`
+                : `${target} exited with a non-zero status ${result.exitCode ?? 1}`,
+        );
 
         this.result = result;
         this.output = output;
+
+        // `result` is usually passed the entire instance of the exec process
+        // depending on the exec API so that handlers can interact with it fully.
+        // As such, its log can be very large so we hide it by making it non-enumerable.
+        Object.defineProperty(this, "result", {
+            enumerable: false,
+            writable: false,
+            configurable: false,
+        });
     }
 }

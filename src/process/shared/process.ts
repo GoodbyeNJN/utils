@@ -66,6 +66,8 @@ export abstract class BaseProcess<P, I> implements BaseProcessInstance<P, I> {
 
     protected _process: ChildProcess | undefined;
     protected _aborted = false;
+    protected _command: string | undefined;
+    protected _args: string[] | undefined;
     protected options: Partial<BaseProcessOptions> = { ...defaultOptions };
     protected streamOut: Nullable<Readable>;
     protected streamErr: Nullable<Readable>;
@@ -75,6 +77,14 @@ export abstract class BaseProcess<P, I> implements BaseProcessInstance<P, I> {
 
     get process(): ChildProcess | undefined {
         return this._process;
+    }
+
+    get command(): string | undefined {
+        return this._command;
+    }
+
+    get args(): string[] | undefined {
+        return this._args;
     }
 
     get aborted(): boolean {
@@ -90,11 +100,11 @@ export abstract class BaseProcess<P, I> implements BaseProcessInstance<P, I> {
     }
 
     get exitCode(): number | undefined {
-        if (this.process && this.process.exitCode !== null) {
-            return this.process.exitCode;
-        }
+        return this.process?.exitCode ?? undefined;
+    }
 
-        return undefined;
+    get signalCode(): string | undefined {
+        return this.process?.signalCode ?? undefined;
     }
 
     constructor(options?: Partial<BaseProcessOptions>) {
@@ -125,6 +135,9 @@ export abstract class BaseProcess<P, I> implements BaseProcessInstance<P, I> {
     }
 
     protected spawn(command: string, args: string[]): this {
+        this._command = command;
+        this._args = args;
+
         const p = spawnProcess(command, args, this.options)
             .once("error", err => {
                 if (isAbortError(err)) {
