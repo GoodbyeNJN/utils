@@ -1,5 +1,6 @@
 import fs, { promises as fsp } from "node:fs";
 import path from "node:path";
+import process from "node:process";
 
 import { isArray, isString, omit } from "@/fp";
 
