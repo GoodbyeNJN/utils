@@ -200,6 +200,41 @@ const withCwd = exec({ cwd: "/path/to/project" });
 const result3 = await withCwd`npm install`;
 ```
 
+#### Terminal Styling
+
+The process module provides a type-safe wrapper around Node.js's `util.styleText`. Use
+`styled` to compose terminal styles with chained properties or tagged templates:
+
+```typescript
+import { styled } from "@goodbyenjn/utils/process";
+
+// Chain Node.js text formats
+console.log(styled.green("Success"));
+console.log(styled.bold.green("Build completed"));
+
+// Use styled as a tagged template
+const file = "dist/index.js";
+console.log(styled.yellow`Generated ${file}`);
+```
+
+The same exports are available from `@goodbyenjn/utils/process/safe`. For a different
+styling backend, pass a formatter to `createStyled`. The formatter receives all formats
+selected through the property chain, followed by the rendered text and any additional
+arguments supplied to the factory:
+
+```typescript
+import { createStyled } from "@goodbyenjn/utils/process";
+
+const format = (formats: string[], text: string) => {
+    const prefix = formats.length > 0 ? `[${formats.join(", ")}] ` : "";
+    return `${prefix}${text}`;
+};
+
+const label = createStyled(format);
+console.log(label.info("Ready")); // "[info] Ready"
+console.log(label.warning`Disk space is low`); // "[warning] Disk space is low"
+```
+
 #### Math Utilities
 
 ```typescript
