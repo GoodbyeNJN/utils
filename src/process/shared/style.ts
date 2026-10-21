@@ -37,4 +37,4 @@ export const createStyled = <T extends BaseStyleFunction>(
     );
 };
 
-export const styled = createStyled(styleText);
+export const styled: Styled<typeof styleText> = createStyled(styleText);
