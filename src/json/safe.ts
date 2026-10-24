@@ -1,4 +1,4 @@
-import { Err, Result } from "@/result";
+import { Err, Result } from "@/result/full";
 
 const safeStringify = /* #__PURE__ */ Result.wrap(JSON.stringify);
 /* #__NO_SIDE_EFFECTS__ */

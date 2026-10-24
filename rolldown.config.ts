@@ -15,7 +15,8 @@ export default defineConfig({
         "json/index": "src/json/unsafe.ts",
         "json/safe": "src/json/safe.ts",
         "option/index": "src/option/index.ts",
-        "result/index": "src/result/index.ts",
+        "result/index": "src/result/full/index.ts",
+        "result/lite/index": "src/result/lite/index.ts",
         index: "src/tools/index.ts",
         types: "src/types/index.ts",
     },
@@ -39,6 +40,7 @@ export default defineConfig({
     plugins: [
         dts({
             tsconfig: "tsconfig.build.json",
+            // entry:
         }),
         {
             name: "emit-globals-types",

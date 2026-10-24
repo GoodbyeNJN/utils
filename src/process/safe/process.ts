@@ -1,4 +1,4 @@
-import { Err, Ok } from "@/result";
+import { Err, Ok } from "@/result/full";
 
 import { NonZeroExitError } from "../shared/error";
 import { BaseProcess } from "../shared/process";
@@ -6,7 +6,7 @@ import { readStreamLines, readStreams } from "../shared/stream";
 
 import type { ExecParams, Output } from "../shared/types";
 import type { Exec, ProcessInstance, ProcessOptions } from "./types";
-import type { Result } from "@/result";
+import type { Result } from "@/result/full";
 
 export class Process
     extends BaseProcess<Result<Output, Error>, Result<string, Error>>

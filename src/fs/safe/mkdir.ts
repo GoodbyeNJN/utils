@@ -1,6 +1,6 @@
 import fs, { promises as fsp } from "node:fs";
 
-import { Ok, Result } from "@/result";
+import { Ok, Result } from "@/result/full";
 
 import { exists, existsSync } from "./exists";
 

@@ -1,6 +1,6 @@
 import fs, { promises as fsp } from "node:fs";
 
-import { Result } from "@/result";
+import { Result } from "@/result/full";
 
 import type { PathLike, RmOptions } from "../shared/types";
 

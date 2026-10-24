@@ -2,7 +2,7 @@ import fs, { promises as fsp } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { Result } from "@/result";
+import { Result } from "@/result/full";
 
 import { pathLikeToPath } from "../shared/utils";
 

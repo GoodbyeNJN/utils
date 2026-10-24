@@ -1,5 +1,6 @@
 export { isOption } from "@/option";
-export { isResult } from "@/result";
+export { isResult } from "@/result/full";
+export { isResult as isResultLite } from "@/result/lite";
 
 export { debounce } from "./debounce";
 export { hasOwnProperty } from "./hasOwnProperty";

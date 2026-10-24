@@ -7,7 +7,7 @@ import type {
     BaseProcessOptions,
     Output,
 } from "../shared/types";
-import type { Result } from "@/result";
+import type { Result } from "@/result/full";
 
 export type ProcessOptions = BaseProcessOptions<ProcessInstance>;
 

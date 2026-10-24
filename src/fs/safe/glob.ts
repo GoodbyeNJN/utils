@@ -1,4 +1,4 @@
-import { Result } from "@/result";
+import { Result } from "@/result/full";
 
 import { glob as unsafeGlob, globSync as unsafeGlobSync } from "../unsafe/glob";
 

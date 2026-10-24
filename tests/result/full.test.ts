@@ -6,7 +6,7 @@
 
 import { describe, expect, expectTypeOf, test } from "vitest";
 
-import { Err, Ok, Result } from "@/result";
+import { Err, Ok, Result } from "@/result/full";
 
 describe("Result.gen", () => {
     test("should handle generator returning non-Result value", () => {

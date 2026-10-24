@@ -59,6 +59,10 @@
             "types": "./dist/result/index.d.ts",
             "import": "./dist/result/index.js"
         },
+        "./result/lite": {
+            "types": "./dist/result/lite/index.d.ts",
+            "import": "./dist/result/lite/index.js"
+        },
         ".": {
             "types": "./dist/index.d.ts",
             "import": "./dist/index.js"

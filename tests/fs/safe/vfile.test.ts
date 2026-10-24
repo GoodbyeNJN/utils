@@ -2,7 +2,7 @@ import { fs, vol } from "memfs";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { VFile } from "@/fs/safe/vfile";
-import { Err } from "@/result";
+import { Err } from "@/result/full";
 
 vi.mock("node:fs");
 vi.mock("node:fs/promises");

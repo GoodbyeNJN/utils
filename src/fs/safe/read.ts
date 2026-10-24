@@ -1,7 +1,7 @@
 import fs, { promises as fsp } from "node:fs";
 
 import { parse } from "@/json/safe";
-import { Err, Result } from "@/result";
+import { Err, Result } from "@/result/full";
 
 import { parseEncodingOptions } from "../shared/utils";
 import { exists, existsSync } from "./exists";

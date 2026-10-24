@@ -2,7 +2,7 @@ import fs, { promises as fsp } from "node:fs";
 import { dirname } from "node:path";
 
 import { stringify } from "@/json/safe";
-import { Result } from "@/result";
+import { Result } from "@/result/full";
 
 import { parseEncodingOptions, parseWriteJsonOptions, pathLikeToPath } from "../shared/utils";
 import { mkdir, mkdirSync } from "./mkdir";

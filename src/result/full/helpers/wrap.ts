@@ -1,9 +1,8 @@
-import { isFunction } from "@/fp";
-
+import { createWrap } from "../../shared/wrap";
 import { _try } from "./try";
 
 import type { Result } from "../result";
-import type { AsyncFn, Fn, SyncFn } from "@/types";
+import type { AsyncFn, SyncFn } from "@/types";
 
 export interface Wrap {
     <A extends any[], T, E = unknown>(fn: SyncFn<T, A>): SyncFn<Result<T, E>, A>;
@@ -25,18 +24,4 @@ export interface Wrap {
 }
 
 /* #__NO_SIDE_EFFECTS__ */
-export const wrap: Wrap = (fn: unknown, onThrow?: Fn): Fn => {
-    if (!isFunction(fn)) {
-        const error = new TypeError("Argument must be a function");
-
-        return () => {
-            return _try(() => {
-                throw error;
-            }, onThrow!);
-        };
-    }
-
-    return (...args) => {
-        return _try(() => (fn as Fn)(...args), onThrow!);
-    };
-};
+export const wrap: Wrap = createWrap(_try);

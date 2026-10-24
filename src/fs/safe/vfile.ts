@@ -1,5 +1,5 @@
 import { parse, stringify } from "@/json/safe";
-import { Err, Ok } from "@/result";
+import { Err, Ok } from "@/result/full";
 
 import { ExtendVFile } from "../shared/vfile";
 import { cp, cpSync } from "./cp";
@@ -9,7 +9,7 @@ import { rm, rmSync } from "./rm";
 import { writeFile, writeFileSync } from "./write";
 
 import type { CpOptions, PathLike, RmOptions } from "../shared/types";
-import type { InferErrType, Result } from "@/result";
+import type { InferErrType, Result } from "@/result/full";
 
 const ERR = Err() as any;
 

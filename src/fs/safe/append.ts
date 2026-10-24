@@ -1,7 +1,7 @@
 import fs, { promises as fsp } from "node:fs";
 import { dirname } from "node:path";
 
-import { Result } from "@/result";
+import { Result } from "@/result/full";
 
 import { parseEncodingOptions, pathLikeToPath } from "../shared/utils";
 import { mkdir, mkdirSync } from "./mkdir";

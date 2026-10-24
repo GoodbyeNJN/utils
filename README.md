@@ -402,6 +402,9 @@ const pattern = convertPathToPattern("/home/user/project");
 
 ### Result Pattern - Functional Error Handling
 
+The `@goodbyenjn/utils/result` entry point provides the full `Result` API, including
+chainable instance methods and helpers such as `Result.all` and `Result.gen`:
+
 ```typescript
 import { Err, Ok, Result } from "@goodbyenjn/utils/result";
 
@@ -449,6 +452,39 @@ const asyncFinal = await Result.gen(async function* () {
     const user = yield* await fetchUser("1");
     return user.name;
 });
+```
+
+#### Lite Result
+
+For a lightweight alternative, import from `@goodbyenjn/utils/result/lite`. Lite results expose
+readonly `ok`, `error`, and `value` properties, and can also be accessed as a three-item tuple.
+They support `Ok`, `Err`, `Result.try`, `Result.wrap`, and `Result.is`, but do not include the
+full version's chainable instance methods or helpers such as `Result.all` and `Result.gen`.
+
+```typescript
+import { Err, Ok, Result } from "@goodbyenjn/utils/result/lite";
+
+const success = Ok(42);
+if (success.ok) {
+    console.log(success.value); // 42
+}
+
+const failure = Err("Something went wrong");
+if (!failure.ok) {
+    console.error(failure.error); // "Something went wrong"
+}
+
+// Catch thrown errors and access the result through its discriminated fields
+const parsed = Result.try(() => JSON.parse('{"valid": true}'), Error);
+if (parsed.ok) {
+    console.log(parsed.value.valid); // true
+} else {
+    console.error(parsed.error.message);
+}
+
+// Wrap a function so it returns a Result instead of throwing
+const safeParse = Result.wrap(JSON.parse, Error);
+const data = safeParse('{"valid": true}');
 ```
 
 ### Type Utilities
