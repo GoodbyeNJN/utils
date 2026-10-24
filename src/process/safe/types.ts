@@ -1,7 +1,6 @@
 import type {
     BaseExecCommandString,
     BaseExecCommandTemplate,
-    BaseExecFactory,
     BaseExecSpawn,
     BaseProcessInstance,
     BaseProcessOptions,
@@ -15,5 +14,4 @@ export type ProcessInstance = BaseProcessInstance<Result<Output, Error>, Result<
 
 export type Exec = BaseExecSpawn<ProcessInstance> &
     BaseExecCommandTemplate<ProcessInstance> &
-    BaseExecCommandString<ProcessInstance> &
-    BaseExecFactory<ProcessInstance>;
+    BaseExecCommandString<ProcessInstance>;

@@ -2,62 +2,49 @@ import { tokenizeArgs } from "args-tokenizer";
 
 import { isArray, isPlainObject, isString } from "@/fp";
 
-import type {
-    BaseProcessOptions,
-    ExecCommandStringParams,
-    ExecCommandTemplateParams,
-    ExecFactoryParams,
-    ExecParams,
-    ExecSpawnParams,
-    SpawnCommand,
-} from "./types";
+import type { BaseProcessOptions, ExecParams, SpawnCommand } from "./types";
 
 export const defaultOptions: Partial<BaseProcessOptions> = {
     timeout: undefined,
-    persist: false,
     useNodeModulesBin: true,
     windowsHide: true,
 };
 
-export const parseCommandString = (input: string): SpawnCommand => {
+export const parseCommandString = (input: string): SpawnCommand | Error => {
     let tokens;
     try {
         tokens = tokenizeArgs(input);
     } catch (error) {
-        throw new Error(`Failed to parse command string: "${input}".`, {
+        return new Error(`Failed to parse command string: "${input}".`, {
             cause: error,
         });
     }
 
     if (!tokens[0]) {
-        throw new Error(`Failed to extract command from string: "${input}".`);
+        return new Error(`Failed to extract command from string: "${input}".`);
     }
 
-    return { command: tokens[0], args: tokens.slice(1) };
+    return { cmd: tokens[0], args: tokens.slice(1) };
 };
 
-export const isSpawnParams = (params: ExecParams): params is ExecSpawnParams => {
-    const [a, b, c] = params;
-
-    return isString(a) && (b === undefined || isArray(b)) && (c === undefined || isPlainObject(c));
-};
-
-export const isCommandTemplateParams = (
+export const getExecParamsKind = (
     params: ExecParams,
-): params is ExecCommandTemplateParams => {
-    const [a] = params;
-
-    return isArray(a);
-};
-
-export const isCommandStringParams = (params: ExecParams): params is ExecCommandStringParams => {
+): "command-template" | "command-string" | "spawn-array" | "spawn-string" | Error => {
     const [a, b, c] = params;
 
-    return isString(a) && b === undefined && c === undefined;
-};
+    if (isArray(a)) return "command-template";
 
-export const isFactoryParams = (params: ExecParams): params is ExecFactoryParams => {
-    const [a, b, c] = params;
+    if (isString(a)) {
+        if (b === undefined && c === undefined) return "command-string";
 
-    return isPlainObject(a) && b === undefined && c === undefined;
+        if (c === undefined || isPlainObject(c)) {
+            if (b === undefined || isArray(b)) {
+                return "spawn-array";
+            } else if (b === null) {
+                return "spawn-string";
+            }
+        }
+    }
+
+    return new Error(`Invalid parameters passed to exec: ${JSON.stringify(params)}`);
 };

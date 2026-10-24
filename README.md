@@ -166,8 +166,8 @@ const result = await promise;
 ### Command Execution
 
 ```typescript
-import { exec } from "@goodbyenjn/utils/process";
-import { exec as safeExec } from "@goodbyenjn/utils/process/safe";
+import { createExec, exec } from "@goodbyenjn/utils/process";
+import { createExec as createSafeExec, exec as safeExec } from "@goodbyenjn/utils/process/safe";
 
 // 1. Unsafe Execution (throws on failure)
 const output = await exec`npm install`;
@@ -176,6 +176,9 @@ console.log(output.stdout);
 // String command with args
 const lsOutput = await exec("ls", ["-la"]);
 console.log(lsOutput.stdout);
+
+// Parse a command string while passing spawn options
+const echoOutput = await exec("echo hello", null, { cwd: "/path/to/project" });
 
 // 2. Safe Execution (returns Result)
 const safeOutput = await safeExec`npm install`;
@@ -196,8 +199,12 @@ for await (const line of exec`cat large-file.txt`) {
 }
 
 // 5. Configuration Factory
-const withCwd = exec({ cwd: "/path/to/project" });
+const withCwd = createExec({ cwd: "/path/to/project" });
 const result3 = await withCwd`npm install`;
+
+// The safe entry point also provides a configuration factory
+const withSafeOptions = createSafeExec({ throwOnError: true });
+const safeResult = await withSafeOptions`npm install`;
 ```
 
 #### Terminal Styling

@@ -10,7 +10,7 @@ export interface Output {
 }
 
 export interface SpawnCommand {
-    command: string;
+    cmd: string;
     args: string[];
 }
 export type { SpawnOptions } from "node:child_process";
@@ -21,14 +21,13 @@ export interface BaseProcessOptions<
     stdin: T | string;
     signal: AbortSignal; // Overrides
     timeout: number; // Overrides
-    persist: boolean;
     throwOnError: boolean;
     useNodeModulesBin: boolean;
 }
 
 export interface BaseProcessInstance<P = any, I = any> extends PromiseLike<P>, AsyncIterable<I> {
     get process(): ChildProcess | undefined;
-    get command(): string | undefined;
+    get cmd(): string | undefined;
     get args(): string[] | undefined;
     get aborted(): boolean;
     get killed(): boolean;
@@ -41,29 +40,18 @@ export interface BaseProcessInstance<P = any, I = any> extends PromiseLike<P>, A
     kill: (signal?: KillSignal) => boolean;
 }
 
-export type ExecParams =
-    | ExecSpawnParams
-    | ExecCommandTemplateParams
-    | ExecCommandStringParams
-    | ExecFactoryParams;
+export type ExecParams = ExecSpawnParams | ExecCommandTemplateParams | ExecCommandStringParams;
 
 export type ExecSpawnParams = [
     command: string,
-    args?: string[],
+    args?: string[] | null,
     options?: Partial<BaseProcessOptions>,
 ];
 export type ExecCommandTemplateParams = Parameters<TemplateFn>;
 export type ExecCommandStringParams = [command: string];
-export type ExecFactoryParams = [options: Partial<BaseProcessOptions>];
 
-export type BaseExec<T> = BaseExecSpawn<T> &
-    BaseExecCommandTemplate<T> &
-    BaseExecCommandString<T> &
-    BaseExecFactory<T>;
+export type BaseExec<T> = BaseExecSpawn<T> & BaseExecCommandTemplate<T> & BaseExecCommandString<T>;
 
 export type BaseExecSpawn<T> = (...params: ExecSpawnParams) => T;
 export type BaseExecCommandTemplate<T> = (...params: ExecCommandTemplateParams) => T;
 export type BaseExecCommandString<T> = (...params: ExecCommandStringParams) => T;
-export type BaseExecFactory<T> = (
-    ...params: ExecFactoryParams
-) => BaseExecCommandTemplate<T> & BaseExecCommandString<T>;

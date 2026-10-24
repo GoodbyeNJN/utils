@@ -3,7 +3,7 @@ import { spawn } from "node:child_process";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 import { NonZeroExitError } from "@/process/shared/error";
-import { exec } from "@/process/unsafe";
+import { createExec, exec } from "@/process/unsafe";
 
 vi.mock("node:child_process", { spy: true });
 
@@ -35,6 +35,14 @@ describe("invocation styles", () => {
         expect(args).toStrictEqual(["hello", "world"]);
     });
 
+    test("should accept a command with null args array", async () => {
+        await exec("echo hello", null);
+
+        const { command, args } = getSpawnParams();
+        expect(command).toBe("echo");
+        expect(args).toStrictEqual(["hello"]);
+    });
+
     test("should accept a template string", async () => {
         const word = "world";
         await exec`echo ${word}`;
@@ -45,7 +53,7 @@ describe("invocation styles", () => {
     });
 
     test("should accept a factory options object and return a runner", async () => {
-        const run = exec({ cwd: "/" });
+        const run = createExec({ cwd: "/" });
         await run("echo factory");
 
         const { command, args, options } = getSpawnParams();
@@ -79,13 +87,13 @@ describe("output", () => {
 
 describe("throwOnError", () => {
     test("should throw NonZeroExitError when throwOnError is true and exit code is non-zero", async () => {
-        await expect(exec({ throwOnError: true })("sh -c 'exit 1'")).rejects.toBeInstanceOf(
+        await expect(createExec({ throwOnError: true })("sh -c 'exit 1'")).rejects.toBeInstanceOf(
             NonZeroExitError,
         );
     });
 
     test("should not throw when throwOnError is true but exit code is 0", async () => {
-        const output = await exec({ throwOnError: true })("echo ok");
+        const output = await createExec({ throwOnError: true })("echo ok");
         expect(output.exitCode).toBe(0);
     });
 });
@@ -94,12 +102,12 @@ describe("abort / timeout", () => {
     test("should not throw when an already-aborted signal is provided", async () => {
         const controller = new AbortController();
         controller.abort();
-        await expect(exec({ signal: controller.signal })("echo hi")).resolves.not.toThrow();
+        await expect(createExec({ signal: controller.signal })("echo hi")).resolves.not.toThrow();
     });
 
     test("should not throw when aborted mid-run", async () => {
         const controller = new AbortController();
-        const p = exec({ signal: controller.signal })("sleep 10");
+        const p = createExec({ signal: controller.signal })("sleep 10");
         controller.abort();
         await expect(p).resolves.not.toThrow();
     });

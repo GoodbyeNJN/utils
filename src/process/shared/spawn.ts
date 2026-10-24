@@ -222,7 +222,7 @@ export const spawnProcess = (
     args: string[],
     options: Partial<BaseProcessOptions>,
 ) => {
-    const { stdin, signal, timeout, persist, throwOnError, useNodeModulesBin, ...rest } = options;
+    const { stdin, signal, timeout, throwOnError, useNodeModulesBin, ...rest } = options;
     const spawnOptions: SpawnOptions = {
         ...rest,
     };
@@ -237,9 +237,6 @@ export const spawnProcess = (
 
     if (signals.length > 0) {
         spawnOptions.signal = combineSignals(signals);
-    }
-    if (persist === true) {
-        spawnOptions.detached = true;
     }
     spawnOptions.env = combineEnv(process.cwd(), spawnOptions.env, useNodeModulesBin);
 

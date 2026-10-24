@@ -26,8 +26,8 @@ export class NonZeroExitError extends Error {
 
     public constructor(result: BaseProcessInstance, output?: Output) {
         let target = "Process";
-        if (result.command) {
-            let full = result.command;
+        if (result.cmd) {
+            let full = result.cmd;
             if (result.args?.length) {
                 const argsString = result.args
                     .map(a => (/[ "'`()]/.test(a) ? JSON.stringify(a) : a))

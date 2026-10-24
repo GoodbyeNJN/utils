@@ -1,5 +1,5 @@
 import { NonZeroExitError } from "../shared/error";
-import { BaseProcess } from "../shared/process";
+import { baseExec, BaseProcess } from "../shared/process";
 import { readStreamLines, readStreams } from "../shared/stream";
 
 import type { ExecParams, Output } from "../shared/types";
@@ -26,7 +26,7 @@ export class Process extends BaseProcess<Output, string> implements ProcessInsta
         this.maybeThrow();
     }
 
-    protected override async thenImpl(): Promise<Output> {
+    protected override async readProcessOutput(): Promise<Output> {
         const p = this.process;
         if (!p) throw new Error("No process was started");
 
@@ -56,7 +56,7 @@ export class Process extends BaseProcess<Output, string> implements ProcessInsta
         throw new NonZeroExitError(this, output);
     }
 
-    protected override child() {
+    protected override createChildProcess() {
         return new Process({ stdin: this });
     }
 }
@@ -64,5 +64,11 @@ export class Process extends BaseProcess<Output, string> implements ProcessInsta
 export const exec: Exec = (...params: ExecParams): any => {
     const self = new Process();
 
-    return BaseProcess["execImpl"](self, params);
+    return baseExec(self, params);
+};
+
+export const createExec = (options?: Partial<ProcessOptions>): Exec => {
+    const self = new Process(options);
+
+    return (...params: ExecParams) => baseExec(self, params);
 };

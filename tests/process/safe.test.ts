@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { exec } from "@/process/safe";
+import { createExec, exec } from "@/process/safe";
 import { NonZeroExitError } from "@/process/shared/error";
 
 vi.mock("node:child_process", { spy: true });
@@ -37,6 +37,15 @@ describe("invocation styles", () => {
         expect(args).toStrictEqual(["hello", "world"]);
     });
 
+    test("should accept a command with null args array", async () => {
+        const result = await exec("echo hello", null);
+
+        expect(result.isOk()).toBe(true);
+        const { command, args } = getSpawnParams();
+        expect(command).toBe("echo");
+        expect(args).toStrictEqual(["hello"]);
+    });
+
     test("should accept a template string", async () => {
         const word = "safe";
         const result = await exec`echo ${word}`;
@@ -48,7 +57,7 @@ describe("invocation styles", () => {
     });
 
     test("should accept a factory options object and return a runner", async () => {
-        const run = exec({ throwOnError: false });
+        const run = createExec({ throwOnError: false });
         const result = await run("echo factory");
 
         expect(result.isOk()).toBe(true);
@@ -83,13 +92,13 @@ describe("output", () => {
 
 describe("throwOnError", () => {
     test("should return Err with NonZeroExitError when throwOnError is true and exit code is non-zero", async () => {
-        const result = await exec({ throwOnError: true })("sh -c 'exit 1'");
+        const result = await createExec({ throwOnError: true })("sh -c 'exit 1'");
         expect(result.isErr()).toBe(true);
         expect(NonZeroExitError.is(result.unwrapErr())).toBe(true);
     });
 
     test("should return Ok when throwOnError is true but exit code is 0", async () => {
-        const result = await exec({ throwOnError: true })("echo ok");
+        const result = await createExec({ throwOnError: true })("echo ok");
         expect(result.isOk()).toBe(true);
         expect(result.unwrap().exitCode).toBe(0);
     });
@@ -98,7 +107,7 @@ describe("throwOnError", () => {
 describe("abort / timeout", () => {
     test("should return Ok when aborted mid-run", async () => {
         const controller = new AbortController();
-        const p = exec({ signal: controller.signal })("sleep 10");
+        const p = createExec({ signal: controller.signal })("sleep 10");
         controller.abort();
         const result = await p;
         expect(result.isOk()).toBe(true);
@@ -107,7 +116,7 @@ describe("abort / timeout", () => {
     test("should return Ok when an already-aborted signal is provided", async () => {
         const controller = new AbortController();
         controller.abort();
-        const result = await exec({ signal: controller.signal })("echo hi");
+        const result = await createExec({ signal: controller.signal })("echo hi");
         expect(result.isOk()).toBe(true);
     });
 });

@@ -1,23 +1,14 @@
-import { isString } from "@/fp";
+import { isError, isString } from "@/fp";
 import { concatTemplateStrings, createPromiseWithResolvers } from "@/tools";
 
 import { isAbortError } from "./error";
-import {
-    defaultOptions,
-    isCommandStringParams,
-    isCommandTemplateParams,
-    isFactoryParams,
-    isSpawnParams,
-    parseCommandString,
-} from "./params";
+import { defaultOptions, getExecParamsKind, parseCommandString } from "./params";
 import { spawnProcess } from "./spawn";
 
 import type {
     BaseExec,
     BaseProcessInstance,
     BaseProcessOptions,
-    ExecCommandStringParams,
-    ExecCommandTemplateParams,
     ExecParams,
     KillSignal,
 } from "./types";
@@ -26,47 +17,9 @@ import type { ChildProcess } from "node:child_process";
 import type { Readable } from "node:stream";
 
 export abstract class BaseProcess<P, I> implements BaseProcessInstance<P, I> {
-    protected static execImpl<P, I>(self: BaseProcess<P, I>, params: ExecParams) {
-        const execCommandTemplateOrString = (
-            ...params: ExecCommandTemplateParams | ExecCommandStringParams
-        ) => {
-            const input = isCommandTemplateParams(params)
-                ? concatTemplateStrings(params[0], params.slice(1))
-                : params[0];
-
-            let cmd;
-            try {
-                cmd = parseCommandString(input);
-            } catch (error) {
-                self.thrownError = error as Error;
-            }
-
-            // Return current instance if command parsing failed, error will be thrown later when waiting for output
-            return cmd ? self.spawn(cmd.command, cmd.args) : self;
-        };
-
-        if (isCommandTemplateParams(params) || isCommandStringParams(params)) {
-            return execCommandTemplateOrString(...params);
-        } else if (isSpawnParams(params)) {
-            self.options = { ...self.options, ...params[2] };
-
-            return self.spawn(params[0], params[1] || []);
-        } else if (isFactoryParams(params)) {
-            self.options = { ...self.options, ...params[0] };
-
-            return execCommandTemplateOrString;
-        } else {
-            self.thrownError = new Error(
-                `Invalid parameters passed to exec: ${JSON.stringify(params)}`,
-            );
-
-            return self;
-        }
-    }
-
     protected _process: ChildProcess | undefined;
     protected _aborted = false;
-    protected _command: string | undefined;
+    protected _cmd: string | undefined;
     protected _args: string[] | undefined;
     protected options: Partial<BaseProcessOptions> = { ...defaultOptions };
     protected streamOut: Nullable<Readable>;
@@ -79,8 +32,8 @@ export abstract class BaseProcess<P, I> implements BaseProcessInstance<P, I> {
         return this._process;
     }
 
-    get command(): string | undefined {
-        return this._command;
+    get cmd(): string | undefined {
+        return this._cmd;
     }
 
     get args(): string[] | undefined {
@@ -113,14 +66,18 @@ export abstract class BaseProcess<P, I> implements BaseProcessInstance<P, I> {
             createPromiseWithResolvers<void>());
     }
 
+    protected abstract createChildProcess(): BaseProcess<P, I>;
+    protected abstract readProcessOutput(): Promise<P>;
+    abstract [Symbol.asyncIterator](): AsyncIterator<I>;
+
     exec: BaseExec<BaseProcessInstance<P, I>> = (...params: ExecParams): any => {
-        return BaseProcess.execImpl(this, params);
+        return baseExec(this, params);
     };
 
     pipe: BaseExec<BaseProcessInstance<P, I>> = (...params: ExecParams): any => {
-        const self = this.child();
+        const self = this.createChildProcess();
 
-        return BaseProcess.execImpl(self, params);
+        return baseExec(self, params);
     };
 
     kill(signal?: KillSignal): boolean {
@@ -131,14 +88,14 @@ export abstract class BaseProcess<P, I> implements BaseProcessInstance<P, I> {
         onfulfilled?: ((value: P) => TResult1 | PromiseLike<TResult1>) | null,
         onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
     ): Promise<TResult1 | TResult2> {
-        return this.thenImpl().then(onfulfilled, onrejected);
+        return this.readProcessOutput().then(onfulfilled, onrejected);
     }
 
-    protected spawn(command: string, args: string[]): this {
-        this._command = command;
+    protected run(command: string, args: string[]): this {
+        this._cmd = command;
         this._args = args;
 
-        const p = spawnProcess(command, args, this.options)
+        const proc = spawnProcess(command, args, this.options)
             .once("error", err => {
                 if (isAbortError(err)) {
                     this._aborted = true;
@@ -150,21 +107,21 @@ export abstract class BaseProcess<P, I> implements BaseProcessInstance<P, I> {
                 this.closeProcess();
             });
 
-        this._process = p;
-        this.streamOut = p.stdout;
-        this.streamErr = p.stderr;
+        this._process = proc;
+        this.streamOut = proc.stdout;
+        this.streamErr = proc.stderr;
 
-        if (!p.stdin) return this;
+        if (!proc.stdin) return this;
 
         const { stdin } = this.options;
         if (isString(stdin)) {
-            p.stdin.end(stdin);
+            proc.stdin.end(stdin);
         } else if (stdin?.process?.stdout) {
             const { stdout } = stdin.process;
-            stdout.pipe(p.stdin);
+            stdout.pipe(proc.stdin);
             // Close stdin manually if the source has already ended
             if (stdout.readableEnded) {
-                p.stdin.end();
+                proc.stdin.end();
             }
         }
 
@@ -181,10 +138,50 @@ export abstract class BaseProcess<P, I> implements BaseProcessInstance<P, I> {
 
         this.process?.removeAllListeners();
     }
-
-    abstract [Symbol.asyncIterator](): AsyncIterator<I>;
-
-    protected abstract thenImpl(): Promise<P>;
-
-    protected abstract child(): BaseProcess<P, I>;
 }
+
+export const baseExec = <P, I>(self: BaseProcess<P, I>, params: ExecParams) => {
+    const [a, b, c] = params;
+    const kind = getExecParamsKind(params);
+
+    let input;
+    switch (kind) {
+        case "command-template": {
+            input = concatTemplateStrings(a as any, params.slice(1));
+
+            break;
+        }
+        case "command-string": {
+            input = a as string;
+
+            break;
+        }
+        case "spawn-array": {
+            // For spawn-array, we directly spawn the command with the provided arguments and options.
+            self["options"] = { ...self["options"], ...c };
+
+            return self["run"](a as any, b ?? []);
+        }
+        case "spawn-string": {
+            self["options"] = { ...self["options"], ...c };
+            input = a as string;
+
+            break;
+        }
+        default: {
+            self["thrownError"] = kind;
+
+            return self;
+        }
+    }
+
+    const cmd = parseCommandString(input);
+    if (isError(cmd)) {
+        self["thrownError"] = cmd;
+
+        // Return current instance if command parsing failed, error will be thrown later when waiting for output
+        return self;
+    }
+
+    return self["run"](cmd.cmd, cmd.args);
+};
