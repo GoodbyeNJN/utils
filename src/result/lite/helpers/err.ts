@@ -7,7 +7,6 @@ export interface Err {
 }
 
 /* #__NO_SIDE_EFFECTS__ */
-export const Err: Err = (error?: unknown) => {
-    // @ts-expect-error ts(2351)
+export const Err: Err = (error?: unknown): any => {
     return new Result(false, error, undefined);
 };

@@ -7,7 +7,6 @@ export interface Ok {
 }
 
 /* #__NO_SIDE_EFFECTS__ */
-export const Ok: Ok = (value?: unknown) => {
-    // @ts-expect-error ts(2351)
+export const Ok: Ok = (value?: unknown): any => {
     return new Result(true, undefined, value);
 };
