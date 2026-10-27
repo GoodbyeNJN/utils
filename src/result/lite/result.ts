@@ -2,6 +2,8 @@ import { isResult } from "./helpers/isResult";
 import { _try } from "./helpers/try";
 import { wrap } from "./helpers/wrap";
 
+import type { InspectContext } from "node:util";
+
 type ResultTuple<T, E> = readonly [ok: boolean, error: E, value: T];
 
 // oxlint-disable-next-line no-redeclare
@@ -30,5 +32,27 @@ export class Result<T = unknown, E = unknown> {
         yield this.value;
 
         return undefined;
+    }
+
+    // See `Inspectable` and `inspect` types in `node:util` for details
+    [Symbol.for("nodejs.util.inspect.custom")](
+        depth: number,
+        options: InspectContext,
+        inspect: typeof import("node:util").inspect,
+    ): string {
+        if (this.ok) {
+            const inner = inspect(this.value, options);
+
+            return `Ok(${inner})`;
+        } else if (this.error instanceof Error) {
+            const { name, message } = this.error;
+            const inner = inspect(message, options);
+
+            return `Err(${name}(${inner}))`;
+        } else {
+            const inner = inspect(this.error, options);
+
+            return `Err(${inner})`;
+        }
     }
 }

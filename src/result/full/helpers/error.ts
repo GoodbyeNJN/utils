@@ -1,15 +1,17 @@
 import { isError } from "@/fp";
 import { getErrorMessage } from "@/tools";
 
-import type { Result } from "../result";
+import { Result } from "../result";
+
+const SEPARATOR = "-".repeat(20);
 
 const prepare = (result: Result, msg?: string) => {
     // 1. Determine error message and cause from the provided error
-    const cause = (result as any).error;
+    const cause = result["error"];
     const reason = cause === undefined ? "" : getErrorMessage(cause);
 
     // 2. Concat error message to contexts as the innermost context
-    const contexts: string[] = (result as any).contexts.reverse().concat(reason || []);
+    const contexts: string[] = result["contexts"].toReversed().concat(reason || []);
 
     let message = "";
     // 3. Use provided message as the main message if available
@@ -59,12 +61,14 @@ export class ResultError extends Error {
 
         super(
             `
---------------------
+${SEPARATOR}
 ${prepared.formatted}
 Stack trace:`,
             prepared.options,
         );
         Error.captureStackTrace(this, caller || this.constructor);
+
+        this.name = "ResultError";
 
         this.#msg = prepared.message;
         this.#ctx = prepared.contexts;
@@ -80,6 +84,13 @@ Stack trace:`,
     }
 
     override toString(): string {
-        return this.#formatted;
+        return `${this.name}
+${SEPARATOR}
+${this.#formatted}`;
+    }
+
+    // See `Inspectable` and `inspect` types in `node:util` for details
+    [Symbol.for("nodejs.util.inspect.custom")](): string {
+        return this.toString();
     }
 }

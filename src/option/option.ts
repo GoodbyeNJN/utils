@@ -10,6 +10,7 @@ import { wrap } from "./helpers/wrap";
 
 import type { InferSomeType } from "./types";
 import type { AsyncFn, SyncFn } from "@/types";
+import type { InspectContext } from "node:util";
 
 export const NONE = Symbol.for("[@goodbyenjn/option]: None") as never;
 
@@ -171,5 +172,20 @@ export class Option<T = unknown> {
 
         // In typical usage, this line will never be reached; the `option` is returned here just as a safe fallback.
         return this as unknown as T;
+    }
+
+    // See `Inspectable` and `inspect` types in `node:util` for details
+    [Symbol.for("nodejs.util.inspect.custom")](
+        depth: number,
+        options: InspectContext,
+        inspect: typeof import("node:util").inspect,
+    ): string {
+        if (this.isSome()) {
+            const inner = inspect(this.value, options);
+
+            return `Some(${inner})`;
+        } else {
+            return `None()`;
+        }
     }
 }

@@ -1,4 +1,4 @@
-import { isPromiseLike } from "@/fp";
+import { isError, isPromiseLike } from "@/fp";
 
 import { all } from "./helpers/all";
 import { Err } from "./helpers/err";
@@ -12,6 +12,7 @@ import { wrap } from "./helpers/wrap";
 
 import type { InferErrType, InferOkType } from "./types";
 import type { AsyncFn, SyncFn } from "@/types";
+import type { InspectContext } from "node:util";
 
 export class Result<T = unknown, E = unknown> {
     static is = isResult;
@@ -47,11 +48,7 @@ export class Result<T = unknown, E = unknown> {
 
     private readonly error: E;
 
-    readonly #contexts: string[] = [];
-
-    private get contexts(): string[] {
-        return this.#contexts;
-    }
+    private readonly contexts: string[] = [];
 
     private constructor(ok: boolean, error: E, value: T) {
         this.ok = ok;
@@ -229,8 +226,30 @@ export class Result<T = unknown, E = unknown> {
     }
 
     context(context: string): this {
-        this.#contexts.push(context);
+        this.contexts.push(context);
 
         return this;
+    }
+
+    // See `Inspectable` and `inspect` types in `node:util` for details
+    [Symbol.for("nodejs.util.inspect.custom")](
+        depth: number,
+        options: InspectContext,
+        inspect: typeof import("node:util").inspect,
+    ): string {
+        if (this.isOk()) {
+            const inner = inspect(this.value, options);
+
+            return `Ok(${inner})`;
+        } else if (isError(this.error)) {
+            const { name, message } = this.error;
+            const inner = inspect(message, options);
+
+            return `Err(${name}(${inner}))`;
+        } else {
+            const inner = inspect(this.error, options);
+
+            return `Err(${inner})`;
+        }
     }
 }
