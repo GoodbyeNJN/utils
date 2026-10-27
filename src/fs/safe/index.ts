@@ -1,3 +1,4 @@
+export { ancestors, extname, filename, isSubpath, mapPathsToEntry } from "../shared/path";
 export { BaseVFile } from "../shared/vfile";
 
 export { appendFile, appendFileSync } from "./append";

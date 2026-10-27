@@ -54,7 +54,7 @@ interface DirnameGetter<T> {
 }
 
 export class BaseVFile {
-    protected _cwd = process.cwd();
+    protected _cwd = "";
     protected _dirname = "";
     protected _filename = "";
     protected _extname = "";
@@ -64,9 +64,7 @@ export class BaseVFile {
      *     const vfile = new VFile("/home/user/project/src/page/index.js", "/home/user/project");
      */
     constructor(filepath: PathLike, cwd?: string) {
-        if (cwd) {
-            this.cwd(cwd);
-        }
+        this.cwd(cwd || process.cwd());
 
         const pathname = isString(filepath) ? filepath : url.fileURLToPath(filepath);
         if (path.isAbsolute(pathname)) {
