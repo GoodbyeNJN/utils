@@ -8,36 +8,36 @@ import type { InferSomeType } from "../types";
 import type { Fn } from "@/types";
 
 export interface Gen {
-    <T, This>(body: (this: This) => Iterator<Option, Option<T> | T>, self?: This): Option<T>;
+    <T, This>(body: (this: This) => Generator<Option, Option<T> | T>, self?: This): Option<T>;
     <YieldNone extends Option, ReturnOption extends Option, This>(
-        body: (this: This) => Iterator<YieldNone, ReturnOption>,
+        body: (this: This) => Generator<YieldNone, ReturnOption>,
         self?: This,
     ): Option<ReturnOption extends Option ? InferSomeType<ReturnOption> : ReturnOption>;
 
     <T, This>(
-        body: (this: This) => AsyncIterator<Option, Option<T> | T>,
+        body: (this: This) => AsyncGenerator<Option, Option<T> | T>,
         self?: This,
     ): Promise<Option<T>>;
     <YieldNone extends Option, ReturnOption extends Option, This>(
-        body: (this: This) => AsyncIterator<YieldNone, ReturnOption>,
+        body: (this: This) => AsyncGenerator<YieldNone, ReturnOption>,
         self?: This,
     ): Promise<Option<ReturnOption extends Option ? InferSomeType<ReturnOption> : ReturnOption>>;
 }
 
+const handleIteratorResult = (result: IteratorResult<any, any>): any => {
+    const { done, value } = result;
+
+    if (!done) return value;
+
+    return isOption(value) ? value : Some(value);
+};
+
 /* #__NO_SIDE_EFFECTS__ */
-export const gen: Gen = (body: Fn<Iterator<any> | AsyncIterator<any>>, self?: any): any => {
-    const iter = body.call(self);
-    const next = iter.next();
-
-    const handle = (option: IteratorResult<any, any>): any => {
-        if (!option.done) return option.value;
-
-        return isOption(option.value) ? option.value : Some(option.value);
-    };
-
+export const gen: Gen = (body: Fn<Generator<any> | AsyncGenerator<any>>, self?: any): any => {
+    const next = body.call(self).next();
     if (isPromiseLike(next)) {
-        return next.then(handle);
+        return next.then(handleIteratorResult);
     }
 
-    return handle(next);
+    return handleIteratorResult(next);
 };

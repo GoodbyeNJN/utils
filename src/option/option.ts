@@ -158,13 +158,18 @@ export class Option<T = unknown> {
         }
     }
 
-    *[Symbol.iterator](): Iterator<Option<never>, T> {
+    *[Symbol.iterator](): Generator<Option<never>, T> {
+        // When used like `const x = yield* option`:
+
+        // If the option is `Some`, the value of `x` will be the `Some` value.
         if (this.isSome()) {
             return this.value;
         }
 
+        // If the option is `None`, the assignment `const x =` will not occur and yield the `option` to the wrapping generator.
         yield this as unknown as Option<never>;
 
+        // In typical usage, this line will never be reached; the `option` is returned here just as a safe fallback.
         return this as unknown as T;
     }
 }

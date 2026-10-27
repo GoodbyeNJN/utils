@@ -9,11 +9,11 @@ import type { Fn } from "@/types";
 
 export interface Gen {
     <T, E, This>(
-        body: (this: This) => Iterator<Result<unknown, E>, Result<T, E> | T>,
+        body: (this: This) => Generator<Result<unknown, E>, Result<T, E> | T>,
         self?: This,
     ): Result<T, E>;
     <YieldErr extends Result, ReturnResult extends Result, This>(
-        body: (this: This) => Iterator<YieldErr, ReturnResult>,
+        body: (this: This) => Generator<YieldErr, ReturnResult>,
         self?: This,
     ): Result<
         ReturnResult extends Result ? InferOkType<ReturnResult> : ReturnResult,
@@ -21,11 +21,11 @@ export interface Gen {
     >;
 
     <T, E, This>(
-        body: (this: This) => AsyncIterator<Result<unknown, E>, Result<T, E> | T>,
+        body: (this: This) => AsyncGenerator<Result<unknown, E>, Result<T, E> | T>,
         self?: This,
     ): Promise<Result<T, E>>;
     <YieldErr extends Result, ReturnResult extends Result, This>(
-        body: (this: This) => AsyncIterator<YieldErr, ReturnResult>,
+        body: (this: This) => AsyncGenerator<YieldErr, ReturnResult>,
         self?: This,
     ): Promise<
         Result<
@@ -36,20 +36,20 @@ export interface Gen {
     >;
 }
 
+const handleIteratorResult = (iteratorResult: IteratorResult<any, any>): any => {
+    const { done, value } = iteratorResult;
+
+    if (!done) return value;
+
+    return isResult(value) ? value : Ok(value);
+};
+
 /* #__NO_SIDE_EFFECTS__ */
-export const gen: Gen = (body: Fn<Iterator<any> | AsyncIterator<any>>, self?: any): any => {
-    const iter = body.call(self);
-    const next = iter.next();
-
-    const handle = (result: IteratorResult<any, any>): any => {
-        if (!result.done) return result.value;
-
-        return isResult(result.value) ? result.value : Ok(result.value);
-    };
-
+export const gen: Gen = (body: Fn<Generator<any> | AsyncGenerator<any>>, self?: any): any => {
+    const next = body.call(self).next();
     if (isPromiseLike(next)) {
-        return next.then(handle);
+        return next.then(handleIteratorResult);
     }
 
-    return handle(next);
+    return handleIteratorResult(next);
 };

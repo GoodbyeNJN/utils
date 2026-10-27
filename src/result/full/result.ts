@@ -213,13 +213,18 @@ export class Result<T = unknown, E = unknown> {
         }
     }
 
-    *[Symbol.iterator](): Iterator<Result<never, E>, T> {
+    *[Symbol.iterator](): Generator<Result<never, E>, T> {
+        // When used like `const x = yield* result`:
+
+        // If the result is `Ok`, the value of `x` will be the `Ok` value.
         if (this.isOk()) {
             return this.value;
         }
 
+        // If the result is `Err`, the assignment `const x =` will not occur and yield the `result` to the wrapping generator.
         yield this as unknown as Result<never, E>;
 
+        // In typical usage, this line will never be reached; the `result` is returned here just as a safe fallback.
         return this as unknown as T;
     }
 
